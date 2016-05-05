@@ -2,6 +2,17 @@
 MOJ Product Dashboard
 =====================
 
+.. image:: https://codeclimate.com/github/ministryofjustice/moj-product-dashboard/badges/gpa.svg
+   :target: https://codeclimate.com/github/ministryofjustice/moj-product-dashboard
+   :alt: Code Climate
+
+.. image:: https://codeclimate.com/github/ministryofjustice/moj-product-dashboard/badges/coverage.svg
+   :target: https://codeclimate.com/github/ministryofjustice/moj-product-dashboard/coverage
+   :alt: Test Coverage
+
+.. image:: https://codeclimate.com/github/ministryofjustice/moj-product-dashboard/badges/issue_count.svg
+   :target: https://codeclimate.com/github/ministryofjustice/moj-product-dashboard
+   :alt: Issue Count
 
 Product dashboard for MoJ products.
 
