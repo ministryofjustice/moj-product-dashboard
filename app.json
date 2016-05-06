@@ -1,0 +1,9 @@
+{
+  "name": "MoJ Product Dashboard",
+  "description": "Moj Project Dashboard",
+  "repository": "https://github.com/ministryofjustice/moj-product-dashboard.git",
+  "scripts": {
+    "postdeploy": "./manage.py migrate --noinput"
+  },
+  "keywords": ["uk", "ministryofjustice", "python", "dashboard", "bokeh"]
+}
