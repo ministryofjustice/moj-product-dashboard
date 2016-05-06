@@ -75,7 +75,10 @@ def bar_stack():
 
 def index(request):
     script, div = components(
-        {'Red': bar_group(), 'Blue': line(), 'Green': bar_stack()}
+        {'MonthlySpend': bar_group(),
+         'CumulativeSpend': line(),
+         'ForecastFTE': bar_stack()
+         }
     )
     context = dict(
         js_resource=INLINE.render_js(),
