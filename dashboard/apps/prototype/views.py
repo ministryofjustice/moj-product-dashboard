@@ -14,6 +14,8 @@ from bokeh.charts.attributes import CatAttr
 from bokeh.models import (
     PrintfTickFormatter, NumeralTickFormatter, DatetimeTickFormatter)
 
+from dashboard.libs import data_generator
+
 
 STYLE = {
     'plot_width': 400,
@@ -34,18 +36,24 @@ PROJECT_PHASES = OrderedDict([
 ])
 
 
-def bar_group():
-    months = ['Mar 2016', 'Apr 2016', 'May 2016', 'June 2016']
+def monthly_spendings(spendings):
+    months = []
+    keys = []
+    values = []
+    for month, props in spendings.items():
+        month_str = month.strftime('%b %y')
+        for key, val in props.items():
+            months.append(month_str)
+            keys.append(key)
+            values.append(val)
+
     data = {
-        'months': sum([[m, m] for m in months], []),
-        'keys': ['Actual', 'Forecast'] * 4,
-        'spendings': [80, 120,
-                      90, 140,
-                      0, 100,
-                      0, 100, ]
+        'months': months,
+        'keys': keys,
+        'values': values
     }
     label = CatAttr(columns='months', sort=False)
-    bar = Bar(data, values='spendings', label=label, group='keys',
+    bar = Bar(data, values='values', label=label, group='keys',
               color=['dodgerblue', 'lightblue'],
               agg='median', title="Monthly Spend",
               legend='top_right', **STYLE)
@@ -66,20 +74,20 @@ def line():
 def forecast_stack(forecast):
     months = []
     keys = []
-    spendings = []
+    values = []
     for month, props in forecast.items():
         month_str = month.strftime('%b %y')
         for key, val in props.items():
             months.append(month_str)
             keys.append(key)
-            spendings.append(val)
+            values.append(val)
     data = {
         'months': months,
         'keys': keys,
-        'spendings': spendings
+        'values': values
     }
     label = CatAttr(columns='months', sort=False)
-    bar = Bar(data, values='spendings', label=label, stack='keys',
+    bar = Bar(data, values='values', label=label, stack='keys',
               color=['dodgerblue', 'lightblue'],
               title="Forecast FTE Civil Servant/Contractor split",
               legend='top_right', **STYLE)
@@ -126,35 +134,13 @@ def project_timeline(timeline):
 
 
 def index(request):
-    timeline = {
-        'discovery': {'date': '2015-04-10', },
-        'alpha': {'date': '2015-08-10', },
-        'beta': {'date': '2016-01-20', },
-        'live': {'date': '2016-07-28', },
-        'project end': {'date': '2016-09-15', },
-    }
-    for value in timeline.values():
-        value['date'] = datetime.strptime(value['date'], '%Y-%m-%d')
-
-    start_date = datetime.now() - timedelta(days=30 * 6)
-    periods = pd.period_range(start_date.strftime('%Y-%m-%d'),
-                              periods=18, freq='M')
-
-    forecast = OrderedDict()
-    for p in periods:
-        val = np.random.uniform(4, 6)
-        forecast[p] = OrderedDict([
-            ('Civil Servant', val),
-            ('Contractor', val * np.random.uniform(0.7, 1))
-        ])
-
-    script, div = components(
-        {'MonthlySpend': bar_group(),
-         'CumulativeSpend': line(),
-         'ForecastFTE': forecast_stack(forecast),
-         'Timeline': project_timeline(timeline),
-         }
-    )
+    script, div = components({
+        'MonthlySpend': monthly_spendings(
+            data_generator.gen_monthly_spendings()),
+        'CumulativeSpend': line(),
+        'ForecastFTE': forecast_stack(data_generator.gen_forcast()),
+        'Timeline': project_timeline(data_generator.gen_project_timeline()),
+    })
     today = datetime.now().strftime('%d %b %Y')
     context = dict(
         js_resource=INLINE.render_js(),
