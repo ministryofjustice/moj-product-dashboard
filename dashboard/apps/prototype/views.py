@@ -63,15 +63,20 @@ def line():
     return line
 
 
-def bar_stack():
-    months = ['Mar 2016', 'Apr 2016', 'May 2016', 'June 2016']
+def forecast_stack(forecast):
+    months = []
+    keys = []
+    spendings = []
+    for month, props in forecast.items():
+        month_str = month.strftime('%b %y')
+        for key, val in props.items():
+            months.append(month_str)
+            keys.append(key)
+            spendings.append(val)
     data = {
-        'months': sum([[m, m] for m in months], []),
-        'keys': ['Civil Servants', 'Contractors'] * 4,
-        'spendings': [3, 0.5,
-                      6, 3.5,
-                      6, 3.5,
-                      4, 4, ]
+        'months': months,
+        'keys': keys,
+        'spendings': spendings
     }
     label = CatAttr(columns='months', sort=False)
     bar = Bar(data, values='spendings', label=label, stack='keys',
@@ -131,10 +136,22 @@ def index(request):
     for value in timeline.values():
         value['date'] = datetime.strptime(value['date'], '%Y-%m-%d')
 
+    start_date = datetime.now() - timedelta(days=30 * 6)
+    periods = pd.period_range(start_date.strftime('%Y-%m-%d'),
+                              periods=18, freq='M')
+
+    forecast = OrderedDict()
+    for p in periods:
+        val = np.random.uniform(4, 6)
+        forecast[p] = OrderedDict([
+            ('Civil Servant', val),
+            ('Contractor', val * np.random.uniform(0.7, 1))
+        ])
+
     script, div = components(
         {'MonthlySpend': bar_group(),
          'CumulativeSpend': line(),
-         'ForecastFTE': bar_stack(),
+         'ForecastFTE': forecast_stack(forecast),
          'Timeline': project_timeline(timeline),
          }
     )
