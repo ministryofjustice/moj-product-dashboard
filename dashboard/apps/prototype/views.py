@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import datetime
+from datetime import datetime, timedelta
+from collections import OrderedDict
 
 from django.shortcuts import render
 
@@ -23,6 +24,14 @@ STYLE = {
     'ylabel': '',
     'toolbar_location': 'above',
 }
+
+PROJECT_PHASES = OrderedDict([
+    ('discovery', {'color': 'olive'}),
+    ('alpha', {'color': 'navy'}),
+    ('beta', {'color': 'red'}),
+    ('live', {'color': 'green'}),
+    ('project end', {'color': 'blue'})
+])
 
 
 def bar_group():
@@ -75,9 +84,17 @@ def bar_stack():
     return bar
 
 
-def timeline():
-    x = [datetime.date(year=period.year, month=period.month, day=1)
-         for period in pd.period_range('2015-01', periods=24, freq='M')]
+def project_timeline(timeline):
+    padding = timedelta(days=60)
+    start_date = timeline[list(PROJECT_PHASES.keys())[0]]['date']
+    end_date = max(timeline[list(PROJECT_PHASES.keys())[-1]]['date'],
+                   datetime.now())
+
+    x = [datetime(year=period.year, month=period.month, day=1) for period in
+         pd.period_range((start_date - padding).strftime('%Y-%m-%d'),
+                         (end_date + padding).strftime('%Y-%m-%d'),
+                         freq='M')
+         ]
     p = figure(title='Timeline', plot_width=400,
                plot_height=120, responsive=True,
                x_axis_type="datetime", y_range=(-2, 8), logo=None)
@@ -90,17 +107,13 @@ def timeline():
         months=["%b %y"],
         years=["%b %y"],
     ))
-    p.diamond([datetime.date(2015, 4, 10)], [0], size=10,
-              color="olive", alpha=0.5, legend="discovery")
-    p.diamond([datetime.date(2015, 8, 10)], [0], size=10,
-              color="navy", alpha=0.5, legend="alpha")
-    p.diamond([datetime.date(2016, 1, 20)], [0], size=10,
-              color="red", alpha=0.5, legend="beta")
-    p.diamond([datetime.date(2016, 7, 28)], [0], size=10,
-              color="green", alpha=0.5, legend="live")
-    p.diamond([datetime.date(2016, 9, 15)], [0], size=10,
-              color="blue", alpha=0.5, legend="project end")
-    p.circle([datetime.date.today()], [0], size=10,
+
+    for phase, props in PROJECT_PHASES.items():
+        date = timeline[phase]['date']
+        p.diamond([date], [0], size=10, color=props['color'],
+                  alpha=0.5, legend=phase)
+
+    p.circle([datetime.now()], [0], size=10,
              color="black", alpha=0.5, legend="today")
     p.legend.orientation = 'top_left'
     p.legend.background_fill_alpha = 0.5
@@ -108,14 +121,24 @@ def timeline():
 
 
 def index(request):
+    timeline = {
+        'discovery': {'date': '2015-04-10', },
+        'alpha': {'date': '2015-08-10', },
+        'beta': {'date': '2016-01-20', },
+        'live': {'date': '2016-07-28', },
+        'project end': {'date': '2016-09-15', },
+    }
+    for value in timeline.values():
+        value['date'] = datetime.strptime(value['date'], '%Y-%m-%d')
+
     script, div = components(
         {'MonthlySpend': bar_group(),
          'CumulativeSpend': line(),
          'ForecastFTE': bar_stack(),
-         'Timeline': timeline(),
+         'Timeline': project_timeline(timeline),
          }
     )
-    today = datetime.date.today().strftime('%d %b %Y')
+    today = datetime.now().strftime('%d %b %Y')
     context = dict(
         js_resource=INLINE.render_js(),
         css_resource=INLINE.render_css(),
