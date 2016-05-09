@@ -80,7 +80,7 @@ def timeline():
     x = [datetime.date(year=period.year, month=period.month, day=1)
          for period in pd.period_range('2015-01', periods=24, freq='M')]
     p = figure(title='Timeline', plot_width=400,
-               plot_height=150, responsive=True,
+               plot_height=120, responsive=True,
                x_axis_type="datetime", y_range=(-2, 8), logo=None)
     p.line(x=x, y=[0] * len(x))
     p.yaxis.visible= None
@@ -103,7 +103,6 @@ def timeline():
     
 
 def index(request):
-    timeline()
     script, div = components(
         {'MonthlySpend': bar_group(),
          'CumulativeSpend': line(),
@@ -111,10 +110,12 @@ def index(request):
          'Timeline': timeline(),
          }
     )
+    today = datetime.date.today().strftime('%d %b %Y')
     context = dict(
         js_resource=INLINE.render_js(),
         css_resource=INLINE.render_css(),
         script=script,
         div=div,
+        today=today,
     )
     return render(request, 'index.html', context)
