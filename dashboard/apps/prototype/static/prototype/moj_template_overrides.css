@@ -1,0 +1,25 @@
+
+/* To make the blue bar under the title extend right across the page */
+#global-header-bar {
+
+    max-width: none;
+    width: 100%;
+
+}
+
+div.inner-block, div.header-bar {
+
+    background-color: #005ea5; /* Standard MoJ template blue */
+
+}
+
+/* Remove display of the .Gov.uk logo */
+.header-logo {
+    display: none;
+}
+
+/* Remove double underline from page title */
+#proposition-name:hover {
+    text-decoration: none !important;
+}
+
