@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
 
 import numpy as np
 import pandas as pd
@@ -133,6 +135,7 @@ def project_timeline(timeline):
     return p
 
 
+@login_required
 def index(request):
     script, div = components({
         'MonthlySpend': monthly_spendings(
