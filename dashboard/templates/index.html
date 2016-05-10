@@ -1,5 +1,10 @@
-<!DOCTYPE html>
-<html class="no-js">
+{% extends 'common.html' %}
+
+{% load staticfiles %}
+
+{#<html class="no-js">#}
+
+{% block head %}
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,8 +19,10 @@
     {{ css_resource|safe }}
     {{ js_resource|safe }}
     {{ script|safe }}
-  </head>
-  <body>
+{%  endblock %}
+
+
+{% block content %}
     <!--[if lt IE 8]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -92,5 +99,5 @@
       </div>
     </div>
 
-  </body>
-</html>
+{%  endblock %}
+
