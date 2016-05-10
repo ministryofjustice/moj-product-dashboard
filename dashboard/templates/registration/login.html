@@ -1,0 +1,28 @@
+{#{% extends "service_status/common.html" %}#}
+
+{% block content %}
+
+<div style="width: 200px; margin-left: auto; margin-right: auto;">
+
+  <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
+    {% csrf_token %}
+    <table>
+      <caption id="login_caption">Enter Login Details</caption>
+
+      <tr class="status_row">
+        <td class="password_cell">{{ form.username.label_tag }}</td>
+        <td class="password_cell">{{ form.username }}</td>
+      </tr>
+      <tr class="status_row">
+        <td class="password_cell">{{ form.password.label_tag }}</td>
+        <td class="password_cell">{{ form.password }}</td>
+      </tr>
+    </table>
+
+    <input class="form_button" type="submit" value="login"/>
+    <input type="hidden" name="next" value="{{ next }}"/>
+  </form>
+
+</div>
+
+{% endblock %}
