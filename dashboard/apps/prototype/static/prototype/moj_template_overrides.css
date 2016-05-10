@@ -5,7 +5,6 @@
     max-width: none;
     width: 100%;
 
-
 }
 
 div.inner-block, div.header-bar {
@@ -13,7 +12,6 @@ div.inner-block, div.header-bar {
     background-color: #005ea5; /* Standard MoJ template blue */
 
 }
-
 
 /* Remove display of the .Gov.uk logo */
 .header-logo {

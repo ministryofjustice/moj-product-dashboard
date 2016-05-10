@@ -1,4 +1,4 @@
-def globals(request):
+def moj(request):
 
     return {
         'app_title': 'MoJ Product Dashboard', # Application Title (Populates <title>)

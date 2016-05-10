@@ -67,7 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'dashboard.apps.prototype.context_processors.globals',
+                'dashboard.apps.prototype.context_processors.moj',
             ],
         },
     },
@@ -125,7 +125,6 @@ USE_TZ = True
 
 STATIC_ROOT = location('static')
 STATIC_URL = '/static/'
-print(location('static'))
 
 HEALTHCHECKS = [
     'moj_irat.healthchecks.database_healthcheck',
