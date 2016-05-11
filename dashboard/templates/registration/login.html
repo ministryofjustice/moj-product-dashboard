@@ -4,24 +4,24 @@
 
 {% block content %}
 
-<div class="login_column">
+<div class="login-column">
 
   <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
     {% csrf_token %}
     <table>
-      <caption id="login_caption">Enter Login Details</caption>
+      <caption>Enter Login Details</caption>
 
       <tr>
-        <td class="password_cell">{{ form.username.label_tag }}</td>
-        <td class="password_cell">{{ form.username }}</td>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
       </tr>
       <tr>
-        <td class="password_cell">{{ form.password.label_tag }}</td>
-        <td class="password_cell">{{ form.password }}</td>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
       </tr>
     </table>
-    <div class="submit_container">
-        <input class="form_button" type="submit" value="login"/>
+    <div class="submit-container">
+        <input class="form-button" type="submit" value="login"/>
     </div>
     <input type="hidden" name="next" value="{{ next }}"/>
   </form>
