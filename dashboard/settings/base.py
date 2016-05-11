@@ -135,3 +135,10 @@ HEALTHCHECKS = [
     # override default list of healthcheck callables
 ]
 AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
+
+
+# .local.py overrides all the common settings.
+try:
+    from .local import *
+except ImportError:
+    pass
