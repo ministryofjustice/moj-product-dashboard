@@ -84,8 +84,8 @@ WSGI_APPLICATION = 'dashboard.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'dashboard',
     }
 }
 DATABASES['default'].update(dj_database_url.config())
@@ -135,3 +135,10 @@ HEALTHCHECKS = [
     # override default list of healthcheck callables
 ]
 AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
+
+
+# .local.py overrides all the common settings.
+try:
+    from .local import *
+except ImportError:
+    pass
