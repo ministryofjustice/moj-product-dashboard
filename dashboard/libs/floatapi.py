@@ -16,8 +16,9 @@ HEADERS = (
 )
 
 
-def many(endpoint):
-    rsp = requests.get('{}/{}'.format(ROOT, endpoint), headers=dict(HEADERS))
+def many(endpoint, **params):
+    rsp = requests.get('{}/{}'.format(ROOT, endpoint), headers=dict(HEADERS),
+                       params=params)
     result = rsp.json()
     return result
 
