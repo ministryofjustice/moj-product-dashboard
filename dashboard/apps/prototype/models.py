@@ -5,7 +5,8 @@ from django.db import models
 class Person(models.Model):
     float_id = models.CharField(max_length=64, unique=True)
     name = models.CharField(max_length=64)
-    email = models.EmailField()
+    email = models.EmailField(null=True)
+    avatar = models.URLField(null=True)
     roles = models.ManyToManyField('Role', through='PersonRole')
 
     def __str__(self):
@@ -29,43 +30,37 @@ class Rate(models.Model):
     amount = models.DecimalField(max_digits=5, decimal_places=2)
     person = models.ForeignKey('Person', related_name='rates')
     start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
 
     def __str__(self):
-        if self.end_date:
-            return '"{}" @ "{}"/day from "{}" to "{}"'.format(
-                self.person, self.amount, self.start_date, self.end_date)
-        else:
-            return '"{}" @ "{}"/day from "{}"'.format(
-                self.person, self.amount, self.start_date)
+        return '"{}" @ "{}"/day from "{}"'.format(
+            self.person, self.amount, self.start_date)
 
 
 class PersonRole(models.Model):
     person = models.ForeignKey('Person')
     role = models.ForeignKey('Role')
     start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
 
     def __str__(self):
-        if self.end_date:
-            return '"{}" "{}" from "{}" to "{}"'.format(
-                self.role, self.person, self.start_date, self.end_date)
-        else:
-            return '"{}" "{}" from "{}"'.format(
-                self.role, self.person, self.start_date)
+        return '"{}" "{}" from "{}"'.format(
+            self.role, self.person, self.start_date)
 
 
 class Client(models.Model):
     name = models.CharField(max_length=32)
+    float_id = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
         return self.name
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=32)
-    managers = models.ManyToManyField('Person')
-    client = models.ForeignKey('Client', related_name='projects')
+    name = models.CharField(max_length=64)
+    description = models.TextField()
+    float_id = models.CharField(max_length=64, unique=True)
+    project_manager = models.ForeignKey(
+        'Person', related_name='projects', null=True)
+    client = models.ForeignKey('Client', related_name='projects', null=True)
     discovery_date = models.DateTimeField(null=True)
     alpha_date = models.DateTimeField(null=True)
     beta_date = models.DateTimeField(null=True)
@@ -82,6 +77,7 @@ class Task(models.Model):
     project = models.ForeignKey('Project', related_name='tasks')
     start_date = models.DateTimeField()
     days = models.DecimalField(max_digits=5, decimal_places=2)
+    float_id = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
         return self.name
