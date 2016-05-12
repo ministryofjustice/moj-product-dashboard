@@ -66,6 +66,11 @@ class Project(models.Model):
     name = models.CharField(max_length=32)
     managers = models.ManyToManyField('Person')
     client = models.ForeignKey('Client', related_name='projects')
+    discovery_date = models.DateTimeField(null=True)
+    alpha_date = models.DateTimeField(null=True)
+    beta_date = models.DateTimeField(null=True)
+    live_date = models.DateTimeField(null=True)
+    end_date = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.name
