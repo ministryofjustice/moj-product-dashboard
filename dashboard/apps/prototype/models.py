@@ -72,12 +72,18 @@ class Project(models.Model):
 
 
 class Task(models.Model):
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=64, null=True)
     person = models.ForeignKey('Person', related_name='tasks')
     project = models.ForeignKey('Project', related_name='tasks')
     start_date = models.DateTimeField()
-    days = models.DecimalField(max_digits=5, decimal_places=2)
+    end_date = models.DateTimeField()
+    days = models.DecimalField(max_digits=10, decimal_places=5)
     float_id = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
-        return self.name
+        if self.name:
+            return self.name
+        else:
+            return '{} on {} from {} for {:.2g} days'.format(
+                self.person, self.project,
+                self.start_date.strftime('%Y-%m-%d'), self.days)
