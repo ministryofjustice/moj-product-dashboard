@@ -29,6 +29,6 @@ RUN rm -rf /app/.git
 RUN cd /app && /app/venv/bin/python manage.py collectstatic --noinput
 
 EXPOSE 8000
-CMD uwsgi --ini /app/conf/uwsgi.ini
+CMD bash /app/docker/run.sh
 
 
