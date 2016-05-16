@@ -18,11 +18,7 @@ import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
 
-VAR = settings.location('../var')
-FLOAT_DATA_DIR = os.path.join(VAR, 'float')
-
-if not os.path.isdir(FLOAT_DATA_DIR):
-    os.makedirs(FLOAT_DATA_DIR)
+FLOAT_DATA_DIR = settings.location('../var/float')
 
 
 def get_logger():
@@ -59,14 +55,14 @@ def get_logger():
 logger = get_logger()
 
 
-def export(token, start_date, weeks):
+def export(token, start_date, weeks, output_dir):
     for endpoint in ['clients', 'people', 'projects', 'accounts']:
         data = many(endpoint, token)
-        filename = os.path.join(FLOAT_DATA_DIR, '{}.json'.format(endpoint))
+        filename = os.path.join(output_dir, '{}.json'.format(endpoint))
         with open(filename, 'w') as fw:
             fw.write(json.dumps(data, indent=2))
     tasks = many('tasks', token, start_day=start_date, weeks=weeks)
-    tasks_filename = os.path.join(FLOAT_DATA_DIR, 'tasks.json')
+    tasks_filename = os.path.join(output_dir, 'tasks.json')
     with open(tasks_filename, 'w') as fw:
         fw.write(json.dumps(tasks, indent=2))
 
@@ -101,8 +97,8 @@ def update(existing_object, difference):
 
 
 @functools.lru_cache()
-def get_account_to_people_mapping():
-    source = os.path.join(FLOAT_DATA_DIR, 'accounts.json')
+def get_account_to_people_mapping(data_dir):
+    source = os.path.join(data_dir, 'accounts.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
     mapping = {item['account_id']: item['people_id']
@@ -110,9 +106,9 @@ def get_account_to_people_mapping():
     return mapping
 
 
-def sync_clients():
+def sync_clients(data_dir):
     logger.info('sync clients')
-    source = os.path.join(FLOAT_DATA_DIR, 'clients.json')
+    source = os.path.join(data_dir, 'clients.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
     for item in data['clients']:
@@ -131,9 +127,9 @@ def sync_clients():
             client.save()
 
 
-def sync_people():
+def sync_people(data_dir):
     logger.info('sync people')
-    source = os.path.join(FLOAT_DATA_DIR, 'people.json')
+    source = os.path.join(data_dir, 'people.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
     for item in data['people']:
@@ -154,10 +150,10 @@ def sync_people():
             person.save()
 
 
-def sync_projects():
+def sync_projects(data_dir):
     logger.info('sync projects')
-    account_to_people = get_account_to_people_mapping()
-    source = os.path.join(FLOAT_DATA_DIR, 'projects.json')
+    account_to_people = get_account_to_people_mapping(data_dir)
+    source = os.path.join(data_dir, 'projects.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
     for item in data['projects']:
@@ -187,9 +183,9 @@ def sync_projects():
             project.save()
 
 
-def sync_tasks():
+def sync_tasks(data_dir):
     logger.info('sync tasks')
-    source = os.path.join(FLOAT_DATA_DIR, 'tasks.json')
+    source = os.path.join(data_dir, 'tasks.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
     for item in data['people']:
@@ -224,15 +220,21 @@ def sync_tasks():
                 task.save()
 
 
-def sync():
-    sync_clients()
-    sync_people()
-    sync_projects()
-    sync_tasks()
+def sync(data_dir):
+    sync_clients(data_dir)
+    sync_people(data_dir)
+    sync_projects(data_dir)
+    sync_tasks(data_dir)
 
 
 def valid_date(s):
     return datetime.strptime(s, "%Y-%m-%d").date()
+
+
+def ensure_directory(d):
+    if not os.path.isdir(d):
+        os.makedirs(d)
+    return d
 
 
 class Command(BaseCommand):
@@ -247,6 +249,14 @@ class Command(BaseCommand):
         parser.add_argument('-e', '--end-date', type=valid_date,
                             default=three_month_in_future)
         parser.add_argument('-t', '--token', type=str)
+        parser.add_argument('-o', '--output-dir', type=ensure_directory,
+                            default=self._default_output_dir())
+
+    @staticmethod
+    def _default_output_dir():
+        output_dir = os.path.join(
+            FLOAT_DATA_DIR, datetime.now().strftime('%y%m%d%H%M'))
+        return ensure_directory(output_dir)
 
     def _get_token(self, token):
         if token:
@@ -259,18 +269,25 @@ class Command(BaseCommand):
                 ' as a command argument or as FLOAT_API_TOKEN in settings.')
 
     def handle(self, *args, **options):
+        token = self._get_token(options['token'])
+
         start_date = options['start_date']
         end_date = options['end_date']
-        token = self._get_token(options['token'])
         if start_date > end_date:
             raise CommandError(
                 'start_date {} is greater than end_date {}'.format(
                     start_date, end_date))
-        logger.info('- export data from float for date range %s to %s',
-                    start_date, end_date)
+
+        output_dir = options['output_dir']
+
+        logger.info(
+            ('- export data from float for date range %s to %s.'
+             ' dump the data to directoy %s'),
+            start_date, end_date, output_dir)
+
         try:
-            export(token, start_date, end_date)
+            export(token, start_date, end_date, output_dir)
         except HTTPError as exc:
             raise CommandError(exc.args)
         logger.info('- sync database with float data')
-        sync()
+        sync(data_dir=output_dir)
