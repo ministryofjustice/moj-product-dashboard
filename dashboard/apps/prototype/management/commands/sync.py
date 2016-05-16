@@ -71,7 +71,7 @@ def export(token, start_date, weeks):
         fw.write(json.dumps(tasks, indent=2))
 
 
-def compare(existing_object, data):
+def compare(existing_object, data, ignores=('raw_data',)):
     """
     compare and existing object with some data
     :param existing_object: a django.Model object
@@ -80,6 +80,8 @@ def compare(existing_object, data):
     """
     result = {}
     for key, value in data.items():
+        if key in ignores:
+            continue
         old_value = getattr(existing_object, key)
         if value != old_value:
             setattr(existing_object, key, value)
@@ -117,6 +119,7 @@ def sync_clients():
         useful_data = {
             'float_id': item['client_id'],
             'name': item['client_name'],
+            'raw_data': item,
         }
         try:
             client = Client.objects.get(float_id=useful_data['float_id'])
@@ -138,7 +141,8 @@ def sync_people():
             'float_id': item['people_id'],
             'name': item['name'],
             'email': item['email'],
-            'avatar': item['avatar_file']
+            'avatar': item['avatar_file'],
+            'raw_data': item,
         }
         try:
             person = Person.objects.get(float_id=useful_data['float_id'])
@@ -170,7 +174,8 @@ def sync_projects():
             'float_id': item['project_id'],
             'description': item['description'],
             'client_id': client_id,
-            'project_manager_id': project_manager_id
+            'project_manager_id': project_manager_id,
+            'raw_data': item,
         }
         try:
             project = Project.objects.get(float_id=useful_data['float_id'])
@@ -207,6 +212,7 @@ def sync_tasks():
                 'start_date': start_date,
                 'end_date': end_date,
                 'days': Decimal(task['total_hours']) / 8,
+                'raw_data': item,
             }
             try:
                 task = Task.objects.get(float_id=useful_data['float_id'])

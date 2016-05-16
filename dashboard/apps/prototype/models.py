@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 
 class Person(models.Model):
@@ -8,6 +9,7 @@ class Person(models.Model):
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
     roles = models.ManyToManyField('Role', through='PersonRole')
+    raw_data = JSONField()
 
     def __str__(self):
         return self.name
@@ -49,6 +51,7 @@ class PersonRole(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=32)
     float_id = models.CharField(max_length=64, unique=True)
+    raw_data = JSONField()
 
     def __str__(self):
         return self.name
@@ -66,6 +69,7 @@ class Project(models.Model):
     beta_date = models.DateTimeField(null=True)
     live_date = models.DateTimeField(null=True)
     end_date = models.DateTimeField(null=True)
+    raw_data = JSONField()
 
     def __str__(self):
         return self.name
@@ -79,6 +83,7 @@ class Task(models.Model):
     end_date = models.DateTimeField()
     days = models.DecimalField(max_digits=10, decimal_places=5)
     float_id = models.CharField(max_length=64, unique=True)
+    raw_data = JSONField()
 
     def __str__(self):
         if self.name:
