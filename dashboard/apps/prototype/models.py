@@ -31,7 +31,7 @@ class Role(models.Model):
 class Rate(models.Model):
     amount = models.DecimalField(max_digits=5, decimal_places=2)
     person = models.ForeignKey('Person', related_name='rates')
-    start_date = models.DateTimeField()
+    start_date = models.DateField()
 
     def __str__(self):
         return '"{}" @ "{}"/day from "{}"'.format(
@@ -41,7 +41,7 @@ class Rate(models.Model):
 class PersonRole(models.Model):
     person = models.ForeignKey('Person')
     role = models.ForeignKey('Role')
-    start_date = models.DateTimeField()
+    start_date = models.DateField()
 
     def __str__(self):
         return '"{}" "{}" from "{}"'.format(
@@ -64,11 +64,11 @@ class Project(models.Model):
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
     client = models.ForeignKey('Client', related_name='projects', null=True)
-    discovery_date = models.DateTimeField(null=True)
-    alpha_date = models.DateTimeField(null=True)
-    beta_date = models.DateTimeField(null=True)
-    live_date = models.DateTimeField(null=True)
-    end_date = models.DateTimeField(null=True)
+    discovery_date = models.DateField(null=True)
+    alpha_date = models.DateField(null=True)
+    beta_date = models.DateField(null=True)
+    live_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
     raw_data = JSONField()
 
     def __str__(self):
@@ -79,8 +79,8 @@ class Task(models.Model):
     name = models.CharField(max_length=64, null=True)
     person = models.ForeignKey('Person', related_name='tasks')
     project = models.ForeignKey('Project', related_name='tasks')
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateField()
+    end_date = models.DateField()
     days = models.DecimalField(max_digits=10, decimal_places=5)
     float_id = models.CharField(max_length=64, unique=True)
     raw_data = JSONField()

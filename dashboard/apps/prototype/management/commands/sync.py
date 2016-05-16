@@ -10,7 +10,6 @@ import logging
 import functools
 from decimal import Decimal
 
-from django.utils import timezone
 from django.core.management.base import BaseCommand, CommandError
 from requests.exceptions import HTTPError
 
@@ -194,12 +193,8 @@ def sync_tasks(data_dir):
         for task in item['tasks']:
             float_project_id = task['project_id']
             project_id = Project.objects.get(float_id=float_project_id).id
-            start_date = timezone.make_aware(
-                datetime.strptime(task['start_date'], '%Y-%m-%d'),
-                timezone.get_current_timezone())
-            end_date = timezone.make_aware(
-                datetime.strptime(task['end_date'], '%Y-%m-%d'),
-                timezone.get_current_timezone())
+            start_date = datetime.strptime(task['start_date'], '%Y-%m-%d')
+            end_date = datetime.strptime(task['end_date'], '%Y-%m-%d')
             useful_data = {
                 'name': task['task_name'],
                 'float_id': task['task_id'],
@@ -208,7 +203,7 @@ def sync_tasks(data_dir):
                 'start_date': start_date,
                 'end_date': end_date,
                 'days': Decimal(task['total_hours']) / 8,
-                'raw_data': item,
+                'raw_data': task,
             }
             try:
                 task = Task.objects.get(float_id=useful_data['float_id'])
