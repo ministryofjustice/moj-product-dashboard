@@ -11,23 +11,19 @@ import functools
 from decimal import Decimal
 
 from django.utils import timezone
+from django.core.management.base import BaseCommand, CommandError
+from requests.exceptions import HTTPError
 
-import dashboard
-from floatapi import many
-
-import django
-django.setup()  # very annoying django thing
-
+from dashboard.settings import location
+from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
 
 START_DATE = date(year=2015, month=1, day=1)
-VAR = os.path.abspath(os.path.join(
-    os.path.dirname(dashboard.__file__), '../var'))
+VAR = location('../var')
 FLOAT_DATA_DIR = os.path.join(VAR, 'float')
 
-for directory in [FLOAT_DATA_DIR]:
-    if not os.path.isdir(directory):
-        os.makedirs(directory)
+if not os.path.isdir(FLOAT_DATA_DIR):
+    os.makedirs(FLOAT_DATA_DIR)
 
 
 def get_logger():
@@ -35,7 +31,8 @@ def get_logger():
         'version': 1,
         'disable_existing_loggers': True,
         'formatters': {
-            'simple': {'format': '%(asctime)s - %(levelname)s - %(message)s'}
+            'basic': {'format': '%(asctime)s - %(levelname)s - %(message)s'},
+            'simple': {'format': '%(message)s'},
         },
         'handlers': {
             'console': {
@@ -47,7 +44,7 @@ def get_logger():
                 'level': 'DEBUG',
                 'class': 'logging.FileHandler',
                 'filename': 'output.log',
-                'formatter': 'simple'
+                'formatter': 'basic'
             },
         },
         'loggers': {
@@ -113,6 +110,7 @@ def get_account_to_people_mapping():
 
 
 def sync_clients():
+    logger.info('sync clients')
     source = os.path.join(FLOAT_DATA_DIR, 'clients.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -132,6 +130,7 @@ def sync_clients():
 
 
 def sync_people():
+    logger.info('sync people')
     source = os.path.join(FLOAT_DATA_DIR, 'people.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -153,6 +152,7 @@ def sync_people():
 
 
 def sync_projects():
+    logger.info('sync projects')
     account_to_people = get_account_to_people_mapping()
     source = os.path.join(FLOAT_DATA_DIR, 'projects.json')
     with open(source, 'r') as sf:
@@ -184,6 +184,7 @@ def sync_projects():
 
 
 def sync_tasks():
+    logger.info('sync tasks')
     source = os.path.join(FLOAT_DATA_DIR, 'tasks.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -218,11 +219,37 @@ def sync_tasks():
                 task.save()
 
 
-def export_job():
-    today = date.today()
-    three_month_in_future = today + timedelta(days=90)
-    weeks = int((three_month_in_future - START_DATE).days / 7)
-    export(START_DATE.strftime('%Y-%m-%d'), weeks)
+def valid_date(s):
+    return datetime.strptime(s, "%Y-%m-%d").date()
+
+
+class Command(BaseCommand):
+    help = 'Sync with float'
+
+    def add_arguments(self, parser):
+        today = date.today()
+        one_month_in_the_past = today - timedelta(days=30)
+        three_month_in_future = today + timedelta(days=90)
+        parser.add_argument('-s', '--start-date', type=valid_date,
+                            default=one_month_in_the_past)
+        parser.add_argument('-e', '--end-date', type=valid_date,
+                            default=three_month_in_future)
+
+    def handle(self, *args, **options):
+        start_date = options['start_date']
+        end_date = options['end_date']
+        if start_date > end_date:
+            raise CommandError(
+                'start_date {} is greater than end_date {}'.format(
+                    start_date, end_date))
+        logger.info('- export data from float for date range %s to %s',
+                    start_date, end_date)
+        try:
+            export(start_date, end_date)
+        except HTTPError as exc:
+            raise CommandError(exc.args)
+        logger.info('- sync database with float data')
+        sync()
 
 
 def sync():
@@ -230,12 +257,3 @@ def sync():
     sync_people()
     sync_projects()
     sync_tasks()
-
-
-def main():
-    #  export_job()
-    sync()
-
-
-if __name__ == '__main__':
-    main()
