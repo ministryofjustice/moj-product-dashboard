@@ -14,12 +14,11 @@ from django.utils import timezone
 from django.core.management.base import BaseCommand, CommandError
 from requests.exceptions import HTTPError
 
-from dashboard.settings import location
+import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
 
-START_DATE = date(year=2015, month=1, day=1)
-VAR = location('../var')
+VAR = settings.location('../var')
 FLOAT_DATA_DIR = os.path.join(VAR, 'float')
 
 if not os.path.isdir(FLOAT_DATA_DIR):
@@ -60,13 +59,13 @@ def get_logger():
 logger = get_logger()
 
 
-def export(start_date, weeks):
+def export(token, start_date, weeks):
     for endpoint in ['clients', 'people', 'projects', 'accounts']:
-        data = many(endpoint)
+        data = many(endpoint, token)
         filename = os.path.join(FLOAT_DATA_DIR, '{}.json'.format(endpoint))
         with open(filename, 'w') as fw:
             fw.write(json.dumps(data, indent=2))
-    tasks = many('tasks', start_day=start_date, weeks=weeks)
+    tasks = many('tasks', token, start_day=start_date, weeks=weeks)
     tasks_filename = os.path.join(FLOAT_DATA_DIR, 'tasks.json')
     with open(tasks_filename, 'w') as fw:
         fw.write(json.dumps(tasks, indent=2))
@@ -219,6 +218,13 @@ def sync_tasks():
                 task.save()
 
 
+def sync():
+    sync_clients()
+    sync_people()
+    sync_projects()
+    sync_tasks()
+
+
 def valid_date(s):
     return datetime.strptime(s, "%Y-%m-%d").date()
 
@@ -234,10 +240,22 @@ class Command(BaseCommand):
                             default=one_month_in_the_past)
         parser.add_argument('-e', '--end-date', type=valid_date,
                             default=three_month_in_future)
+        parser.add_argument('-t', '--token', type=str)
+
+    def _get_token(self, token):
+        if token:
+            return token
+        try:
+            return settings.FLOAT_API_TOKEN
+        except AttributeError:
+            raise CommandError(
+                'float api token is not supplied. please either specify it'
+                ' as a command argument or as FLOAT_API_TOKEN in settings.')
 
     def handle(self, *args, **options):
         start_date = options['start_date']
         end_date = options['end_date']
+        token = self._get_token(options['token'])
         if start_date > end_date:
             raise CommandError(
                 'start_date {} is greater than end_date {}'.format(
@@ -245,15 +263,8 @@ class Command(BaseCommand):
         logger.info('- export data from float for date range %s to %s',
                     start_date, end_date)
         try:
-            export(start_date, end_date)
+            export(token, start_date, end_date)
         except HTTPError as exc:
             raise CommandError(exc.args)
         logger.info('- sync database with float data')
         sync()
-
-
-def sync():
-    sync_clients()
-    sync_people()
-    sync_projects()
-    sync_tasks()
