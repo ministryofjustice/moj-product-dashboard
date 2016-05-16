@@ -239,6 +239,8 @@ def ensure_directory(d):
 
 class Command(BaseCommand):
     help = 'Sync with float'
+    output = ['accounts.json', 'clients.json', 'people.json',
+              'projects.json', 'tasks.json']
 
     def add_arguments(self, parser):
         today = date.today()
@@ -268,6 +270,15 @@ class Command(BaseCommand):
                 'float api token is not supplied. please either specify it'
                 ' as a command argument or as FLOAT_API_TOKEN in settings.')
 
+    def _has_all_files(self, output_dir):
+        """
+        check if all files are present in the output directory
+        """
+        for filename in self.output:
+            if not os.path.isfile(os.path.join(output_dir, filename)):
+                return False
+        return True
+
     def handle(self, *args, **options):
         token = self._get_token(options['token'])
 
@@ -279,15 +290,20 @@ class Command(BaseCommand):
                     start_date, end_date))
 
         output_dir = options['output_dir']
+        if self._has_all_files(output_dir):
+            logger.info(
+                ('- found already exported Float data in direcotry %s.'
+                 ' skip downloading.'), output_dir)
+        else:
+            logger.info(
+                ('- export data from Float for date range %s to %s.'
+                 ' dump the data to directoy %s'),
+                start_date, end_date, output_dir)
 
-        logger.info(
-            ('- export data from float for date range %s to %s.'
-             ' dump the data to directoy %s'),
-            start_date, end_date, output_dir)
-
-        try:
-            export(token, start_date, end_date, output_dir)
-        except HTTPError as exc:
-            raise CommandError(exc.args)
-        logger.info('- sync database with float data')
+            try:
+                export(token, start_date, end_date, output_dir)
+            except HTTPError as exc:
+                raise CommandError(exc.args)
+        logger.info('- sync database with exported Float data.')
         sync(data_dir=output_dir)
+        logger.info('- job complete.')
