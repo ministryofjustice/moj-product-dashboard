@@ -5,17 +5,26 @@
 
 function figure(element) {
   this.element = element;
+  this.data = {};
+  this.layout = {};
 
+  this.plot = function () {
+
+    Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
+
+  };
   this.getFigure = function () {
+
     console.log("Request made");
-    var element = this.element;
+    var $this = this;
     $.ajax({
       url: "/getfig/",
       type: "GET",
 
       success: function (json) {
-
-        Plotly.newPlot(element, json);
+        $this.data = json.data;
+        $this.layout = json.layout;
+        $this.plot();
 
       },
 
@@ -27,24 +36,6 @@ function figure(element) {
   }
 }
 
-//function getFigure () {
-//  console.log("Get statuses request made");
-//  $.ajax({
-//    url: "/getfig/",
-//    type: "GET",
-//
-//    success: function (json) {
-//
-//      Plotly.newPlot(element, json);
-//
-//    },
-//
-//    error: function (xhr, errmsg, err) {
-//      console.log(xhr.status + ": " + xhr.responseText);
-//    }
-//
-//  });
-//}
 
 //Run on page load
 $(document).ready(function () {
@@ -53,11 +44,6 @@ $(document).ready(function () {
   var topRight = document.getElementById("top_right");
   var bottomLeft = document.getElementById("bottom_left");
   var bottomRight = document.getElementById("bottom_right");
-
-  //getFigure(topLeft);
-  //getFigure(topRight);
-  //getFigure(bottomLeft);
-  //getFigure(bottomRight);
 
   var tL = new figure(topLeft);
   var tR = new figure(topRight);

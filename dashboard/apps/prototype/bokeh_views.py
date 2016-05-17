@@ -152,6 +152,6 @@ def index(request):
         div=div,
         today=today,
     )
-    return render(request, 'index.html', context)
+    return render(request, 'index_bokeh.html', context)
 
 

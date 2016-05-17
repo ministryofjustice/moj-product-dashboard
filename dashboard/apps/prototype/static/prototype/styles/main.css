@@ -31,6 +31,10 @@
 }
 
 .col-md-6 {
-    height: 200px;
-    min-height: 200px;
+    /*border-style: solid;*/
+    /*border-color: black;*/
+    /*border-width: 1px;*/
+    width: 500px;
+    height: 400px;
+    min-height: 400px;
 }

@@ -30,6 +30,26 @@ class DataResponse(View):
             'type': 'bar',
         }
 
-        data = [trace, ]
+        layout = {
+            # 'height': 350,
+            # 'width': 350,
+            'showlegend': False,
 
-        return JsonResponse(data, safe=False)
+            'margin': {
+                'l': 50,
+                'r': 100,
+                'b': 100,
+                't': 100,
+                'pad': 4
+            },
+
+            # 'paper_bgcolor': '#7f7f7f',
+            # 'plot_bgcolor': '#c7c7c7',
+        }
+
+        response = {
+            'data': [trace],
+            'layout': layout,
+        }
+
+        return JsonResponse(response, safe=False)
