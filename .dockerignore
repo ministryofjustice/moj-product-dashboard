@@ -1,0 +1,15 @@
+# general
+*.DS_Store
+*.py?
+*~
+__pycache__
+
+# editors
+.idea
+*.sublime-workspace
+*.sublime-project
+
+# project
+dashboard/settings/local.py
+static/
+venv/

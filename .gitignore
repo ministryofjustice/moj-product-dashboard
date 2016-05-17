@@ -7,4 +7,6 @@ db.sqlite3
 .idea
 
 dashboard/settings/local.py
-dashboard/apps/prototype/static/prototype/js/vendor/*
+
+var/*
+

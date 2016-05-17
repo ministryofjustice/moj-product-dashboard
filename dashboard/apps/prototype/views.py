@@ -19,6 +19,7 @@ def get_x_axis(date):
 
     return x_axis
 
+
 class Index(TemplateView):
 
     template_name = 'index.html'
@@ -29,10 +30,6 @@ class DataResponse(View):
     def get(self, request, *args, **kwargs):
 
         date = datetime.datetime(2016, 1, 1, 12, 0, 0)
-
-        # x_axis = ['January', 'February', 'March', 'April',
-        #           'May', 'June', 'July', 'August', 'September',
-        #           'October', 'November', 'December']
 
         x_axis = get_x_axis(date)
 

@@ -1,0 +1,25 @@
+# NB: this is only used for local development
+# see Dockerfile for deployed version
+
+db:
+  build: docker/postgres
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+django:
+  build: .
+  command: venv/bin/python manage.py runserver 0.0.0.0:8000
+  ports:
+    - "8000:8000"
+  links:
+    - db
+  environment:
+    ENV: local
+    DEBUG: "True"
+    DJANGO_SECRET_KEY: BIG_SECRET
+    DJANGO_SETTINGS_MODULE: dashboard.settings.base
+    DB_NAME: dashboard
+    DB_USERNAME: postgres
+    DB_PASSWORD: postgres
+    DB_HOST: db
+    DB_PORT: 5432
