@@ -29,3 +29,8 @@
     background-color: #005ea5;
     color: white;
 }
+
+.col-md-6 {
+    height: 200px;
+    min-height: 200px;
+}
