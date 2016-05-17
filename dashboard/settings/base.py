@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'moj_template',
+
     'dashboard.apps.prototype',
 ]
 
@@ -141,6 +143,20 @@ HEALTHCHECKS = [
 AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
 
 FLOAT_API_TOKEN = os.environ.get('FLOAT_API_TOKEN')
+
+# RAVEN SENTRY CONFIG
+if 'SENTRY_DSN' in os.environ:
+    RAVEN_CONFIG = {
+        'dsn': os.environ.get('SENTRY_DSN')
+    }
+
+    INSTALLED_APPS += [
+        'raven.contrib.django.raven_compat',
+    ]
+
+    MIDDLEWARE_CLASSES = [
+        'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
+    ] + MIDDLEWARE_CLASSES
 
 
 # .local.py overrides all the common settings.
