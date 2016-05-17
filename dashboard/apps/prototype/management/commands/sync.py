@@ -167,6 +167,7 @@ def sync_projects(data_dir):
         useful_data = {
             'name': item['project_name'],
             'float_id': item['project_id'],
+            'is_billable': item['non_billable'] == '0',
             'description': item['description'],
             'client_id': client_id,
             'project_manager_id': project_manager_id,

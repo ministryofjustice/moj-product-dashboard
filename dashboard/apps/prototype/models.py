@@ -61,6 +61,7 @@ class Project(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField()
     float_id = models.CharField(max_length=64, unique=True)
+    is_billable = models.BooleanField()
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
     client = models.ForeignKey('Client', related_name='projects', null=True)
