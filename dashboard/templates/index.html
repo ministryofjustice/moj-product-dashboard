@@ -16,6 +16,7 @@
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
     {{ css_resource|safe }}
     {{ js_resource|safe }}
     {{ script|safe }}
@@ -74,10 +75,10 @@
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-6" id="top_left">
             {{ div.MonthlySpend|safe }}
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6" id="top_right">
             {{ div.CumulativeSpend|safe }}
           </div>
         </div>
@@ -90,9 +91,9 @@
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-6" id="bottom_left">
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6" id="bottom_right">
             {{ div.ForecastFTE|safe }}
           </div>
         </div>
