@@ -3,10 +3,11 @@
  */
 
 
-function figure(element) {
+function figure(element, type) {
   this.element = element;
   this.data = {};
   this.layout = {};
+  this.type = 'line';
 
   this.plot = function () {
 

@@ -1,9 +1,23 @@
 import json
+import datetime
+from dateutil import relativedelta
 import random
 from django.views.generic import View, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 
+
+def get_x_axis(date):
+
+    x_axis = []
+
+    x_axis.append(date.strftime('%B %Y'))
+
+    for i in range(1, 11):
+        date += relativedelta.relativedelta(months=1)
+        x_axis.append(date.strftime('%B %Y'))
+
+    return x_axis
 
 class Index(TemplateView):
 
@@ -14,9 +28,13 @@ class DataResponse(View):
 
     def get(self, request, *args, **kwargs):
 
-        x_axis = ['January', 'February', 'March', 'April',
-                  'May', 'June', 'July', 'August', 'September',
-                  'October', 'November', 'December']
+        date = datetime.datetime(2016, 1, 1, 12, 0, 0)
+
+        # x_axis = ['January', 'February', 'March', 'April',
+        #           'May', 'June', 'July', 'August', 'September',
+        #           'October', 'November', 'December']
+
+        x_axis = get_x_axis(date)
 
         y_axis = []
 
