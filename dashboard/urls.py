@@ -16,15 +16,15 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-from dashboard.apps.prototype.views import Index, DataResponse
-from dashboard.apps.prototype.bokeh_views import index
+from dashboard.apps.prototype.views import index, data_response
+from dashboard.apps.prototype.bokeh_views import bokeh
 from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
-    url(r'^$', Index.as_view()),
-    url(r'^getfig/', DataResponse.as_view()),
-    url(r'^bokeh/', index),
+    url(r'^$', index),
+    url(r'^getfig/', data_response),
+    url(r'^bokeh/', bokeh),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/login/', auth_views.login),
 ]

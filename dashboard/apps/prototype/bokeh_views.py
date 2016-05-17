@@ -136,7 +136,7 @@ def project_timeline(timeline):
 
 
 @login_required
-def index(request):
+def bokeh(request):
     script, div = components({
         'MonthlySpend': monthly_spendings(
             data_generator.gen_monthly_spendings()),

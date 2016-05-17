@@ -1,10 +1,8 @@
-import json
 import datetime
 from dateutil import relativedelta
 import random
-from django.views.generic import View, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.http import JsonResponse
 
 
 def get_x_axis(date):
@@ -20,51 +18,49 @@ def get_x_axis(date):
     return x_axis
 
 
-class Index(TemplateView):
+def index(request):
 
-    template_name = 'index.html'
+    return render(request, 'index.html')
 
 
-class DataResponse(View):
+def data_response(request):
 
-    def get(self, request, *args, **kwargs):
+    date = datetime.datetime(2016, 1, 1, 12, 0, 0)
 
-        date = datetime.datetime(2016, 1, 1, 12, 0, 0)
+    x_axis = get_x_axis(date)
 
-        x_axis = get_x_axis(date)
+    y_axis = []
 
-        y_axis = []
+    for month in x_axis:
 
-        for month in x_axis:
+        y_axis.append(random.random() * 100)
 
-            y_axis.append(random.random() * 100)
+    trace = {
+        'x': x_axis,
+        'y': y_axis,
+        'type': 'bar',
+    }
 
-        trace = {
-            'x': x_axis,
-            'y': y_axis,
-            'type': 'bar',
-        }
+    layout = {
+        # 'height': 350,
+        # 'width': 350,
+        'showlegend': False,
 
-        layout = {
-            # 'height': 350,
-            # 'width': 350,
-            'showlegend': False,
+        'margin': {
+            'l': 50,
+            'r': 100,
+            'b': 100,
+            't': 100,
+            'pad': 4
+        },
 
-            'margin': {
-                'l': 50,
-                'r': 100,
-                'b': 100,
-                't': 100,
-                'pad': 4
-            },
+        # 'paper_bgcolor': '#7f7f7f',
+        # 'plot_bgcolor': '#c7c7c7',
+    }
 
-            # 'paper_bgcolor': '#7f7f7f',
-            # 'plot_bgcolor': '#c7c7c7',
-        }
+    response = {
+        'data': [trace],
+        'layout': layout,
+    }
 
-        response = {
-            'data': [trace],
-            'layout': layout,
-        }
-
-        return JsonResponse(response, safe=False)
+    return JsonResponse(response, safe=False)
