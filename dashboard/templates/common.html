@@ -10,8 +10,17 @@
 
 {% block stylesheets %}
 
-    <link href="{% static 'prototype/moj_template_overrides.css' %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static 'prototype/main.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'prototype/styles/moj_template_overrides.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'prototype/styles/main.css' %}" rel="stylesheet" type="text/css"/>
+
+{% endblock %}
+
+{% block javascripts %}
+
+    <script src="https://cdn.plot.ly/plotly-1.10.2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.js"></script>
+    <script src="{% static 'prototype/js/vendor/superagent.js' %}"></script>
+    <script src="{% static 'prototype/js/main.js' %}"></script>
 
 {% endblock %}
 

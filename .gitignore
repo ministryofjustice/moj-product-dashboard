@@ -7,4 +7,6 @@ db.sqlite3
 .idea
 
 dashboard/settings/local.py
+
 var/*
+

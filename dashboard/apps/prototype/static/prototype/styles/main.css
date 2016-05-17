@@ -29,3 +29,12 @@
     background-color: #005ea5;
     color: white;
 }
+
+.col-md-6 {
+    /*border-style: solid;*/
+    /*border-color: black;*/
+    /*border-width: 1px;*/
+    width: 500px;
+    height: 400px;
+    min-height: 400px;
+}
