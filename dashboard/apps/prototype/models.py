@@ -87,8 +87,14 @@ class Task(models.Model):
 
     def __str__(self):
         if self.name:
-            return self.name
+            return '{} - {} on {} from {} to {} for {:.2g} days'.format(
+                self.name, self.person, self.project,
+                self.start_date.strftime('%Y-%m-%d'),
+                self.end_date.strftime('%Y-%m-%d'),
+                self.days)
         else:
-            return '{} on {} from {} for {:.2g} days'.format(
+            return '{} on {} from {} to {} for {:.2g} days'.format(
                 self.person, self.project,
-                self.start_date.strftime('%Y-%m-%d'), self.days)
+                self.start_date.strftime('%Y-%m-%d'),
+                self.end_date.strftime('%Y-%m-%d'),
+                self.days)
