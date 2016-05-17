@@ -140,6 +140,8 @@ HEALTHCHECKS = [
 ]
 AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
 
+FLOAT_API_TOKEN = os.environ.get('FLOAT_API_TOKEN')
+
 
 # .local.py overrides all the common settings.
 try:
