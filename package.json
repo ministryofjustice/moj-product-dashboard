@@ -1,0 +1,24 @@
+{
+  "name": "moj-product-dashboard",
+  "version": "1.0.0",
+  "description": "===================== MOJ Product Dashboard =====================",
+  "main": "index.js",
+  "dependencies": {
+    "plotly.js": "^1.11.0",
+    "whatwg-fetch": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ministryofjustice/moj-product-dashboard.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ministryofjustice/moj-product-dashboard/issues"
+  },
+  "homepage": "https://github.com/ministryofjustice/moj-product-dashboard#readme"
+}

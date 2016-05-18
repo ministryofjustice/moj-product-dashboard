@@ -63,4 +63,6 @@ def data_response(request):
         'layout': layout,
     }
 
+    # response = trace
+
     return JsonResponse(response, safe=False)

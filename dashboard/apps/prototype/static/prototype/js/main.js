@@ -2,8 +2,15 @@
  * Created by jamesnarey on 17/05/2016.
  */
 
+// This doesn't work:
+//var nodeDir = "../../../../../../node_modules/";
+//require(nodeDir + "whatwg-fetch");
 
-function figure(element, type) {
+
+require("../../../../../../node_modules/whatwg-fetch");
+var Plotly = require("../../../../../../node_modules/plotly.js");
+
+function figure(element) {
   this.element = element;
   this.data = {};
   this.layout = {};
@@ -17,23 +24,19 @@ function figure(element, type) {
   this.getFigure = function () {
 
     console.log("Request made");
+
     var $this = this;
-    $.ajax({
-      url: "/getfig/",
-      type: "GET",
 
-      success: function (json) {
-        $this.data = json.data;
-        $this.layout = json.layout;
-        $this.plot();
+    fetch('/getfig/')
+      .then(function (response) {
+        return response.json()
+      }).then(function (json) {
 
-      },
-
-      error: function (xhr, errmsg, err) {
-        console.log(xhr.status + ": " + xhr.responseText);
-      }
-
+      $this.data = json.data;
+      $this.layout = json.layout;
+      $this.plot();
     });
+
   }
 }
 
