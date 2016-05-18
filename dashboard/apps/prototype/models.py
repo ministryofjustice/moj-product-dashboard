@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
@@ -142,4 +144,4 @@ class Task(models.Model):
 
         slice_workdays = get_workdays(*slice)
 
-        return (slice_workdays / self.workdays) * self.days
+        return Decimal(slice_workdays) / Decimal(self.workdays) * self.days
