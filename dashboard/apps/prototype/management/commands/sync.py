@@ -193,8 +193,9 @@ def sync_tasks(data_dir):
         for task in item['tasks']:
             float_project_id = task['project_id']
             project_id = Project.objects.get(float_id=float_project_id).id
-            start_date = datetime.strptime(task['start_date'], '%Y-%m-%d')
-            end_date = datetime.strptime(task['end_date'], '%Y-%m-%d')
+            start_date = datetime.strptime(
+                task['start_date'], '%Y-%m-%d').date()
+            end_date = datetime.strptime(task['end_date'], '%Y-%m-%d').date()
             useful_data = {
                 'name': task['task_name'],
                 'float_id': task['task_id'],
