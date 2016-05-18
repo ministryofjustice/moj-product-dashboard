@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
+from dashboard.libs.date_tools import get_workdays
+
 
 class Person(models.Model):
     float_id = models.CharField(max_length=64, unique=True)
@@ -99,3 +101,45 @@ class Task(models.Model):
                 self.start_date.strftime('%Y-%m-%d'),
                 self.end_date.strftime('%Y-%m-%d'),
                 self.days)
+
+    @property
+    def workdays(self):
+        """
+        number of workdays for the task. it's the number for days
+        from start_date to end_date minus holidays.
+        """
+        return get_workdays(self.start_date, self.end_date)
+
+    def time_spent(self, start_date=None, end_date=None):
+        """
+        get the days spent on the task during a time window.
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: number of days, a decimal
+        """
+        start_date = start_date or self.start_date
+        end_date = end_date or self.end_date
+
+        if start_date < self.start_date:
+            if end_date < self.start_date:
+                slice = None
+            elif end_date <= self.end_date:
+                slice = self.start_date, end_date
+            else:
+                slice = self.start_date, self.end_date
+        elif start_date <= self.end_date:
+            if end_date <= self.end_date:
+                slice = start_date, end_date
+            else:
+                slice = start_date, self.end_date
+        else:
+            slice = None
+
+        if not slice:
+            return 0
+        if slice == (self.start_date, self.end_date):
+            return self.days
+
+        slice_workdays = get_workdays(*slice)
+
+        return (slice_workdays / self.workdays) * self.days

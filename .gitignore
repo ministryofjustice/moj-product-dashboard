@@ -5,11 +5,10 @@ env
 db.sqlite3
 
 .idea
+.cache
 
 dashboard/settings/local.py
 
 var/*
-
 node_modules/
-
 output.log

@@ -6,6 +6,7 @@ calculate
 from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 
 from dashboard.apps.prototype.models import Task
 
@@ -16,13 +17,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         today = date.today()
         weekday = today.weekday()
-        first_day_of_last_week = today - timedelta(days=weekday, weeks=1)
-        last_day_of_last_week = first_day_of_last_week + timedelta(days=6)
-        print('first day')
-        print(first_day_of_last_week)
-        print('last day')
-        print(last_day_of_last_week)
-        tasks = Task.objects.filter(start_date__gte=first_day_of_last_week,
-                                    start_date__lte=last_day_of_last_week)
+        start_date = today - timedelta(days=weekday, weeks=1)
+        end_date = start_date + timedelta(days=6)
+        print('start day')
+        print(start_date)
+        print('end day')
+        print(end_date)
+        tasks = Task.objects.filter(
+            Q(start_date__gte=start_date, start_date__lte=end_date) |
+            Q(end_date__gte=start_date, end_date__lte=end_date) |
+            Q(start_date__lt=start_date, end_date__gt=end_date)
+        )
         for task in tasks:
             print(task)
