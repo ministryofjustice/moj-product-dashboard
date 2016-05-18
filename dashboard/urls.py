@@ -14,7 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
+from django.conf import settings
 from django.contrib import admin
+from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.prototype.views import index, data_response
 from dashboard.apps.prototype.bokeh_views import bokeh
@@ -27,4 +29,8 @@ urlpatterns = [
     url(r'^bokeh/', bokeh),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/login/', auth_views.login),
+    url(r'^ping.json$', PingJsonView.as_view(**settings.PING_JSON_KEYS),
+        name='ping_json'),
+    url(r'^healthcheck.json$', HealthcheckView.as_view(),
+        name='healthcheck_json'),
 ]

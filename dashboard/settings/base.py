@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -18,12 +19,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 location = lambda x: os.path.abspath(os.path.join(
     os.path.dirname(os.path.realpath(__file__)), '..', x))
 
+sys.path.insert(0, location('apps'))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-tzdf^ri+5pbo^b5o0tp0iamq%i0myv-u7)-@m#d1@kt*3sl8g'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'moj_template',
+
     'dashboard.apps.prototype',
 ]
 
@@ -131,11 +136,34 @@ USE_TZ = True
 STATIC_ROOT = location('static')
 STATIC_URL = '/static/'
 
+PING_JSON_KEYS = {
+    'build_date_key': 'APP_BUILD_DATE',
+    'commit_id_key': 'APP_GIT_COMMIT',
+    'version_number_key': 'APPVERSION',
+    'build_tag_key': 'APP_BUILD_TAG',
+}
+
 HEALTHCHECKS = [
     'moj_irat.healthchecks.database_healthcheck',
     # override default list of healthcheck callables
 ]
 AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
+
+FLOAT_API_TOKEN = os.environ.get('FLOAT_API_TOKEN')
+
+# RAVEN SENTRY CONFIG
+if 'SENTRY_DSN' in os.environ:
+    RAVEN_CONFIG = {
+        'dsn': os.environ.get('SENTRY_DSN')
+    }
+
+    INSTALLED_APPS += [
+        'raven.contrib.django.raven_compat',
+    ]
+
+    MIDDLEWARE_CLASSES = [
+        'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
+    ] + MIDDLEWARE_CLASSES
 
 
 # .local.py overrides all the common settings.
