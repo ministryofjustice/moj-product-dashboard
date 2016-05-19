@@ -13,3 +13,5 @@ dashboard/apps/prototype/static/prototype/js/bundle.js
 var/*
 
 node_modules/
+
+output.log
