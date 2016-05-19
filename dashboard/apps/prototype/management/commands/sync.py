@@ -241,10 +241,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         today = date.today()
-        one_month_in_the_past = today - timedelta(days=30)
+        three_month_in_the_past = today - timedelta(days=90)
         three_month_in_future = today + timedelta(days=90)
         parser.add_argument('-s', '--start-date', type=valid_date,
-                            default=one_month_in_the_past)
+                            default=three_month_in_the_past)
         parser.add_argument('-e', '--end-date', type=valid_date,
                             default=three_month_in_future)
         parser.add_argument('-t', '--token', type=str)
