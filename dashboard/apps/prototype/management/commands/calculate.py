@@ -12,15 +12,14 @@ from dashboard.apps.prototype.models import Task, Person
 
 
 def print_person(person, padding=''):
-    # TODO do not rely on raw_data
-    if person.raw_data['contractor']:
+    if person.is_contractor:
         line = '{}, {} (contractor)'.format(
-            person.name, person.raw_data['job_title'],
-            person.raw_data['job_title'])
+            person.name, person.job_title,
+            person.job_title)
     else:
         line = '{}, {} (civil servant)'.format(
-            person.name, person.raw_data['job_title'],
-            person.raw_data['job_title'])
+            person.name, person.job_title,
+            person.job_title)
     print('{}{}'.format(padding, line))
 
 

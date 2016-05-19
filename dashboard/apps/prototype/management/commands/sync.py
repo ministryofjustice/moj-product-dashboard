@@ -136,6 +136,8 @@ def sync_people(data_dir):
             'float_id': item['people_id'],
             'name': item['name'],
             'email': item['email'],
+            'job_title': item['job_title'],
+            'is_contractor': item['contractor'],
             'avatar': item['avatar_file'],
             'raw_data': item,
         }

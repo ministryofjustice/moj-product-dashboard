@@ -12,24 +12,13 @@ class Person(models.Model):
     name = models.CharField(max_length=64)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
-    roles = models.ManyToManyField('Role', through='PersonRole')
+    is_contractor = models.BooleanField(default=False)
+    job_title = models.CharField(max_length=64, null=True)
+    is_current = models.BooleanField(default=True)
     raw_data = JSONField()
 
     def __str__(self):
         return self.name
-
-
-class Role(models.Model):
-    name = models.CharField(max_length=32)
-    people = models.ManyToManyField('Person', through='PersonRole')
-    default_rate = models.DecimalField(max_digits=5, decimal_places=2)
-    is_contractor = models.BooleanField()
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        unique_together = ('name', 'is_contractor')
 
 
 class Rate(models.Model):
@@ -40,16 +29,6 @@ class Rate(models.Model):
     def __str__(self):
         return '"{}" @ "{}"/day from "{}"'.format(
             self.person, self.amount, self.start_date)
-
-
-class PersonRole(models.Model):
-    person = models.ForeignKey('Person')
-    role = models.ForeignKey('Role')
-    start_date = models.DateField()
-
-    def __str__(self):
-        return '"{}" "{}" from "{}"'.format(
-            self.role, self.person, self.start_date)
 
 
 class Client(models.Model):
@@ -65,7 +44,7 @@ class Project(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField()
     float_id = models.CharField(max_length=64, unique=True)
-    is_billable = models.BooleanField()
+    is_billable = models.BooleanField(default=True)
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
     client = models.ForeignKey('Client', related_name='projects', null=True)
