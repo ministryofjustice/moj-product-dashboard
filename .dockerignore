@@ -10,6 +10,5 @@ __pycache__
 *.sublime-project
 
 # project
-dashboard/settings/local.py
 static/
 venv/
