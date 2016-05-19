@@ -7,21 +7,25 @@
 //require(nodeDir + "whatwg-fetch");
 
 
-require("../../../../../../node_modules/whatwg-fetch");
-var Plotly = require("../../../../../../node_modules/plotly.js");
+require("whatwg-fetch");
+var Plotly = require("plotly.js");
 
-function figure(element) {
-  this.element = element;
-  this.data = {};
-  this.layout = {};
-  this.type = 'line';
 
-  this.plot = function () {
+class figure {
+
+  constrctor(element) {
+    this.element = element;
+    this.data = {};
+    this.layout = {};
+  }
+
+  plot() {
 
     Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
 
-  };
-  this.getFigure = function () {
+  }
+
+  getFigure () {
 
     console.log("Request made");
 
@@ -39,6 +43,37 @@ function figure(element) {
 
   }
 }
+
+
+//function figure(element) {
+//  this.element = element;
+//  this.data = {};
+//  this.layout = {};
+//  this.type = 'line';
+//
+//  this.plot = function () {
+//
+//    Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
+//
+//  };
+//  this.getFigure = function () {
+//
+//    console.log("Request made");
+//
+//    var $this = this;
+//
+//    fetch('/getfig/')
+//      .then(function (response) {
+//        return response.json()
+//      }).then(function (json) {
+//
+//      $this.data = json.data;
+//      $this.layout = json.layout;
+//      $this.plot();
+//    });
+//
+//  }
+//}
 
 
 //Run on page load
