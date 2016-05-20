@@ -136,6 +136,8 @@ def sync_people(data_dir):
             'float_id': item['people_id'],
             'name': item['name'],
             'email': item['email'],
+            'job_title': item['job_title'],
+            'is_contractor': item['contractor'],
             'avatar': item['avatar_file'],
             'raw_data': item,
         }
@@ -167,6 +169,7 @@ def sync_projects(data_dir):
         useful_data = {
             'name': item['project_name'],
             'float_id': item['project_id'],
+            'is_billable': item['non_billable'] == '0',
             'description': item['description'],
             'client_id': client_id,
             'project_manager_id': project_manager_id,
@@ -240,10 +243,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         today = date.today()
-        one_month_in_the_past = today - timedelta(days=30)
+        three_month_in_the_past = today - timedelta(days=90)
         three_month_in_future = today + timedelta(days=90)
         parser.add_argument('-s', '--start-date', type=valid_date,
-                            default=one_month_in_the_past)
+                            default=three_month_in_the_past)
         parser.add_argument('-e', '--end-date', type=valid_date,
                             default=three_month_in_future)
         parser.add_argument('-t', '--token', type=str)

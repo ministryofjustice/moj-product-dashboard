@@ -4,7 +4,7 @@ import random
 from django.shortcuts import render
 from django.http import JsonResponse
 
-from .models import Person, Project, Client, Task, Role, Rate
+from .models import Person, Project, Client, Task, Rate
 
 
 def get_total_times(projects):
