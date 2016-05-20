@@ -26,10 +26,10 @@ class Figure {
 
 //Run on page load
 function onLoad() {
-  const figA = document.getElementById("fig_a");
-  const figB = document.getElementById("fig_b");
-  const figC = document.getElementById("fig_c");
-  const figD = document.getElementById("fig_d");
+  const figA = document.getElementById("fig-a");
+  const figB = document.getElementById("fig-b");
+  const figC = document.getElementById("fig-c");
+  const figD = document.getElementById("fig-d");
 
   const fA = new Figure(figA);
   const fB = new Figure(figB);

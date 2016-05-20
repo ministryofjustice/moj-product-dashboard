@@ -8,8 +8,6 @@ db.sqlite3
 
 dashboard/settings/local.py
 
-dashboard/apps/prototype/static/prototype/js/bundle.js
-
 var/*
 
 node_modules/

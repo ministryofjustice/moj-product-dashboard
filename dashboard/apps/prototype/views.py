@@ -57,24 +57,6 @@ def comparison(request):
     return JsonResponse(response, safe=False)
 
 
-def trend(request):
-
-    float_id = request.GET.get('float_id')
-
-    project = Project.objects.get(float_id=float_id)
-
-    trace = {}
-
-    layout = {}
-
-    response = {
-        'data': [trace],
-        'layout': layout,
-    }
-
-    return JsonResponse(response, safe=False)
-
-
 def get_x_axis(date):
 
     x_axis = []

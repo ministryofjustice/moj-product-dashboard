@@ -61,13 +61,10 @@ Install frontend dependencies:
 
 ::
 
-    npm install webpack -g
-    npm install plotly.js --save
-    npm install whatwg-fetch --save
+    npm install
 
-Usage
+Development
 ============
 
-In addition to running the Django development server from the project root directory (python manage.py runserver) go to
-dashboard/apps/prototype/static/prototype/js and run webpack --watch either in a different terminal window/tab or using
-webpack --watch &
+In addition to running the Django development server (python manage.py runserver) run npm run --watch from the same
+directory to ensure that changes to the front-end code are reflected immediately.
