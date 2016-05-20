@@ -15,7 +15,5 @@
       - ['add_rate', 'prototype', 'rate']
       - ['change_client', 'prototype', 'client']
       - ['change_person', 'prototype', 'person']
-      - ['change_personrole', 'prototype', 'personrole']
       - ['change_project', 'prototype', 'project']
-      - ['change_role', 'prototype', 'role']
       - ['change_task', 'prototype', 'task']
