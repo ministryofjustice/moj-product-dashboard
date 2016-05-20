@@ -13,8 +13,8 @@ class Figure {
     Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
   }
 
-  getFigure () {
-    fetch('/getfig/')
+  getFigure (url) {
+    fetch(url)
       .then((response) => response.json())
       .then((json) => {
         this.data = json.data;
@@ -22,24 +22,24 @@ class Figure {
         this.plot();
       });
   }
-};
+}
 
 //Run on page load
 function onLoad() {
-  const topLeft = document.getElementById("top_left");
-  const topRight = document.getElementById("top_right");
-  const bottomLeft = document.getElementById("bottom_left");
-  const bottomRight = document.getElementById("bottom_right");
+  const figA = document.getElementById("fig_a");
+  const figB = document.getElementById("fig_b");
+  const figC = document.getElementById("fig_c");
+  const figD = document.getElementById("fig_d");
 
-  const tL = new Figure(topLeft);
-  const tR = new Figure(topRight);
-  const bL = new Figure(bottomLeft);
-  const bR = new Figure(bottomRight);
+  const fA = new Figure(figA);
+  const fB = new Figure(figB);
+  const fC = new Figure(figC);
+  const fD = new Figure(figD);
 
-  tL.getFigure();
-  tR.getFigure();
-  bL.getFigure();
-  bR.getFigure();
-};
+  fA.getFigure('/comp/');
+  fB.getFigure('/getfig/');
+  fC.getFigure('/getfig/');
+  fD.getFigure('/getfig/');
+}
 
 document.addEventListener("DOMContentLoaded", () => onLoad());
