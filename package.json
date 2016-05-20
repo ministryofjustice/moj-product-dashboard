@@ -1,0 +1,32 @@
+{
+  "name": "moj-product-dashboard",
+  "version": "1.0.0",
+  "description": "===================== MOJ Product Dashboard =====================",
+  "main": "index.js",
+  "dependencies": {
+    "plotly.js": "^1.11.0",
+    "whatwg-fetch": "^1.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.9.0",
+    "babel-loader": "^6.2.4",
+    "babel-polyfill": "^6.9.0",
+    "babel-preset-es2015": "^6.9.0",
+    "webpack": "^1.13.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack -p --progress --colors",
+    "watch": "webpack --progress --colors --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ministryofjustice/moj-product-dashboard.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ministryofjustice/moj-product-dashboard/issues"
+  },
+  "homepage": "https://github.com/ministryofjustice/moj-product-dashboard#readme"
+}

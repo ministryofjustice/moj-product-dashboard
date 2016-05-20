@@ -23,6 +23,10 @@ Dependencies
 
 -  `Python 3.5 <http://www.python.org/>`__ (can be installed using :code:`brew install python3`)
 -  `Virtualenv <http://www.virtualenv.org/en/latest/>`__ (can be installed using :code:`pip3 install virtualenv`)
+-  `Plotly.js <https://plot.ly/javascript/>`__(can be installed using :code:`npm install plotly.js --save`)
+-  `fetch polyfill <https://github.com/github/fetch>`__(can be installed using :code:`npm install whatwg-fetch --save`)
+-  `webpack <https://webpack.github.io/>`__(can be installed using :code:`npm install webpack -g`)
+
 
 Installation
 ============
@@ -52,3 +56,15 @@ Install python dependencies:
 ::
 
     pip install -r requirements/local.txt
+
+Install frontend dependencies:
+
+::
+
+    npm install
+
+Development
+============
+
+In addition to running the Django development server (python manage.py runserver) run npm run --watch from the same
+directory to ensure that changes to the front-end code are reflected immediately.

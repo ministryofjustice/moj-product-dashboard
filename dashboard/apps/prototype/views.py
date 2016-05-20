@@ -4,6 +4,58 @@ import random
 from django.shortcuts import render
 from django.http import JsonResponse
 
+from .models import Person, Project, Client, Task, Role, Rate
+
+
+def get_total_times(projects):
+
+    project_days = []
+    project_names = []
+
+    for project in projects:
+        tasks = project.tasks.all()
+
+        total_days = 0
+        for task in tasks:
+            total_days += task.days
+
+        project_days.append(total_days)
+        project_names.append(project.name)
+
+    return project_names, project_days
+
+
+def index(request):
+
+    return render(request, 'index.html')
+
+
+def simple(request):
+
+    return render(request, 'simple.html')
+
+
+def comparison(request):
+
+    projects = Project.objects.all()
+
+    project_names, project_days = get_total_times(projects)
+
+    layout = {}
+
+    trace = {
+        'x': project_names,
+        'y': project_days,
+        'type': 'bar',
+    }
+
+    response = {
+        'data': [trace],
+        'layout': layout,
+    }
+
+    return JsonResponse(response, safe=False)
+
 
 def get_x_axis(date):
 
@@ -16,11 +68,6 @@ def get_x_axis(date):
         x_axis.append(date.strftime('%B %Y'))
 
     return x_axis
-
-
-def index(request):
-
-    return render(request, 'index.html')
 
 
 def data_response(request):
@@ -42,8 +89,7 @@ def data_response(request):
     }
 
     layout = {
-        # 'height': 350,
-        # 'width': 350,
+
         'showlegend': False,
 
         'margin': {
@@ -54,8 +100,6 @@ def data_response(request):
             'pad': 4
         },
 
-        # 'paper_bgcolor': '#7f7f7f',
-        # 'plot_bgcolor': '#c7c7c7',
     }
 
     response = {

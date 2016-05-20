@@ -18,14 +18,16 @@ from django.conf import settings
 from django.contrib import admin
 from moj_irat.views import PingJsonView, HealthcheckView
 
-from dashboard.apps.prototype.views import index, data_response
+from dashboard.apps.prototype.views import index, data_response, simple, comparison
 from dashboard.apps.prototype.bokeh_views import bokeh
 from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     url(r'^$', index),
+    url(r'^simple/', simple),
     url(r'^getfig/', data_response),
+    url(r'^comp/', comparison),
     url(r'^bokeh/', bokeh),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/login/', auth_views.login),

@@ -1,60 +1,45 @@
-/**
- * Created by jamesnarey on 17/05/2016.
- */
+import 'whatwg-fetch';
+import Plotly from 'plotly.js';
 
+class Figure {
 
-function figure(element, type) {
-  this.element = element;
-  this.data = {};
-  this.layout = {};
-  this.type = 'line';
+  constructor(element) {
+    this.element = element;
+    this.data = {};
+    this.layout = {};
+  }
 
-  this.plot = function () {
-
+  plot() {
     Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
+  }
 
-  };
-  this.getFigure = function () {
-
-    console.log("Request made");
-    var $this = this;
-    $.ajax({
-      url: "/getfig/",
-      type: "GET",
-
-      success: function (json) {
-        $this.data = json.data;
-        $this.layout = json.layout;
-        $this.plot();
-
-      },
-
-      error: function (xhr, errmsg, err) {
-        console.log(xhr.status + ": " + xhr.responseText);
-      }
-
-    });
+  getFigure (url) {
+    fetch(url)
+      .then((response) => response.json())
+      .then((json) => {
+        this.data = json.data;
+        this.layout = json.layout;
+        this.plot();
+      });
   }
 }
 
-
 //Run on page load
-$(document).ready(function () {
+function onLoad() {
+  const figA = document.getElementById("fig-a");
+  const figB = document.getElementById("fig-b");
+  const figC = document.getElementById("fig-c");
+  const figD = document.getElementById("fig-d");
 
-  var topLeft = document.getElementById("top_left");
-  var topRight = document.getElementById("top_right");
-  var bottomLeft = document.getElementById("bottom_left");
-  var bottomRight = document.getElementById("bottom_right");
+  const fA = new Figure(figA);
+  const fB = new Figure(figB);
+  const fC = new Figure(figC);
+  const fD = new Figure(figD);
 
-  var tL = new figure(topLeft);
-  var tR = new figure(topRight);
-  var bL = new figure(bottomLeft);
-  var bR = new figure(bottomRight);
+  fA.getFigure('/comp/');
+  fB.getFigure('/getfig/');
+  fC.getFigure('/getfig/');
+  fD.getFigure('/getfig/');
+}
 
-  tL.getFigure();
-  tR.getFigure();
-  bL.getFigure();
-  //bR.getFigure();
-
-});
-
+document.addEventListener("DOMContentLoaded", () => onLoad());
