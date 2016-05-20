@@ -58,25 +58,28 @@ class Command(BaseCommand):
                             default=this_monday)
         parser.add_argument('-e', '--end-date', type=valid_date,
                             default=this_friday)
+        parser.add_argument('-p', '--project', type=valid_date,
+                            default=this_friday)
         parser.add_argument('-n', '--names', nargs='*', type=str)
 
     def handle(self, *args, **options):
         start_date = options['start_date']
         end_date = options['end_date']
         names = options['names']
+        print('time frame start: {} end : {}'.format(start_date, end_date))
         if names:
             queries = [Q(name__icontains=name) for name in names]
             query = queries.pop()
             for item in queries:
                 query |= item
             persons = Person.objects.filter(query)
-        else:
-            persons = []
-
-        print('time frame start: {} end : {}'.format(start_date, end_date))
-        if persons:
+            if not persons:
+                raise CommandError(
+                    'could not find any person with name(s) {}'.format(
+                        ','.join(names)))
             print('people: {}'.format(', '.join([p.name for p in persons])))
         else:
+            persons = []
             print('people: all')
         tasks = Task.objects.filter(
             Q(start_date__gte=start_date, start_date__lte=end_date) |
@@ -86,7 +89,7 @@ class Command(BaseCommand):
         person_to_task = {}
         for task in tasks:
             person = task.person
-            if persons and person in persons or not persons:
+            if not persons or person in persons:
                 person_to_task.setdefault(task.person, []).append(task)
         for person in person_to_task:
             print('-' * 20)
