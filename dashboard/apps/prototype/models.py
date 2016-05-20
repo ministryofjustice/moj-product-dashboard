@@ -8,12 +8,12 @@ from dashboard.libs.date_tools import get_workdays
 
 
 class Person(models.Model):
-    float_id = models.CharField(max_length=64, unique=True)
-    name = models.CharField(max_length=64)
+    float_id = models.CharField(max_length=128, unique=True)
+    name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
     is_contractor = models.BooleanField(default=False)
-    job_title = models.CharField(max_length=64, null=True)
+    job_title = models.CharField(max_length=128, null=True)
     is_current = models.BooleanField(default=True)
     raw_data = JSONField()
 
@@ -32,8 +32,8 @@ class Rate(models.Model):
 
 
 class Client(models.Model):
-    name = models.CharField(max_length=32)
-    float_id = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=128)
+    float_id = models.CharField(max_length=128, unique=True)
     raw_data = JSONField()
 
     def __str__(self):
@@ -41,9 +41,9 @@ class Client(models.Model):
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=128)
     description = models.TextField()
-    float_id = models.CharField(max_length=64, unique=True)
+    float_id = models.CharField(max_length=128, unique=True)
     is_billable = models.BooleanField(default=True)
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
@@ -60,13 +60,13 @@ class Project(models.Model):
 
 
 class Task(models.Model):
-    name = models.CharField(max_length=64, null=True)
+    name = models.CharField(max_length=128, null=True)
     person = models.ForeignKey('Person', related_name='tasks')
     project = models.ForeignKey('Project', related_name='tasks')
     start_date = models.DateField()
     end_date = models.DateField()
     days = models.DecimalField(max_digits=10, decimal_places=5)
-    float_id = models.CharField(max_length=64, unique=True)
+    float_id = models.CharField(max_length=128, unique=True)
     raw_data = JSONField()
 
     def __str__(self):
