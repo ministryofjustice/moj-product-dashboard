@@ -34,7 +34,8 @@ def print_task(task, start_date, end_date, padding='  '):
     lines.append('task start: {}, end: {}, total: {:.5f} working days'.format(
         task.start_date, task.end_date, task.days))
     time_spent = task.time_spent(start_date, end_date)
-    lines.append('time spent in this period: {:.5f} days'.format(time_spent))
+    lines.append(
+        'time spent in this time frame: {:.5f} days'.format(time_spent))
     for index, line in enumerate(lines):
         if index == 0:
             print('{}- {}'.format(padding, line))
