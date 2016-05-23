@@ -2,17 +2,12 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 from django.contrib.auth.models import User, Group
-from django.test import TestCase
+from django.test import TestCase, mock
 
 from model_mommy import mommy
 
 from ..admin import RateAdmin
 from ..models import Rate
-
-
-class MockRequest():
-    def __init__(self, user):
-        self.user = user
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -34,7 +29,7 @@ class TaskTimeSpentTestCase(TestCase):
 
     def assertHasPermission(self, user, admin_class, model_class, add=True,
                             change=True, delete=True):
-        mock_request = MockRequest(user=user)
+        mock_request = mock.Mock(user=user)
         model_admin = admin_class(model_class, admin.site)
         can_add = model_admin.has_add_permission(mock_request)
         can_change = model_admin.has_change_permission(mock_request)
