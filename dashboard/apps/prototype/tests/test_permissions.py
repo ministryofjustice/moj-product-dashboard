@@ -6,7 +6,7 @@ from django.test import TestCase, mock
 
 from model_mommy import mommy
 
-from ..admin import RateAdmin
+from ..admin import RateAdmin, Person, RateInline
 from ..models import Rate
 
 
@@ -45,11 +45,17 @@ class TaskTimeSpentTestCase(TestCase):
     def test_finance_can_access_rates(self):
         self.assertHasPermission(self.finance_admin, RateAdmin, Rate,
                                  delete=False)
+        self.assertHasPermission(self.finance_admin, RateInline, Person,
+                                 delete=False)
 
     def test_users_cant_access_rates(self):
         self.assertHasNoPermission(self.user_admin, RateAdmin, Rate)
         self.assertHasNoPermission(self.other_admin, RateAdmin, Rate)
         self.assertHasNoPermission(self.regular_user, RateAdmin, Rate)
+
+        self.assertHasNoPermission(self.user_admin, RateInline, Person)
+        self.assertHasNoPermission(self.other_admin, RateInline, Person)
+        self.assertHasNoPermission(self.regular_user, RateInline, Person)
 
     def test_useradmin_can_access_users(self):
         self.assertHasPermission(self.user_admin, ModelAdmin, User)
