@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import get_workdays
 
@@ -20,6 +21,9 @@ class Person(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = ugettext_lazy('People')
+
 
 class Rate(models.Model):
     amount = models.DecimalField(max_digits=5, decimal_places=2)
@@ -29,6 +33,10 @@ class Rate(models.Model):
     def __str__(self):
         return '"{}" @ "{}"/day from "{}"'.format(
             self.person, self.amount, self.start_date)
+
+    class Meta:
+        ordering = ('-start_date',)
+        unique_together = ('start_date', 'person')
 
 
 class Client(models.Model):

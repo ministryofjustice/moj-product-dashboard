@@ -1,0 +1,45 @@
+- model: auth.user
+  pk: 1
+  fields:
+    password: pbkdf2_sha256$24000$jdDM9W1xn8Yl$UjI3dK+D7SIobZWxAMhKEcUHCwOaogUYTPmDgMdAKGk=
+    last_login: 2016-05-18 13:40:59+00:00
+    is_superuser: true
+    username: admin
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: true
+    is_active: true
+    date_joined: 2016-05-13 15:25:00+00:00
+    groups: [1]
+    user_permissions: []
+- model: auth.user
+  pk: 2
+  fields:
+    password: pbkdf2_sha256$24000$mKuoPrCQ2QcA$bN2/ul30eYgp4lUrhupdJiuk/qPlcvDhASdoME+/XE8=
+    last_login: 2016-05-20 14:43:51.669723+00:00
+    is_superuser: false
+    username: test_admin
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: true
+    is_active: true
+    date_joined: 2016-05-20 14:41:48+00:00
+    groups: [1]
+    user_permissions: []
+- model: auth.user
+  pk: 3
+  fields:
+    password: pbkdf2_sha256$24000$Cnnq9fwCOMQt$sLi2+BTwUMMMvEAi2nsb/QlNeN3pF8mCL/CWRSpsCgc=
+    last_login: null
+    is_superuser: false
+    username: test_finance
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: true
+    is_active: true
+    date_joined: 2016-05-20 14:48:11+00:00
+    groups: [2]
+    user_permissions: []
