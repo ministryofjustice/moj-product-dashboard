@@ -18,7 +18,7 @@ class FinancePermissions():
     """
 
     def is_finance(self, user):
-        return user.groups.filter(name='Finance')
+        return user.groups.filter(name='Finance').exists()
 
     def has_add_permission(self, request, obj=None):
         return self.is_finance(request.user)

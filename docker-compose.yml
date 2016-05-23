@@ -1,6 +1,9 @@
 # NB: this is only used for local development
 # see Dockerfile for deployed version
 
+# To col=mpletely reset the database add the following in front of the command
+# venv/bin/python manage.py reset_db --noinput
+
 db:
   build: docker/postgres
   environment:
@@ -8,7 +11,7 @@ db:
     POSTGRES_PASSWORD: postgres
 django:
   build: .
-  command: bash -c "venv/bin/python manage.py migrate && venv/bin/python manage.py runserver 0.0.0.0:8000"
+  command: bash -c "venv/bin/python manage.py migrate --noinput --run-syncdb && venv/bin/python manage.py loaddata auth_group_permissions.yaml test_users.yaml && venv/bin/python manage.py runserver 0.0.0.0:8000"
   ports:
     - "8000:8000"
   links:
