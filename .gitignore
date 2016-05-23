@@ -12,3 +12,4 @@ dashboard/settings/local.py
 var/*
 node_modules/
 output.log
+*.map

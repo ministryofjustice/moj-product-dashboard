@@ -1,5 +1,8 @@
 import 'whatwg-fetch';
-import Plotly from 'plotly.js';
+import Plotly from 'plotly.js/lib/core';
+import * as bar from 'plotly.js/lib/bar';
+
+Plotly.register([bar]);
 
 class Figure {
 
