@@ -2,7 +2,7 @@
   pk: 1
   fields:
     password: pbkdf2_sha256$24000$jdDM9W1xn8Yl$UjI3dK+D7SIobZWxAMhKEcUHCwOaogUYTPmDgMdAKGk=
-    last_login: 2016-05-18 13:40:59+00:00
+    last_login: null
     is_superuser: true
     username: admin
     first_name: ''
@@ -17,7 +17,7 @@
   pk: 2
   fields:
     password: pbkdf2_sha256$24000$mKuoPrCQ2QcA$bN2/ul30eYgp4lUrhupdJiuk/qPlcvDhASdoME+/XE8=
-    last_login: 2016-05-20 14:43:51.669723+00:00
+    last_login: null
     is_superuser: false
     username: test_admin
     first_name: ''
