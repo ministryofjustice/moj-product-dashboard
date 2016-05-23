@@ -120,7 +120,7 @@ class Command(BaseCommand):
         print('time frame start: {} end : {}'.format(start_date, end_date))
         persons = self._get_persons(options['names'])
         areas = self._get_areas(options['areas'])
-        projects = self._get_projects(options.get('projects', []), areas)
+        projects = self._get_projects(options['projects'] or [], areas)
 
         tasks = Task.objects.filter(
             Q(start_date__gte=start_date, start_date__lte=end_date) |
