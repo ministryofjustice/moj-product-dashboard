@@ -18,7 +18,6 @@ class Figure {
   }
 
   handleResponse(json) {
-    console.log('handleResponse called');
     this.data = json.data;
     this.layout = json.layout;
     this.plot();
@@ -30,7 +29,7 @@ class Figure {
       .then((json) => this.handleResponse(json));
   }
 
-  postRequestFigure (url) {
+  postRequestFigure (url, requestJson) {
     fetch(url, {
       credentials: 'same-origin',
       method: 'POST',
@@ -39,9 +38,7 @@ class Figure {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        test: 'testtext',
-      })
+      body: JSON.stringify(requestJson)
     })
     .then((response) => response.json())
       .then((json) => this.handleResponse(json));
@@ -49,12 +46,28 @@ class Figure {
 
 }
 
+var testRequest = {
+
+  requested_figure : 'staff_split',
+
+  projects : ['la'],
+
+  persons : [],
+
+  areas : [],
+
+  start_date: '2015-01-01',
+
+  end_date: '2016-05-23'
+
+};
+
 //Run on page load
 function onLoad() {
-  const figA = document.getElementById("fig-a");
-  const figB = document.getElementById("fig-b");
-  const figC = document.getElementById("fig-c");
-  const figD = document.getElementById("fig-d");
+  const figA = document.getElementById('fig-a');
+  const figB = document.getElementById('fig-b');
+  const figC = document.getElementById('fig-c');
+  const figD = document.getElementById('fig-d');
 
   const fA = new Figure(figA);
   const fB = new Figure(figB);
@@ -62,7 +75,7 @@ function onLoad() {
   const fD = new Figure(figD);
 
   fA.getRequestFigure('/comp/');
-  fB.postRequestFigure('/getrand/');
+  fB.postRequestFigure('/getfig/', testRequest);
   fC.getRequestFigure('/getrand/');
   fD.getRequestFigure('/getrand/');
 }

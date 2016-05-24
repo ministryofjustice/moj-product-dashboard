@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 # from dashboard.apps.prototype.models import Task, Person, Project, Client
 
-from dashboard.libs.queries import get_areas, get_persons, get_projects, get_tasks, valid_date
+from dashboard.libs.queries import get_areas, get_persons, get_projects, get_tasks, valid_date, filter_projects_by_area
 
 
 def print_person(person, padding=''):
@@ -61,6 +61,7 @@ class Command(BaseCommand):
         parser.add_argument('-a', '--areas', nargs='*', type=str)
         parser.add_argument('-n', '--names', nargs='*', type=str)
 
+
     def handle(self, *args, **options):
         start_date = options['start_date']
         end_date = options['end_date']
@@ -74,8 +75,6 @@ class Command(BaseCommand):
 
         projects = get_projects(options['projects'] or [], options['areas'] or [])
         print('projects: {}'.format(', '.join([p.name for p in projects]))) if projects else print('projects: all')
-
-        # import ipdb; ipdb.set_trace()
 
         tasks = get_tasks(start_date, end_date)
 

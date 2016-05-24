@@ -64,6 +64,23 @@ def get_projects(names, areas):
     return projects
 
 
+def get_all_projects(names):
+
+    if not names:
+        return []
+
+    filter_by_name = Q()
+    for item in [Q(name__icontains=name) for name in names]:
+        filter_by_name |= item
+    projects = Project.objects.filter(filter_by_name)
+
+    if not projects:
+        raise NoMatchFound(
+            ('could not find any project with name(s) {}'
+             ).format(','.join(names)))
+    return projects
+
+
 def get_tasks(start_date, end_date):
 
     tasks = Task.objects.filter(

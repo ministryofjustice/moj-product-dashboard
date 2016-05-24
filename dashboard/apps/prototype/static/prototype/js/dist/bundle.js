@@ -8136,7 +8136,6 @@
 	  }, {
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
-	      console.log('handleResponse called');
 	      this.data = json.data;
 	      this.layout = json.layout;
 	      this.plot();
@@ -8154,7 +8153,7 @@
 	    }
 	  }, {
 	    key: 'postRequestFigure',
-	    value: function postRequestFigure(url) {
+	    value: function postRequestFigure(url, requestJson) {
 	      var _this2 = this;
 	
 	      fetch(url, {
@@ -8165,9 +8164,7 @@
 	          'Accept': 'application/json',
 	          'Content-Type': 'application/json'
 	        },
-	        body: JSON.stringify({
-	          test: 'testtext'
-	        })
+	        body: JSON.stringify(requestJson)
 	      }).then(function (response) {
 	        return response.json();
 	      }).then(function (json) {
@@ -8179,14 +8176,28 @@
 	  return Figure;
 	}();
 	
+	var testRequest = {
+	
+	  requested_figure: 'staff_split',
+	
+	  projects: ['la'],
+	
+	  persons: [],
+	
+	  areas: [],
+	
+	  start_date: '2015-01-01',
+	
+	  end_date: '2016-05-23'
+	
+	};
+	
 	//Run on page load
-	
-	
 	function onLoad() {
-	  var figA = document.getElementById("fig-a");
-	  var figB = document.getElementById("fig-b");
-	  var figC = document.getElementById("fig-c");
-	  var figD = document.getElementById("fig-d");
+	  var figA = document.getElementById('fig-a');
+	  var figB = document.getElementById('fig-b');
+	  var figC = document.getElementById('fig-c');
+	  var figD = document.getElementById('fig-d');
 	
 	  var fA = new Figure(figA);
 	  var fB = new Figure(figB);
@@ -8194,7 +8205,7 @@
 	  var fD = new Figure(figD);
 	
 	  fA.getRequestFigure('/comp/');
-	  fB.postRequestFigure('/getrand/');
+	  fB.postRequestFigure('/getfig/', testRequest);
 	  fC.getRequestFigure('/getrand/');
 	  fD.getRequestFigure('/getrand/');
 	}
@@ -8806,7 +8817,7 @@
 /* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -25086,7 +25097,7 @@
 	        dflt: '',
 	        description: [
 	            'Sets the legend group for this trace.',
-	            'Traces part of the same legend group hide/show at the same time',
+	            'Figures part of the same legend group hide/show at the same time',
 	            'when toggling legend items.'
 	        ].join(' ')
 	    },
