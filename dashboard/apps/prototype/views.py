@@ -3,6 +3,7 @@ from dateutil import relativedelta
 import random
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 from .models import Person, Project, Client, Task, Rate
 
@@ -25,6 +26,7 @@ def get_total_times(projects):
     return project_names, project_days
 
 
+@login_required
 def index(request):
 
     return render(request, 'index.html')
