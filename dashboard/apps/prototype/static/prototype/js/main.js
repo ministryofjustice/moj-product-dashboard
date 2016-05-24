@@ -17,14 +17,17 @@ class Figure {
     Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
   }
 
+  handleResponse(json) {
+    console.log('handleResponse called');
+    this.data = json.data;
+    this.layout = json.layout;
+    this.plot();
+  }
+
   getRequestFigure (url) {
     fetch(url)
       .then((response) => response.json())
-      .then((json) => {
-        this.data = json.data;
-        this.layout = json.layout;
-        this.plot();
-      });
+      .then((json) => this.handleResponse(json));
   }
 
   postRequestFigure (url) {
@@ -41,11 +44,7 @@ class Figure {
       })
     })
     .then((response) => response.json())
-    .then((json) => {
-        this.data = json.data;
-        this.layout = json.layout;
-        this.plot();
-      });
+      .then((json) => this.handleResponse(json));
   }
 
 }
@@ -63,9 +62,9 @@ function onLoad() {
   const fD = new Figure(figD);
 
   fA.getRequestFigure('/comp/');
-  fB.postRequestFigure('/getfig/');
-  fC.getRequestFigure('/getfig/');
-  fD.getRequestFigure('/getfig/');
+  fB.postRequestFigure('/getrand/');
+  fC.getRequestFigure('/getrand/');
+  fD.getRequestFigure('/getrand/');
 }
 
 document.addEventListener("DOMContentLoaded", () => onLoad());

@@ -8134,6 +8134,14 @@
 	      _core2.default.newPlot(this.element, this.data, this.layout, { displaylogo: false });
 	    }
 	  }, {
+	    key: 'handleResponse',
+	    value: function handleResponse(json) {
+	      console.log('handleResponse called');
+	      this.data = json.data;
+	      this.layout = json.layout;
+	      this.plot();
+	    }
+	  }, {
 	    key: 'getRequestFigure',
 	    value: function getRequestFigure(url) {
 	      var _this = this;
@@ -8141,9 +8149,7 @@
 	      fetch(url).then(function (response) {
 	        return response.json();
 	      }).then(function (json) {
-	        _this.data = json.data;
-	        _this.layout = json.layout;
-	        _this.plot();
+	        return _this.handleResponse(json);
 	      });
 	    }
 	  }, {
@@ -8165,9 +8171,7 @@
 	      }).then(function (response) {
 	        return response.json();
 	      }).then(function (json) {
-	        _this2.data = json.data;
-	        _this2.layout = json.layout;
-	        _this2.plot();
+	        return _this2.handleResponse(json);
 	      });
 	    }
 	  }]);
@@ -8190,9 +8194,9 @@
 	  var fD = new Figure(figD);
 	
 	  fA.getRequestFigure('/comp/');
-	  fB.postRequestFigure('/getfig/');
-	  fC.getRequestFigure('/getfig/');
-	  fD.getRequestFigure('/getfig/');
+	  fB.postRequestFigure('/getrand/');
+	  fC.getRequestFigure('/getrand/');
+	  fD.getRequestFigure('/getrand/');
 	}
 	
 	document.addEventListener("DOMContentLoaded", function () {
