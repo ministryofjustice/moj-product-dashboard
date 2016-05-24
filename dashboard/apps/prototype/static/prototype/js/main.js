@@ -1,4 +1,5 @@
 import 'whatwg-fetch';
+import Cookies from 'js-cookie';
 import Plotly from 'plotly.js/lib/core';
 import * as bar from 'plotly.js/lib/bar';
 
@@ -16,7 +17,7 @@ class Figure {
     Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
   }
 
-  getFigure (url) {
+  getRequestFigure (url) {
     fetch(url)
       .then((response) => response.json())
       .then((json) => {
@@ -25,6 +26,28 @@ class Figure {
         this.plot();
       });
   }
+
+  postRequestFigure (url) {
+    fetch(url, {
+      credentials: 'same-origin',
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': Cookies.get('csrftoken'),
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        test: 'testtext',
+      })
+    })
+    .then((response) => response.json())
+    .then((json) => {
+        this.data = json.data;
+        this.layout = json.layout;
+        this.plot();
+      });
+  }
+
 }
 
 //Run on page load
@@ -39,10 +62,10 @@ function onLoad() {
   const fC = new Figure(figC);
   const fD = new Figure(figD);
 
-  fA.getFigure('/comp/');
-  fB.getFigure('/getfig/');
-  fC.getFigure('/getfig/');
-  fD.getFigure('/getfig/');
+  fA.getRequestFigure('/comp/');
+  fB.postRequestFigure('/getfig/');
+  fC.getRequestFigure('/getfig/');
+  fD.getRequestFigure('/getfig/');
 }
 
 document.addEventListener("DOMContentLoaded", () => onLoad());

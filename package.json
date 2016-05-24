@@ -4,6 +4,7 @@
   "description": "===================== MOJ Product Dashboard =====================",
   "main": "index.js",
   "dependencies": {
+    "js-cookie": "^2.1.1",
     "plotly.js": "^1.11.0",
     "whatwg-fetch": "^1.0.0"
   },

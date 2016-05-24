@@ -1,10 +1,12 @@
 import datetime
+import json
 from dateutil import relativedelta
 import random
 from django.shortcuts import render
 from django.http import JsonResponse
 
 from .models import Person, Project, Client, Task, Rate
+from django.views.decorators.csrf import csrf_exempt
 
 
 def get_total_times(projects):
@@ -71,6 +73,13 @@ def get_x_axis(date):
 
 
 def data_response(request):
+
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        json_data = json.loads(request.body.decode())
+        print(json_data)
+        pass
 
     date = datetime.datetime(2016, 1, 1, 12, 0, 0)
 
