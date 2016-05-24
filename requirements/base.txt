@@ -4,6 +4,7 @@ pandas==0.18.1
 psycopg2==2.6.1
 requests==2.10.0
 raven==5.17.0
+django-extended-choices==1.0.7
 django-moj-template==0.23.1
 
 #Irat healthcheck and ping package
