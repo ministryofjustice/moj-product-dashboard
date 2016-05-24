@@ -10,7 +10,7 @@
 
 {% block stylesheets %}
 
-    <link href="{% static 'prototype/styles/moj_template_overrides.css' %}" rel="stylesheet" type="text/css"/>
+    <!-- <link href="{% static 'prototype/styles/moj_template_overrides.css' %}" rel="stylesheet" type="text/css"/> -->
     <link href="{% static 'prototype/styles/main.css' %}" rel="stylesheet" type="text/css"/>
 
 {% endblock %}
@@ -27,5 +27,10 @@
 
 {% endblock %}
 
-
-
+{% block content %}
+  <!--TODO use main tag in moj template-->
+  <main id="content" role="main">
+    {% block main %}
+    {% endblock %}
+  </main>
+{% endblock %}
