@@ -34,8 +34,9 @@ class Rate(models.Model):
     start_date = models.DateField()
 
     def __str__(self):
-        return '"{}" @ "{}"/day from "{}"'.format(
-            self.person, self.amount, self.start_date)
+        return '"{}" @ "{}"/{} from "{}"'.format(
+            self.person, self.rate,
+            RATE_TYPES.from_value(self.rate_type).display, self.start_date)
 
     class Meta:
         ordering = ('-start_date',)
@@ -52,16 +53,6 @@ class Rate(models.Model):
             rate=self.rate,
             rate_type=self.rate_type
         ).average_day_rate(start_date, end_date)
-
-    @property
-    def amount(self):
-        #TODO use average_day_rate(start_date, end_date) instead of this
-        return self.average_day_rate()
-
-    @amount.setter
-    def amount(self, amount):
-        self.rate = amount
-        self.rate_type = RATE_TYPES.DAY
 
 
 class Client(models.Model):
