@@ -4,7 +4,6 @@ from dateutil import relativedelta
 import random
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
 
 from .models import Person, Project, Client, Task, Rate
 
@@ -38,7 +37,7 @@ def simple(request):
 
     return render(request, 'simple.html')
 
-@csrf_exempt
+
 def send_figure(request):
 
     if request.method == 'GET':
