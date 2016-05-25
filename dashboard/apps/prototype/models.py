@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import get_workdays
+from dashboard.libs.rate_converter import RATE_TYPES, RateConverter
 
 
 class Person(models.Model):
@@ -26,7 +27,9 @@ class Person(models.Model):
 
 
 class Rate(models.Model):
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    rate_type = models.PositiveSmallIntegerField(
+        choices=RATE_TYPES, default=RATE_TYPES.DAY)
+    rate = models.DecimalField(max_digits=10, decimal_places=2)
     person = models.ForeignKey('Person', related_name='rates')
     start_date = models.DateField()
 
@@ -37,6 +40,28 @@ class Rate(models.Model):
     class Meta:
         ordering = ('-start_date',)
         unique_together = ('start_date', 'person')
+
+    def average_day_rate(self, start_date=None, end_date=None):
+        """
+        average day rate in range
+        param: start_date: date object - beginning of time period for average
+        param: end_date: date - object end of time period for average
+        return: Decimal object - average day rate
+        """
+        return RateConverter(
+            rate=self.rate,
+            rate_type=self.rate_type
+        ).average_day_rate(start_date, end_date)
+
+    @property
+    def amount(self):
+        #TODO use average_day_rate(start_date, end_date) instead of this
+        return self.average_day_rate()
+
+    @amount.setter
+    def amount(self, amount):
+        self.rate = amount
+        self.rate_type = RATE_TYPES.DAY
 
 
 class Client(models.Model):

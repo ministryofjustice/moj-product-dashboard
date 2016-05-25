@@ -76,7 +76,8 @@ class RateConverter():
         weights = []
         rates = []
 
-        months = [dt.date() for dt in rrule(MONTHLY, dtstart=start_date, until=end_date)]
+        months = [dt.date() for dt in rrule(MONTHLY, dtstart=start_date,
+                                            until=end_date)]
         # include last month
         months.append(date(end_date.year, end_date.month, 1))
         for n, start in enumerate(months):
@@ -90,8 +91,8 @@ class RateConverter():
             elif n + 1 is len(months):
                 end = end_date
 
-            # This is a bit horrible
             # numpy won't average decimals
+            # this seems close enough though
             weights.append(float(dec_workdays(start, end) / total_workdays))
             rates.append(float(rate))
 
