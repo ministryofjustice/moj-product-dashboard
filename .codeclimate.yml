@@ -2,5 +2,7 @@ engines:
   fixme:
     enabled: true
 ratings:
-  paths: []
-exclude_paths: []
+  paths:
+    - dashboard/**
+exclude_paths:
+  - "**/vendor"
