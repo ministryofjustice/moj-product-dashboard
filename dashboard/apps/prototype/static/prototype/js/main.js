@@ -50,7 +50,7 @@ var testRequest = {
 
   requested_figure : 'staff_split',
 
-  projects : ['la'],
+  projects : ['Digital'],
 
   persons : [],
 

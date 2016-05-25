@@ -14,6 +14,19 @@ def valid_date(s):
     return datetime.strptime(s, "%Y-%m-%d").date()
 
 
+def get_dates(start_date, end_date):
+    if start_date:
+        start_date = valid_date(start_date)
+    else:
+        start_date = valid_date('2015-01-01')
+    if end_date:
+        end_date = valid_date(end_date)
+    else:
+        end_date = valid_date(datetime.date())
+
+    return start_date, end_date
+
+
 def get_persons(names, as_filter=True, logger=None):
     if not logger:
         logger = logging

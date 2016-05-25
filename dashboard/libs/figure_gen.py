@@ -1,79 +1,95 @@
-from dashboard.libs.queries import get_areas, get_persons, get_all_projects, get_tasks, valid_date
+from dashboard.libs.queries import get_areas, get_persons, get_all_projects, get_tasks, get_dates
 
 
 class Figures(object):
-
-    @staticmethod
-    def _get_persons_on_project(project):
-        tasks = project.tasks.all()
-
-        persons = []
-        for task in tasks:
-            if task.person not in persons:
-                persons.append(task.person)
-
-        return persons
-
+    """
+    To add different types of figure, create new methods
+    in this class and then set the 'requested_figure'
+    attribute in the request JSON to the name of the method.
+    """
     @staticmethod
     def staff_split(data):
-
         # tasks = get_tasks(data['start_date'], data['end_date'])
         contractor_percs = []
         cs_percs = []
         for project in data['projects']:
-            persons = Figures._get_persons_on_project(project)
+            persons = get_persons_on_project(project)
 
-            contractors = 0
-            civil_servants = 0
-            for person in persons:
+            num_contractors, num_civil_servants = count_staff_by_type(persons)
 
-                if person.is_contractor:
-                    contractors += 1
-                else:
-                    civil_servants += 1
+            if num_contractors == 0:
+                contractor_percs.append(0)
+            else:
+                contractor_percs.append((num_contractors / (num_contractors + num_civil_servants)) * 100)
+            if num_civil_servants == 0:
+                cs_percs.append(0)
+            else:
+                cs_percs.append((num_civil_servants / (num_contractors + num_civil_servants)) * 100)
 
-            contractor_percs.append((contractors / (contractors + civil_servants)) * 100)
-            cs_percs.append((civil_servants / (contractors + civil_servants)) * 100)
+        project_names = [project.name for project in data['projects']]
 
-        civ_servant_trace = {
-            'x': [project.name for project in data['projects']],
-            'y': [perc for perc in cs_percs],
-            'name': 'Civil Servants',
-            'type': 'bar',
-        }
+        cs_trace = get_trace(project_names, [perc for perc in cs_percs], 'Civil Servants')
 
-        contractors_trace = {
-            'x': [project.name for project in data['projects']],
-            'y': [perc for perc in contractor_percs],
-            'name': 'Civil Servants',
-            'type': 'bar',
-        }
+        contr_trace = get_trace(project_names, [perc for perc in contractor_percs], 'Contractors')
 
-        layout = {
-
-            'showlegend': False,
-            'barmode': 'stack',
-
-        },
+        layout = get_layout(barmode='stack')
 
         figure = {
-            'data': [civ_servant_trace, contractors_trace],
+            'data': [cs_trace, contr_trace],
             'layout': layout,
         }
 
         return figure
 
 
-def get_figure(requested_figure, request_data):
+def get_layout(**kwargs):
+    layout = {'showlegend': False}
+    for key, value in kwargs.items():
+        layout[key] = value
+    return layout
 
+
+def count_staff_by_type(persons):
+    contractors = 0
+    civil_servants = 0
+    for person in persons:
+        if person.is_contractor:
+            contractors += 1
+        else:
+            civil_servants += 1
+    return contractors, civil_servants
+
+
+def get_persons_on_project(project):
+    tasks = project.tasks.all()
+
+    persons = []
+    for task in tasks:
+        if task.person not in persons:
+            persons.append(task.person)
+
+    return persons
+
+
+def get_trace(x_axis, y_axis, name='trace', trace_type='bar'):
+    trace = {
+        'name': name,
+        'x': x_axis,
+        'y': y_axis,
+        'type': trace_type
+    }
+    return trace
+
+
+def get_figure(requested_figure, request_data):
+    start_date, end_date = get_dates(request_data['start_date'], request_data['end_date'])
     data = {
         'persons': get_persons(request_data['persons']),
         'areas': get_areas(request_data['areas']),
         'projects': get_all_projects(request_data['projects']),  # Consider whether to limit by area here?
-        'start_date': valid_date(request_data['start_date']),
-        'end_date': valid_date(request_data['end_date'])
+        'start_date': start_date,
+        'end_date': end_date
     }
-
     try:
         figure = (getattr(Figures, requested_figure)(data))
     except AttributeError as err:
