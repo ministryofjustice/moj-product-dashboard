@@ -27,7 +27,8 @@ def test_get_work_days(start_date, end_date, expected):
     '2016-12-27',  # christmas day (substitue day)
 ])
 def test_get_bank_holidays_good_days(day):
-    assert day in get_bank_holidays(), '{} is a bank holiday!'.format(day)
+    assert datetime.strptime(day, '%Y-%m-%d').date() in get_bank_holidays(), \
+        '{} is a bank holiday!'.format(day)
 
 
 @pytest.mark.parametrize("day", [
@@ -35,4 +36,5 @@ def test_get_bank_holidays_good_days(day):
     '2016-08-01',  # summer bank holiday (Scotland)
 ])
 def test_get_bank_holidays_bad_days(day):
-    assert day not in get_bank_holidays()
+    assert datetime.strptime(day, '%Y-%m-%d').date() not in \
+           get_bank_holidays()
