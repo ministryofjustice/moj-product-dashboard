@@ -3,47 +3,14 @@
 """
 calculate
 """
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
-# from django.db.models import Q
 
-# from dashboard.apps.prototype.models import Task, Person, Project, Client
-
-from dashboard.libs.queries import get_areas, get_persons, get_projects, get_tasks, valid_date, filter_projects_by_area
-
-
-def print_person(person, padding=''):
-    if person.is_contractor:
-        line = '{}, {} (contractor)'.format(
-            person.name, person.job_title,
-            person.job_title)
-    else:
-        line = '{}, {} (civil servant)'.format(
-            person.name, person.job_title,
-            person.job_title)
-    print('{}{}'.format(padding, line))
-
-
-def print_task(task, start_date, end_date, padding='  '):
-    lines = []
-    lines.append('task name: {}'.format(task.name or 'N/A'))
-    if task.project.is_billable:
-        lines.append('project: {}, area: {}'.format(
-            task.project, task.project.client.name))
-    else:
-        lines.append('project: {} (non-billable), area: {}'.format(
-            task.project, task.project.client.name))
-    lines.append('task start: {}, end: {}, total: {:.5f} working days'.format(
-        task.start_date, task.end_date, task.days))
-    time_spent = task.time_spent(start_date, end_date)
-    lines.append(
-        'time spent in this time frame: {:.5f} days'.format(time_spent))
-    for index, line in enumerate(lines):
-        if index == 0:
-            print('{}- {}'.format(padding, line))
-        else:
-            print('{}  {}'.format(padding, line))
+from dashboard.libs.queries import (
+    get_areas, get_persons, get_projects, get_tasks, valid_date,
+    NoMatchFound)
+from .helpers import print_person, print_task, logger
 
 
 class Command(BaseCommand):
@@ -61,23 +28,26 @@ class Command(BaseCommand):
         parser.add_argument('-a', '--areas', nargs='*', type=str)
         parser.add_argument('-n', '--names', nargs='*', type=str)
 
-
     def handle(self, *args, **options):
         start_date = options['start_date']
         end_date = options['end_date']
-        print('time frame start: {} end : {}'.format(start_date, end_date))
+        logger.info('time frame start: {} end : {}'.format(
+            start_date, end_date))
+        try:
+            persons = get_persons(options['names'], logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
+        try:
+            areas = get_areas(options['areas'], logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
+        try:
+            projects = get_projects(options['projects'] or [], areas,
+                                    logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
 
-        persons = get_persons(options['names'])
-        print('people: {}'.format(', '.join([p.name for p in persons]))) if persons else print('people: all')
-
-        areas = get_areas(options['areas'])
-        print('areas: {}'.format(', '.join([p.name for p in areas]))) if areas else print('areas: all')
-
-        projects = get_projects(options['projects'] or [], options['areas'] or [])
-        print('projects: {}'.format(', '.join([p.name for p in projects]))) if projects else print('projects: all')
-
-        tasks = get_tasks(start_date, end_date)
-
+        tasks = get_tasks(start_date, end_date, logger)
         if persons:
             tasks = tasks.filter(person__in=persons)
         if projects:
@@ -86,7 +56,7 @@ class Command(BaseCommand):
         for task in tasks:
             person_to_task.setdefault(task.person, []).append(task)
         for person in person_to_task:
-            print('-' * 20)
+            logger.info('-' * 20)
             print_person(person)
             for task in person_to_task[person]:
                 print_task(task, start_date, end_date)

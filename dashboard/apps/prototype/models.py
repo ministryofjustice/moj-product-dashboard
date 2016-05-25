@@ -26,7 +26,7 @@ class Person(models.Model):
 
 
 class Rate(models.Model):
-    amount = models.DecimalField(max_digits=5, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
     person = models.ForeignKey('Person', related_name='rates')
     start_date = models.DateField()
 

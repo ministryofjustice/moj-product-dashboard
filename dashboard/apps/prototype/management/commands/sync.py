@@ -6,7 +6,6 @@ export from float
 import os
 import json
 from datetime import datetime, date, timedelta
-import logging
 import functools
 from decimal import Decimal
 
@@ -16,42 +15,10 @@ from requests.exceptions import HTTPError
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
+from dashboard.libs.queries import valid_date
+from .helpers import logger
 
 FLOAT_DATA_DIR = settings.location('../var/float')
-
-
-def get_logger():
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': True,
-        'formatters': {
-            'basic': {'format': '%(asctime)s - %(levelname)s - %(message)s'},
-            'simple': {'format': '%(message)s'},
-        },
-        'handlers': {
-            'console': {
-                'level': 'INFO',
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple'
-            },
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': 'output.log',
-                'formatter': 'basic'
-            },
-        },
-        'loggers': {
-            __name__: {
-                'handlers': ['console', 'file'],
-                'level': 'DEBUG'
-            }
-        }
-    }
-    logging.config.dictConfig(LOGGING)
-    return logging.getLogger(__name__)
-
-logger = get_logger()
 
 
 def export(token, start_date, weeks, output_dir):
@@ -224,10 +191,6 @@ def sync(data_dir):
     sync_people(data_dir)
     sync_projects(data_dir)
     sync_tasks(data_dir)
-
-
-def valid_date(s):
-    return datetime.strptime(s, "%Y-%m-%d").date()
 
 
 def ensure_directory(d):
