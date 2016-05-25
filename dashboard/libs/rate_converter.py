@@ -43,14 +43,14 @@ class RateConverter():
         day, number = monthrange(year, month)
         return date(year, month, 1), date(year, month, number)
 
-    def method_name(self, extension):
-        return '_{}_{}'.format(
-            RATE_TYPES.for_value(self.rate_type).constant.lower(),
-            extension)
+    @property
+    def range_method(self):
+        return '_{}_date_range'.format(
+            RATE_TYPES.for_value(self.rate_type).constant.lower())
 
     @property
     def get_date_range(self):
-        return getattr(self, self.method_name('date_range'))
+        return getattr(self, self.range_method)
 
     def average_day_rate(self, start_date=None, end_date=None, as_of=None):
         """
