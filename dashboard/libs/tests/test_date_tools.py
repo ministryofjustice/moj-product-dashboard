@@ -11,6 +11,8 @@ import pytest
     ('2016-04-27', '2016-04-30', 3),  # one weekend day
     ('2016-04-27', '2016-05-01', 3),  # two weekend days
     ('2016-04-27', '2016-05-02', 3),  # two weekend days plus a bank holiday
+    ('2016-01-01', '2016-01-31', 20),  # Jan 2016
+    ('2016-02-01', '2016-02-28', 20),  # Feb 2016
 ])
 def test_get_work_days(start_date, end_date, expected):
     start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
