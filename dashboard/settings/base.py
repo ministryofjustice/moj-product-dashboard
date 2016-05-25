@@ -165,6 +165,8 @@ if 'SENTRY_DSN' in os.environ:
         'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
     ] + MIDDLEWARE_CLASSES
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 
 # .local.py overrides all the common settings.
 try:
