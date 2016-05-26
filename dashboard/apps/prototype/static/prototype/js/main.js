@@ -46,6 +46,24 @@ class Figure {
 
 }
 
+class ProjectCostFigure extends Figure {
+
+  constructor(element) {
+    super(element);
+    this.rawData = {}
+  }
+
+  handleResponse(json) {
+
+    this.rawData = json;
+    console.log(json)
+    // Something here
+  }
+
+
+
+}
+
 var testRequest = {
 
   requested_figure : 'staff_split',
@@ -62,6 +80,23 @@ var testRequest = {
 
 };
 
+var projectTestRequest = {
+
+  requested_figure : 'project_cost',
+
+  projects : ['CLA Public'],
+
+  persons : [],
+
+  areas : [],
+
+  start_date: '2015-01-01',
+
+  end_date: '2016-05-23'
+
+};
+
+
 //Run on page load
 function onLoad() {
   const figA = document.getElementById('fig-a');
@@ -71,12 +106,12 @@ function onLoad() {
 
   const fA = new Figure(figA);
   const fB = new Figure(figB);
-  const fC = new Figure(figC);
+  const fC = new ProjectCostFigure(figC);
   const fD = new Figure(figD);
 
   fA.getRequestFigure('/comp/');
   fB.postRequestFigure('/getfig/', testRequest);
-  fC.getRequestFigure('/getrand/');
+  fC.getRequestFigure('/getfig/', projectTestRequest);
   fD.getRequestFigure('/getrand/');
 }
 

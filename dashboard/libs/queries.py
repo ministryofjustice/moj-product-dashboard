@@ -112,10 +112,21 @@ def get_all_projects(names):
         raise NoMatchFound(
             ('could not find any project with name(s) {}'
              ).format(','.join(names)))
+
     return projects
 
 
-def get_tasks(start_date, end_date, logger=None):
+def tasks_by_person_proj(tasks, persons, projects):
+
+    if persons:
+        tasks = tasks.filter(person__in=persons)
+    if projects:
+        tasks = tasks.filter(project__in=projects)
+
+    return tasks
+
+
+def get_tasks(start_date, end_date, tasks=None, logger=None):
 
     if not logger:
         logger = logging

@@ -30,10 +30,17 @@ def get_workdays(start_date, end_date):
     :param end_date: date object for the end date
     :return: an integer for the number of work days
     """
+    workdays = get_workdays_list(start_date, end_date)
+
+    return len(workdays)
+
+
+def get_workdays_list(start_date, end_date):
     days = (start_date + timedelta(i) for i in
             range((end_date - start_date).days + 1))
     bank_holidays = get_bank_holidays()
     workdays = [
         d for d in days if
         d.weekday() < 5 and d.strftime('%Y-%m-%d') not in bank_holidays]
-    return len(workdays)
+
+    return workdays

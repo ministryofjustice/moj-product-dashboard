@@ -1,4 +1,8 @@
+from datetime import date
+
 from dashboard.libs.queries import get_areas, get_persons, get_all_projects, get_tasks, get_dates
+from dashboard.libs.date_tools import get_workdays_list
+from dashboard.libs.rate_generator import get_reference_rate
 
 
 class Figures(object):
@@ -7,6 +11,46 @@ class Figures(object):
     in this class and then set the 'requested_figure'
     attribute in the request JSON to the name of the method.
     """
+
+    @staticmethod
+    def project_cost(data):
+
+        if not data['projects']:
+            return gen_empty_figure()
+
+        # Consider a more sophisticated way to deal with multiple projects being passed in
+        project = data['projects'][0]
+
+        tasks = project.tasks.all()
+
+        start_date = project.discovery_date
+
+        end_date = date.today() if not project.end_date else end_date = project
+
+        all_days = get_workdays_list(start_date, end_date)
+
+        costs = []
+        times = []
+
+        for day in all_days:
+
+            day_time = 0
+            day_cost = 0
+            for task in tasks:
+
+                time = task.time_spent(day, day)
+                cost = get_reference_rate(task.person.job_title)
+
+                day_time += time
+                day_cost += cost
+
+            costs.append(day_cost)
+            times.append(day_time)
+
+        data = {'days': all_days, 'costs': costs, 'times': times}
+
+        return data
+
     @staticmethod
     def staff_split(data):
         # tasks = get_tasks(data['start_date'], data['end_date'])
@@ -40,6 +84,16 @@ class Figures(object):
         }
 
         return figure
+
+
+def gen_empty_figure():
+
+    figure = {
+        'data': [{}],
+        'layout': {},
+    }
+
+    return figure
 
 
 def get_layout(**kwargs):
