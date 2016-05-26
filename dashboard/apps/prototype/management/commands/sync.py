@@ -15,7 +15,8 @@ from requests.exceptions import HTTPError
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
-from .helpers import valid_date, logger
+from dashboard.libs.queries import valid_date
+from .helpers import logger
 
 FLOAT_DATA_DIR = settings.location('../var/float')
 

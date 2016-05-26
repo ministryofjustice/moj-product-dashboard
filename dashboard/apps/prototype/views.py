@@ -1,11 +1,16 @@
 import datetime
+import json
 from dateutil import relativedelta
 import random
 from django.shortcuts import render
-from django.http import JsonResponse
+
+from django.http import JsonResponse, HttpResponseBadRequest
+
 from django.contrib.auth.decorators import login_required
 
 from .models import Person, Project, Client, Task, Rate
+
+from dashboard.libs.figure_gen import get_figure
 
 
 def get_total_times(projects):
@@ -37,39 +42,20 @@ def simple(request):
     return render(request, 'simple.html')
 
 
-def comparison(request):
+def send_figure(request):
 
-    projects = Project.objects.all()
+    if request.method == 'GET':
+        request_data = request.GET
+    elif request.method == 'POST':
+        request_data = json.loads(request.body.decode())
+    else:
+        return HttpResponseBadRequest()
 
-    project_names, project_days = get_total_times(projects)
+    print(request_data)
 
-    layout = {}
+    figure = get_figure(request_data['requested_figure'], request_data)
 
-    trace = {
-        'x': project_names,
-        'y': project_days,
-        'type': 'bar',
-    }
-
-    response = {
-        'data': [trace],
-        'layout': layout,
-    }
-
-    return JsonResponse(response, safe=False)
-
-
-def get_x_axis(date):
-
-    x_axis = []
-
-    x_axis.append(date.strftime('%B %Y'))
-
-    for i in range(1, 11):
-        date += relativedelta.relativedelta(months=1)
-        x_axis.append(date.strftime('%B %Y'))
-
-    return x_axis
+    return JsonResponse(figure)
 
 
 def data_response(request):
@@ -110,3 +96,38 @@ def data_response(request):
     }
 
     return JsonResponse(response, safe=False)
+
+
+def comparison(request):
+
+    projects = Project.objects.all()
+
+    project_names, project_days = get_total_times(projects)
+
+    layout = {}
+
+    trace = {
+        'x': project_names,
+        'y': project_days,
+        'type': 'bar',
+    }
+
+    response = {
+        'data': [trace],
+        'layout': layout,
+    }
+
+    return JsonResponse(response, safe=False)
+
+
+def get_x_axis(date):
+
+    x_axis = []
+
+    x_axis.append(date.strftime('%B %Y'))
+
+    for i in range(1, 11):
+        date += relativedelta.relativedelta(months=1)
+        x_axis.append(date.strftime('%B %Y'))
+
+    return x_axis

@@ -10,7 +10,8 @@ from django.db.utils import IntegrityError
 
 from dashboard.apps.prototype.models import Rate
 from dashboard.libs.rate_generator import gen_rates, get_reference_rate
-from .helpers import valid_date, get_persons, logger
+from dashboard.libs.queries import valid_date, get_persons, NoMatchFound
+from .helpers import logger
 
 
 class Command(BaseCommand):
@@ -35,7 +36,11 @@ class Command(BaseCommand):
                   ' i.e. every 2 quarters'))
 
     def handle(self, *args, **options):
-        people = get_persons(options['names'], as_filter=False)
+        try:
+            people = get_persons(options['names'], as_filter=False,
+                                 logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
         start_date = options['start_date']
         end_date = options['end_date']
         freq = options['freq']

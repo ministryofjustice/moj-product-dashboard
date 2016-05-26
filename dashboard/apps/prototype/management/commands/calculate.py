@@ -5,12 +5,12 @@ calculate
 """
 from datetime import date, timedelta
 
-from django.core.management.base import BaseCommand
-from django.db.models import Q
+from django.core.management.base import BaseCommand, CommandError
 
-from dashboard.apps.prototype.models import Task
-from .helpers import (valid_date, get_persons, get_areas, get_projects,
-                      print_person, print_task, logger)
+from dashboard.libs.queries import (
+    get_areas, get_persons, get_projects, get_tasks, valid_date,
+    NoMatchFound)
+from .helpers import print_person, print_task, logger
 
 
 class Command(BaseCommand):
@@ -33,15 +33,21 @@ class Command(BaseCommand):
         end_date = options['end_date']
         logger.info('time frame start: {} end : {}'.format(
             start_date, end_date))
-        persons = get_persons(options['names'])
-        areas = get_areas(options['areas'])
-        projects = get_projects(options['projects'] or [], areas)
+        try:
+            persons = get_persons(options['names'], logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
+        try:
+            areas = get_areas(options['areas'], logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
+        try:
+            projects = get_projects(options['projects'] or [], areas,
+                                    logger=logger)
+        except NoMatchFound as exc:
+            raise CommandError(exc.args)
 
-        tasks = Task.objects.filter(
-            Q(start_date__gte=start_date, start_date__lte=end_date) |
-            Q(end_date__gte=start_date, end_date__lte=end_date) |
-            Q(start_date__lt=start_date, end_date__gt=end_date)
-        )
+        tasks = get_tasks(start_date, end_date, logger)
         if persons:
             tasks = tasks.filter(person__in=persons)
         if projects:

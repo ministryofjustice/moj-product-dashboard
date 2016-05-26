@@ -1,4 +1,5 @@
 import 'whatwg-fetch';
+import Cookies from 'js-cookie';
 import Plotly from 'plotly.js/lib/core';
 import * as bar from 'plotly.js/lib/bar';
 
@@ -16,33 +17,67 @@ class Figure {
     Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
   }
 
-  getFigure (url) {
+  handleResponse(json) {
+    this.data = json.data;
+    this.layout = json.layout;
+    this.plot();
+  }
+
+  getRequestFigure (url) {
     fetch(url)
       .then((response) => response.json())
-      .then((json) => {
-        this.data = json.data;
-        this.layout = json.layout;
-        this.plot();
-      });
+      .then((json) => this.handleResponse(json));
   }
+
+  postRequestFigure (url, requestJson) {
+    fetch(url, {
+      credentials: 'same-origin',
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': Cookies.get('csrftoken'),
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestJson)
+    })
+    .then((response) => response.json())
+      .then((json) => this.handleResponse(json));
+  }
+
 }
+
+var testRequest = {
+
+  requested_figure : 'staff_split',
+
+  projects : ['Digital'],
+
+  persons : [],
+
+  areas : [],
+
+  start_date: '2015-01-01',
+
+  end_date: '2016-05-23'
+
+};
 
 //Run on page load
 function onLoad() {
-  const figA = document.getElementById("fig-a");
-  const figB = document.getElementById("fig-b");
-  const figC = document.getElementById("fig-c");
-  const figD = document.getElementById("fig-d");
+  const figA = document.getElementById('fig-a');
+  const figB = document.getElementById('fig-b');
+  const figC = document.getElementById('fig-c');
+  const figD = document.getElementById('fig-d');
 
   const fA = new Figure(figA);
   const fB = new Figure(figB);
   const fC = new Figure(figC);
   const fD = new Figure(figD);
 
-  fA.getFigure('/comp/');
-  fB.getFigure('/getfig/');
-  fC.getFigure('/getfig/');
-  fD.getFigure('/getfig/');
+  fA.getRequestFigure('/comp/');
+  fB.postRequestFigure('/getfig/', testRequest);
+  fC.getRequestFigure('/getrand/');
+  fD.getRequestFigure('/getrand/');
 }
 
 document.addEventListener("DOMContentLoaded", () => onLoad());
