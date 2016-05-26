@@ -8188,9 +8188,74 @@
 	
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
 	
-	    _this3.rawData = {};
-	    // this.initialStartDate = new Date('2015-01-01');
+	    _this3.days = [];
+	    _this3.costs = [];
+	    _this3.times = [];
 	    _this3.initialEndDate = new Date();
+	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
+	    _this3.incrementLength = _this3.incrementLengths[3];
+	    _this3.startDate = undefined;
+	
+	    _this3.getMonthTrace = function (name, months, values) {
+	
+	      var costTrace = {
+	        name: name,
+	        x: months,
+	        y: values,
+	        type: 'bar'
+	      };
+	
+	      return costTrace;
+	    };
+	
+	    _this3.getMonthData = function () {
+	
+	      var month = _this3.startDate.getMonth();
+	      var year = _this3.startDate.getFullYear();
+	
+	      var thisYear = new Date().getFullYear();
+	      console.log(thisYear);
+	      var projectMonths = [];
+	      var monthlyCosts = [];
+	      var monthlyTimes = [];
+	      var cumulativeCosts = [];
+	      var cumulativeCost = 0;
+	      while (year <= thisYear) {
+	
+	        while (month <= 12) {
+	          // let firstDayOfMonth = new Date(year, month);
+	          var monthlyCost = 0;
+	          var monthlyTime = 0;
+	
+	          for (var i = 0; i < _this3.days.length, i++;) {
+	
+	            if (days[i].getFullYear() == year && days[i].getMonth() == month) {
+	              monthlyCost = monthlyCost + _this3.costs[i];
+	              cumulativeCost = cumulativeCost + monthlyCost;
+	              monthlyTime = monthlyTime + _this3.times[i];
+	            }
+	          }
+	
+	          projectMonths.push(month + ' ' + year);
+	          monthlyCosts.push(monthlyCost);
+	          monthlyTimes.push(monthlyTime);
+	          cumulativeCosts.push(cumulativeCost);
+	          month++;
+	        }
+	
+	        console.log(year);
+	        console.log('one iteration');
+	        month = 1;
+	        year++;
+	      }
+	      // console.log(monthlyCosts);
+	      var monthlyCostTrace = _this3.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
+	      // console.log('here');
+	      console.log(monthlyCostTrace);
+	      _core2.default.newPlot(_this3.element, [monthlyCostTrace], { displaylogo: false });
+	      // console.log('not here');
+	    };
+	
 	    return _this3;
 	  }
 	
@@ -8198,9 +8263,62 @@
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
 	
-	      this.rawData = json.data;
+	      // this.rawData = json.data;
 	      // this.initialStartDate = new Date(json.start_date);
-	      this.initialEndDate = new Date(json.end_date);
+	      this.endDate = new Date(json.end_date);
+	      this.startDate = new Date(json.start_date);
+	
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+	
+	      try {
+	        for (var _iterator = json.data.days[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var value = _step.value;
+	
+	          this.days.push(new Date(value));
+	        }
+	
+	        // this.days = json.data.days;
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+	
+	      this.costs = json.data.costs;
+	      this.times = json.data.times;
+	      console.log(this.costs);
+	
+	      // console.log(this.days);
+	
+	      // let test = () => this.getMonthData();
+	      // test();
+	      this.getMonthData();
+	    }
+	  }, {
+	    key: 'getMonthData',
+	    value: function getMonthData() {
+	
+	      month = this.startDate.getMonth();
+	      year = this.startDate.getFullYear();
+	
+	      months = [];
+	
+	      while (year <= new Date().getFullYear()) {
+	
+	        console.log('one iteration');
+	        year++;
+	      }
 	    }
 	  }]);
 	
