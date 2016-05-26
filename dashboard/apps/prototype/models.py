@@ -49,8 +49,6 @@ class Person(models.Model):
 
         total_workdays = dec_workdays(start_date, end_date)
 
-        print(segments)
-
         return average_rate_from_segments(segments, total_workdays)
 
     def rate_on(self, on=None):
