@@ -45,7 +45,6 @@ class Person(models.Model):
             segments.append(
                 (start, end, rate.rate_between(start, end))
             )
-            rate.rate_between(start_date, end_date)
 
         total_workdays = dec_workdays(start_date, end_date)
 
