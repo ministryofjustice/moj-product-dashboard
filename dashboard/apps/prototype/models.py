@@ -70,7 +70,7 @@ class Rate(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=128)
     float_id = models.CharField(max_length=128, unique=True)
-    raw_data = JSONField()
+    raw_data = JSONField(null=True)
 
     def __str__(self):
         return self.name
@@ -89,7 +89,7 @@ class Project(models.Model):
     beta_date = models.DateField(null=True)
     live_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
-    raw_data = JSONField()
+    raw_data = JSONField(null=True)
 
     def __str__(self):
         return self.name
@@ -103,7 +103,7 @@ class Task(models.Model):
     end_date = models.DateField()
     days = models.DecimalField(max_digits=10, decimal_places=5)
     float_id = models.CharField(max_length=128, unique=True)
-    raw_data = JSONField()
+    raw_data = JSONField(null=True)
 
     def __str__(self):
         if self.name:
