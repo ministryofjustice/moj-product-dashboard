@@ -8189,6 +8189,7 @@
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
 	
 	    _this3.rawData = {};
+	    _this3.initialStartDate = new Date('2015-01-01');
 	    return _this3;
 	  }
 	

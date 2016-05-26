@@ -21,6 +21,12 @@ class Figures(object):
         # Consider a more sophisticated way to deal with multiple projects being passed in
         project = data['projects'][0]
 
+        persons = get_persons_on_project(project)
+
+        rates = {}
+        for person in persons:
+            rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
+
         tasks = project.tasks.all()
 
         start_date = tasks.order_by('start_date')[0].start_date
@@ -42,7 +48,7 @@ class Figures(object):
             for task in tasks:
 
                 time = task.time_spent(day, day)
-                cost = get_reference_rate(task.person.job_title, task.person.is_contractor)
+                cost = rates[task.person.float_id]
 
                 day_time += time
                 day_cost += cost

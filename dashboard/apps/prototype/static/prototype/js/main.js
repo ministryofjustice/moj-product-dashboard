@@ -50,13 +50,14 @@ class ProjectCostFigure extends Figure {
 
   constructor(element) {
     super(element);
-    this.rawData = {}
+    this.rawData = {};
+    this.initialStartDate = new Date('2015-01-01');
   }
 
   handleResponse(json) {
 
     this.rawData = json;
-    console.log(json)
+    console.log(json);
     // Something here
   }
 
