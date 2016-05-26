@@ -8189,7 +8189,8 @@
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
 	
 	    _this3.rawData = {};
-	    _this3.initialStartDate = new Date('2015-01-01');
+	    // this.initialStartDate = new Date('2015-01-01');
+	    _this3.initialEndDate = new Date();
 	    return _this3;
 	  }
 	
@@ -8197,9 +8198,9 @@
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
 	
-	      this.rawData = json;
-	      console.log(json);
-	      // Something here
+	      this.rawData = json.data;
+	      // this.initialStartDate = new Date(json.start_date);
+	      this.initialEndDate = new Date(json.end_date);
 	    }
 	  }]);
 	

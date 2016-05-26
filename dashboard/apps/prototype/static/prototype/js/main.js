@@ -51,17 +51,20 @@ class ProjectCostFigure extends Figure {
   constructor(element) {
     super(element);
     this.rawData = {};
-    this.initialStartDate = new Date('2015-01-01');
+    // this.initialStartDate = new Date('2015-01-01');
+    this.initialEndDate = new Date();
   }
 
   handleResponse(json) {
 
-    this.rawData = json;
-    console.log(json);
-    // Something here
+    this.rawData = json.data;
+    // this.initialStartDate = new Date(json.start_date);
+    this.initialEndDate = new Date(json.end_date);
+
+
   }
 
-
+  
 
 }
 

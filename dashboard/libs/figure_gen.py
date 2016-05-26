@@ -56,7 +56,15 @@ class Figures(object):
             costs.append(day_cost)
             times.append(day_time)
 
-        data = {'days': all_days, 'costs': costs, 'times': times}
+        data = {
+            'data': {
+                'days': all_days,
+                'costs': costs,
+                'times': times
+            },
+            'start_date': start_date,
+            'end_date': end_date
+        }
 
         return data
 
@@ -81,9 +89,12 @@ class Figures(object):
 
         project_names = [project.name for project in data['projects']]
 
-        cs_trace = get_trace(project_names, [perc for perc in cs_percs], 'Civil Servants')
+        # cs_trace = get_trace(project_names, [perc for perc in cs_percs], 'Civil Servants')
+        cs_trace = get_trace(project_names, cs_percs, 'Civil Servants')
 
-        contr_trace = get_trace(project_names, [perc for perc in contractor_percs], 'Contractors')
+        # contr_trace = get_trace(project_names, [perc for perc in contractor_percs], 'Contractors')
+
+        contr_trace = get_trace(project_names, contractor_percs, 'Contractors')
 
         layout = get_layout(barmode='stack')
 
