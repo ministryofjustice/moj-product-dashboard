@@ -63,11 +63,11 @@ class Command(BaseCommand):
                               reference_rate * options['max'])
             logger.info('randomly generated rates:')
             logger.info(rates)
-            for sdate, amount in rates.items():
+            for sdate, rate in rates.items():
                 try:
                     Rate.objects.create(person=person,
                                         start_date=sdate.date(),
-                                        amount=Decimal(str(amount)))
+                                        rate=Decimal(str(rate)))
                 except IntegrityError:
                     logger.info(
                         'found rate for %s with start_date %s already. skip.',

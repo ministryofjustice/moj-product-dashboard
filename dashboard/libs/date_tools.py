@@ -3,12 +3,17 @@
 """
 tools for dealing with dates
 """
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache
 
+from numpy import busday_count
 import requests
 
 BANK_HOLIDAY_URL = 'https://www.gov.uk/bank-holidays/england-and-wales.json'
+
+
+def parse(date_string):
+    return datetime.strptime(date_string, '%Y-%m-%d').date()
 
 
 @lru_cache()
@@ -20,7 +25,7 @@ def get_bank_holidays():
     """
     response = requests.get(BANK_HOLIDAY_URL)
     response.raise_for_status()
-    return {event['date']: event for event in response.json()['events']}
+    return [parse(event['date']) for event in response.json()['events']]
 
 
 def get_workdays(start_date, end_date):
@@ -30,10 +35,6 @@ def get_workdays(start_date, end_date):
     :param end_date: date object for the end date
     :return: an integer for the number of work days
     """
-    days = (start_date + timedelta(i) for i in
-            range((end_date - start_date).days + 1))
-    bank_holidays = get_bank_holidays()
-    workdays = [
-        d for d in days if
-        d.weekday() < 5 and d.strftime('%Y-%m-%d') not in bank_holidays]
-    return len(workdays)
+    days = int(busday_count(start_date, end_date + timedelta(days=1),
+                            holidays=get_bank_holidays()))
+    return max(0, days)
