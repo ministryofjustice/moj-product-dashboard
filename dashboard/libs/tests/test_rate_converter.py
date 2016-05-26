@@ -28,7 +28,7 @@ from ..rate_converter import RateConverter, RATE_TYPES
 def test_rate_at_certain_time(on, rate, rate_type, expected):
     converter = RateConverter(Decimal(rate), rate_type)
 
-    assert converter.average_day_rate(on=on) == Decimal(expected)
+    assert converter.rate_on(on=on) == Decimal(expected)
 
 
 @pytest.mark.parametrize('start_date, end_date, rate, rate_type, expected', [
@@ -60,6 +60,6 @@ def test_rate_at_certain_time(on, rate, rate_type, expected):
 def test_cross_month_average(start_date, end_date, rate, rate_type, expected):
     converter = RateConverter(Decimal(rate), rate_type)
 
-    assert converter.average_day_rate(
+    assert converter.rate_between(
         start_date=start_date,
         end_date=end_date) == Decimal(expected)

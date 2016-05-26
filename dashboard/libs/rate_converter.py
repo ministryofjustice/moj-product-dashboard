@@ -117,7 +117,7 @@ class RateConverter():
     def get_date_range(self):
         return getattr(self, self.range_method)
 
-    def average_day_rate(self, start_date=None, end_date=None, on=None):
+    def rate_on(self, on=None):
         """
         Returns an average day rate over a time period
 
@@ -128,12 +128,22 @@ class RateConverter():
         if self.rate_type is RATE_TYPES.DAY:
             return self.rate
 
-        if not start_date or not end_date:
-            if not on:
-                on = datetime.now()
-            start_date, end_date = self.get_date_range(on)
-            # No point continuing although would be same result
-            return round(self.rate / dec_workdays(start_date, end_date), 2)
+        if not on:
+            on = datetime.now()
+        start_date, end_date = self.get_date_range(on)
+        # No point continuing although would be same result
+        return round(self.rate / dec_workdays(start_date, end_date), 2)
+
+    def rate_between(self, start_date, end_date):
+        """
+        Returns an average day rate over a time period
+
+        param: start_date: date object - beginning of time period for average
+        param: end_date: date - object end of time period for average
+        return: Decimal object - average day rate
+        """
+        if self.rate_type is RATE_TYPES.DAY:
+            return self.rate
 
         total_workdays = dec_workdays(start_date, end_date)
         segments = month_segments(self, start_date, end_date)
