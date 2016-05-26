@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
 from decimal import Decimal
 
 from django.db import models
@@ -6,7 +7,8 @@ from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import get_workdays
-from dashboard.libs.rate_converter import RATE_TYPES, RateConverter
+from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
+    dec_workdays, average_rate_from_segments
 
 
 class Person(models.Model):
@@ -17,13 +19,67 @@ class Person(models.Model):
     is_contractor = models.BooleanField(default=False)
     job_title = models.CharField(max_length=128, null=True)
     is_current = models.BooleanField(default=True)
-    raw_data = JSONField()
+    raw_data = JSONField(null=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
         verbose_name_plural = ugettext_lazy('People')
+
+    def rate_between(self, start_date, end_date):
+        """
+        average day rate in range
+        param: start_date: date object - beginning of time period for average
+        param: end_date: date object - end of time period for average
+        return: Decimal object - average day rate
+        """
+        rate_list = self.rates.between(start_date, end_date)
+        segments = []
+        for n, rate in enumerate(rate_list):
+            start = rate.start_date
+            try:
+                end = rate_list[n + 1].start_date - timedelta(days=1)
+            except IndexError:
+                end = end_date
+            segments.append(
+                (start, end, rate.rate_between(start, end))
+            )
+            rate.rate_between(start_date, end_date)
+
+        total_workdays = dec_workdays(start_date, end_date)
+
+        print(segments)
+
+        return average_rate_from_segments(segments, total_workdays)
+
+    def rate_on(self, on=None):
+        """
+        rate at time of date
+        param: on: date object - if no start or end then rate on specific date
+        return: Decimal object - rate on date
+        """
+        rate = self.rates.on(on=on)
+        return rate.rate_on(on) if rate else None
+
+
+class RatesManager(models.Manager):
+    use_for_related_fields = True
+
+    def on(self, on):
+        return self.get_queryset()\
+            .filter(start_date__lte=on)\
+            .order_by('-start_date')\
+            .first()
+
+    def between(self, start_date, end_date):
+        rates = list(self.get_queryset()
+            .filter(start_date__lte=end_date, start_date__gt=start_date)
+            .order_by('start_date'))
+        first = self.on(start_date)
+        if first:
+            rates.insert(0, first)
+        return rates
 
 
 class Rate(models.Model):
@@ -32,6 +88,8 @@ class Rate(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=2)
     person = models.ForeignKey('Person', related_name='rates')
     start_date = models.DateField()
+
+    objects = RatesManager()
 
     def __str__(self):
         return '"{}" @ "{}"/{} from "{}"'.format(
