@@ -15,6 +15,14 @@ class RateInline(FinancePermissions, admin.TabularInline):
 
 class PersonAdmin(ReadOnlyAdmin):
     inlines = [RateInline]
+    readonly_fields = ('avatar_tag', )
+    list_display = ('avatar_tag', 'name', 'job_title', 'is_contractor',
+                    'is_current')
+
+    def avatar_tag(self, obj):
+        return '<img src="{}" style="height:40px;"/>'.format(obj.avatar)
+    avatar_tag.allow_tags = True
+    avatar_tag.short_description = 'image'
 
 
 class RateAdmin(FinancePermissions, admin.ModelAdmin):
