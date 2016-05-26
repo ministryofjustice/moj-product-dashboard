@@ -65,16 +65,20 @@ def average_rate_from_segments(segments, total_workdays):
     :param total_workdays: total number of workdays to average over
     :return: Decimal object - average day rate over segments
     """
-    weights = []
-    rates = []
+    if total_workdays:
+        weights = []
+        rates = []
 
-    for start, end, rate in segments:
-        # numpy won't average decimals
-        # this seems close enough though
-        weights.append(float(dec_workdays(start, end) / total_workdays))
-        rates.append(float(rate))
+        for start, end, rate in segments:
+            # numpy won't average decimals
+            # this seems close enough though
+            weight = dec_workdays(start, end) / total_workdays
+            if weight:
+                weights.append(float(weight))
+                rates.append(float(rate))
 
-    return round(Decimal(np.average(rates, weights=weights)), 2)
+        if rates and weights:
+            return round(Decimal(np.average(rates, weights=weights)), 2)
 
 
 class RateConverter():
