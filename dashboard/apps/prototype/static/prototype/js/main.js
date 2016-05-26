@@ -111,7 +111,7 @@ function onLoad() {
 
   fA.getRequestFigure('/comp/');
   fB.postRequestFigure('/getfig/', testRequest);
-  fC.getRequestFigure('/getfig/', projectTestRequest);
+  fC.postRequestFigure('/getfig/', projectTestRequest);
   fD.getRequestFigure('/getrand/');
 }
 

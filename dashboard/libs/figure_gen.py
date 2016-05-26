@@ -23,9 +23,12 @@ class Figures(object):
 
         tasks = project.tasks.all()
 
-        start_date = project.discovery_date
+        start_date = tasks.order_by('start_date')[0].start_date
 
-        end_date = date.today() if not project.end_date else end_date = project
+        if project.end_date:
+            end_date = project
+        else:
+            end_date = date.today()
 
         all_days = get_workdays_list(start_date, end_date)
 
@@ -39,7 +42,7 @@ class Figures(object):
             for task in tasks:
 
                 time = task.time_spent(day, day)
-                cost = get_reference_rate(task.person.job_title)
+                cost = get_reference_rate(task.person.job_title, task.person.is_contractor)
 
                 day_time += time
                 day_cost += cost
