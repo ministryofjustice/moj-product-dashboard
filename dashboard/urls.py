@@ -31,7 +31,7 @@ urlpatterns = [
     url(r'^comp/', comparison),
     url(r'^bokeh/', bokeh),
     url(r'^admin/', admin.site.urls),
-    url(r'^accounts/login/', auth_views.login),
+    url(r'^login/', auth_views.login),
     url(r'^ping.json$', PingJsonView.as_view(**settings.PING_JSON_KEYS),
         name='ping_json'),
     url(r'^healthcheck.json$', HealthcheckView.as_view(),

@@ -2,30 +2,21 @@
 
 {% load staticfiles %}
 
-{% block content %}
-
-<div class="login-column">
-
+{% block main %}
   <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
     {% csrf_token %}
-    <table>
-      <caption>Enter Login Details</caption>
+    <h1 class="heading-xlarge">Sign in</h1>
+    <p>Sign in using your account details to access the system.</p>
 
-      <tr>
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }}</td>
-      </tr>
-      <tr>
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }}</td>
-      </tr>
-    </table>
-    <div class="submit-container">
-        <input class="form-button" type="submit" value="login"/>
+    <div class="form-group">
+      <label class="form-label" for="{{ form.username.id_for_label  }}">Username</label>
+      <input class="form-control" id="{{ form.username.id_for_label }}" name="username" type="text">
     </div>
+    <div class="form-group">
+      <label class="form-label" for="{{ form.password.id_for_label  }}">Password</label>
+      <input class="form-control" id="{{ form.password.id_for_label }}" name="password" type="password">
+    </div>
+    <input class="button" type="submit" value="Sign in"/>
     <input type="hidden" name="next" value="{{ next }}"/>
   </form>
-
-</div>
-
 {% endblock %}
