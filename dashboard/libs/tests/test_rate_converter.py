@@ -7,7 +7,7 @@ import pytest
 from ..rate_converter import RateConverter, RATE_TYPES
 
 
-@pytest.mark.parametrize('as_of, rate, rate_type, expected', [
+@pytest.mark.parametrize('on, rate, rate_type, expected', [
     (date(2016, 1, 1), '500', RATE_TYPES.DAY, '500'),  # Day rate
     (date(2016, 1, 1), '4600', RATE_TYPES.MONTH, '230'),  # Jan / 20 days
     (date(2016, 2, 1), '4600', RATE_TYPES.MONTH, '219.05'),  # Feb / 21 days
@@ -25,10 +25,10 @@ from ..rate_converter import RateConverter, RATE_TYPES
     (date(2015, 1, 1), '60000', RATE_TYPES.YEAR, '237.15'),  # 2015
     (date(2016, 1, 1), '60000', RATE_TYPES.YEAR, '237.15'),  # 2016
 ])
-def test_rate_at_certain_time(as_of, rate, rate_type, expected):
+def test_rate_at_certain_time(on, rate, rate_type, expected):
     converter = RateConverter(Decimal(rate), rate_type)
 
-    assert converter.average_day_rate(as_of=as_of) == Decimal(expected)
+    assert converter.average_day_rate(on=on) == Decimal(expected)
 
 
 @pytest.mark.parametrize('start_date, end_date, rate, rate_type, expected', [

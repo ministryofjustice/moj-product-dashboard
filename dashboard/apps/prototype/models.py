@@ -42,17 +42,18 @@ class Rate(models.Model):
         ordering = ('-start_date',)
         unique_together = ('start_date', 'person')
 
-    def average_day_rate(self, start_date=None, end_date=None):
+    def average_day_rate(self, start_date=None, end_date=None, on=None):
         """
         average day rate in range
         param: start_date: date object - beginning of time period for average
-        param: end_date: date - object end of time period for average
+        param: end_date: date object - end of time period for average
+        param: on: date object - if no start or end then rate on specific date
         return: Decimal object - average day rate
         """
         return RateConverter(
             rate=self.rate,
             rate_type=self.rate_type
-        ).average_day_rate(start_date, end_date)
+        ).average_day_rate(start_date, end_date, on)
 
 
 class Client(models.Model):

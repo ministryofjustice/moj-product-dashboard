@@ -18,7 +18,63 @@ RATE_TYPES = Choices(
 
 
 def dec_workdays(start_date, end_date):
+    """
+    Returns workdays in Decimal
+    :param start_date: date object
+    :param end_date: date object
+    :return: Decimal object - number of workdays between
+    """
     return Decimal(get_workdays(start_date, end_date))
+
+
+def last_date_in_month(d):
+    """
+    Returns the date of the last day in the month
+    :param d: date object
+    :return: date object = last day of month
+    """
+    day, number = monthrange(d.year, d.month)
+    return date(d.year, d.month, number)
+
+
+def month_segments(converter, start_date, end_date):
+    """
+    Split in to segments of months between start_date and end_date
+    :param converter: RateConverter object
+    :param start_date: date object - start date of segments
+    :param end_date: date object - end date of segments
+    :return: list of tuples with (start, end, rate) for each month
+    """
+    def rate(d):
+        return converter.rate / dec_workdays(*converter.get_date_range(d))
+
+    months = [(dt.date(), last_date_in_month(dt), rate(dt.date())) for dt in
+              rrule(MONTHLY, dtstart=start_date, until=end_date)]
+    # include last month
+    months.append(
+        (date(end_date.year, end_date.month, 1), end_date, rate(end_date))
+    )
+    return months
+
+
+def average_rate_from_segments(segments, total_workdays):
+    """
+    Returns average rate for a list of date segments
+    :param segments: list of tuples (start (date object), end (date object),
+                                    rate (Decimal object))
+    :param total_workdays: total number of workdays to average over
+    :return: Decimal object - average day rate over segments
+    """
+    weights = []
+    rates = []
+
+    for start, end, rate in segments:
+        # numpy won't average decimals
+        # this seems close enough though
+        weights.append(float(dec_workdays(start, end) / total_workdays))
+        rates.append(float(rate))
+
+    return round(Decimal(np.average(rates, weights=weights)), 2)
 
 
 class RateConverter():
@@ -33,15 +89,24 @@ class RateConverter():
         self.rate = rate
         self.rate_type = rate_type
 
-    def _year_date_range(self, as_of):
-        year = as_of.year
-        return date(as_of.year, 1, 1), date(year, 12, 31)
+    def _year_date_range(self, on):
+        """
+        Returns dated for beginning and end of year
+        :param on: date object
+        :return: tuple object - beginning and end of year
+        """
+        year = on.year
+        return date(on.year, 1, 1), date(year, 12, 31)
 
-    def _month_date_range(self, as_of):
-        year = as_of.year
-        month = as_of.month
-        day, number = monthrange(year, month)
-        return date(year, month, 1), date(year, month, number)
+    def _month_date_range(self, on):
+        """
+        Returns dated for beginning and end of month
+        :param on: date object
+        :return: tuple object - beginning and end of month
+        """
+        year = on.year
+        month = on.month
+        return date(year, month, 1), last_date_in_month(on)
 
     @property
     def range_method(self):
@@ -52,10 +117,9 @@ class RateConverter():
     def get_date_range(self):
         return getattr(self, self.range_method)
 
-    def average_day_rate(self, start_date=None, end_date=None, as_of=None):
+    def average_day_rate(self, start_date=None, end_date=None, on=None):
         """
         Returns an average day rate over a time period
-        #TODO: not implemented yet - returns day rate as of now()
 
         param: start_date: date object - beginning of time period for average
         param: end_date: date - object end of time period for average
@@ -65,37 +129,15 @@ class RateConverter():
             return self.rate
 
         if not start_date or not end_date:
-            if not as_of:
-                as_of = datetime.now()
-            start_date, end_date = self.get_date_range(as_of)
+            if not on:
+                on = datetime.now()
+            start_date, end_date = self.get_date_range(on)
             # No point continuing although would be same result
             return round(self.rate / dec_workdays(start_date, end_date), 2)
 
         total_workdays = dec_workdays(start_date, end_date)
+        segments = month_segments(self, start_date, end_date)
 
-        weights = []
-        rates = []
-
-        months = [dt.date() for dt in rrule(MONTHLY, dtstart=start_date,
-                                            until=end_date)]
-        # include last month
-        months.append(date(end_date.year, end_date.month, 1))
-        for n, start in enumerate(months):
-            rate = self.rate / dec_workdays(*self.get_date_range(start))
-
-            day, number = monthrange(start.year, start.month)
-            end = date(start.year, start.month, number)
-
-            if n is 0:
-                start = start_date
-            elif n + 1 is len(months):
-                end = end_date
-
-            # numpy won't average decimals
-            # this seems close enough though
-            weights.append(float(dec_workdays(start, end) / total_workdays))
-            rates.append(float(rate))
-
-        return round(Decimal(np.average(rates, weights=weights)), 2)
+        return average_rate_from_segments(segments, total_workdays)
 
 
