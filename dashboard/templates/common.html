@@ -10,15 +10,12 @@
 
 {% block stylesheets %}
 
-    <!-- <link href="{% static 'prototype/styles/moj_template_overrides.css' %}" rel="stylesheet" type="text/css"/> -->
-    <link href="{% static 'prototype/styles/main.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'prototype/dist/styles.css' %}" rel="stylesheet" type="text/css"/>
 
 {% endblock %}
 
 {% block javascripts %}
-
-    <script src="{% static 'prototype/js/dist/bundle.js' %}"></script>
-
+    <script src="{% static 'prototype/dist/bundle.js' %}"></script>
 {% endblock %}
 
 {% block before_content %}
