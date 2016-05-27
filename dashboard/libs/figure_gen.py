@@ -54,7 +54,7 @@ class Figures(object):
         data = {
             'start_date': start_date,
             'end_date': end_date,
-            'data': [all_days, costs, times]
+            'data': {'days': all_days, 'costs': costs, 'times': times}
         }
         # import ipdb; ipdb.set_trace()
         return data

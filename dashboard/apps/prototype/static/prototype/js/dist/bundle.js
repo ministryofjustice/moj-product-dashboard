@@ -8188,7 +8188,7 @@
 	
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
 	
-	    _this3.dayData = [];
+	    _this3.data = {};
 	    _this3.initialEndDate = new Date();
 	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
 	    _this3.incrementLength = _this3.incrementLengths[3];
@@ -8208,38 +8208,27 @@
 	
 	    _this3.getMonthData = function () {
 	
-	      var month = _this3.startDate.getMonth();
-	      var year = _this3.startDate.getFullYear();
+	      var monthlyBreakdowns = _this3.getMonthsInProject();
 	
-	      var thisYear = new Date().getFullYear();
-	      var projectMonths = [];
-	      // let monthlyCosts = [];
+	      // console.log(projectMonths);
 	
-	      for (year; year <= thisYear; year++) {
+	      for (var i = 0; i < monthlyBreakdowns.length; i++) {
 	
-	        for (month; month <= 12; month++) {
+	        for (var j = 0; j < _this3.data.days.length; j++) {
 	
-	          projectMonths.push([month, year, 0, 0]);
-	        }
+	          var date = new Date(_this3.data.days[j]);
 	
-	        month = 1;
-	      }
-	      console.log(projectMonths);
-	
-	      for (var i = 0; i < projectMonths.length; i++) {
-	        // console.log(this.dayData[0].length);
-	        for (var j = 0; j < _this3.dayData[0].length; j++) {
-	
-	          var date = new Date(_this3.dayData[0][j]);
-	          // console.log(date);
-	          // console.log(date.getMonth() + ' ' + projectMonths[i][0] + ' ' + date.getFullYear() + ' ' + projectMonths[i][1]);
-	          if (date.getMonth() == projectMonths[i][0] && date.getFullYear() == projectMonths[i][1]) {
+	          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
 	            console.log('match');
-	            projectMonths[i][2] = projectMonths[i][2] + parseInt(_this3.dayData[1][j]);
-	            projectMonths[i][3] = projectMonths[i][3] + parseInt(_this3.dayData[2][j]);
+	
+	            monthlyBreakdowns[i].monthCost += parseInt(_this3.data.costs[j]);
+	            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
+	
+	            // projectMonths[i][2] = projectMonths[i][2] + parseInt( this.data.costs[j] );
+	            // projectMonths[i][3] = projectMonths[i][3] + projectMonths[i][2];
 	          }
 	        }
-	        console.log(projectMonths[i][0] + ' ' + projectMonths[i][1] + ' ' + projectMonths[i][2]);
+	        console.log(monthlyBreakdowns[i].monthNum + ' ' + monthlyBreakdowns[i].yearNum + ' ' + monthlyBreakdowns[i].monthCost + ' ' + monthlyBreakdowns[i].cumulCost);
 	      }
 	
 	      // let monthlyCostTrace = this.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
@@ -8253,16 +8242,39 @@
 	  }
 	
 	  _createClass(ProjectCostFigure, [{
+	    key: 'getMonthsInProject',
+	    value: function getMonthsInProject() {
+	
+	      var month = this.startDate.getMonth();
+	      var year = this.startDate.getFullYear();
+	      var thisYear = new Date().getFullYear();
+	      var monthlyBreakdowns = [];
+	
+	      for (year; year <= thisYear; year++) {
+	
+	        for (month; month <= 12; month++) {
+	
+	          monthlyBreakdowns.push({
+	            monthNum: month,
+	            yearNum: year,
+	            monthCost: 0,
+	            cumulCost: 0,
+	            monthTimeSpent: 0
+	          });
+	        }
+	        month = 1;
+	      }
+	      return monthlyBreakdowns;
+	    }
+	  }, {
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
 	
 	      this.endDate = new Date(json.end_date);
 	      this.startDate = new Date(json.start_date);
 	
-	      this.dayData = json.data;
-	      // console.log(this.dayData);
-	      // this.costs = json.data.costs;
-	      // this.times = json.data.times;
+	      this.data = json.data;
+	      console.log(this.data);
 	      this.getMonthData();
 	    }
 	  }]);
