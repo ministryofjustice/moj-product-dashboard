@@ -56,7 +56,7 @@ class Figures(object):
             'end_date': end_date,
             'data': [all_days, costs, times]
         }
-
+        # import ipdb; ipdb.set_trace()
         return data
 
     @staticmethod

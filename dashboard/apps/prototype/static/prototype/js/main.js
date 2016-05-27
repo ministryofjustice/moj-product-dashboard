@@ -93,17 +93,20 @@ class ProjectCostFigure extends Figure {
       console.log(projectMonths);
 
       for (let i = 0; i < projectMonths.length; i++) {
-
-        for (let j = 0; j < this.dayData.length; j++) {
+        // console.log(this.dayData[0].length);
+        for (let j = 0; j < this.dayData[0].length; j++) {
 
           let date = new Date(this.dayData[0][j]);
+          // console.log(date);
+          // console.log(date.getMonth() + ' ' + projectMonths[i][0] + ' ' + date.getFullYear() + ' ' + projectMonths[i][1]);
           if (date.getMonth() == projectMonths[i][0] && date.getFullYear() == projectMonths[i][1]) {
-            projectMonths[i][2] = projectMonths[i][2] + this.dayData[j][1];
-            projectMonths[i][3] = projectMonths[i][3] + this.dayData[j][2];
+            console.log('match');
+            projectMonths[i][2] = projectMonths[i][2] + parseInt( this.dayData[1][j] );
+            projectMonths[i][3] = projectMonths[i][3] + parseInt( this.dayData[2][j] );
           }
 
         }
-        console.log(projectMonths[i][2]);
+        console.log(projectMonths[i][0] + ' ' + projectMonths[i][1] + ' ' + projectMonths[i][2]);
 
       }
 

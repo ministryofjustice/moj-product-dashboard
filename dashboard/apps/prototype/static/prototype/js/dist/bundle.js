@@ -8227,16 +8227,19 @@
 	      console.log(projectMonths);
 	
 	      for (var i = 0; i < projectMonths.length; i++) {
-	
-	        for (var j = 0; j < _this3.dayData.length; j++) {
+	        // console.log(this.dayData[0].length);
+	        for (var j = 0; j < _this3.dayData[0].length; j++) {
 	
 	          var date = new Date(_this3.dayData[0][j]);
+	          // console.log(date);
+	          // console.log(date.getMonth() + ' ' + projectMonths[i][0] + ' ' + date.getFullYear() + ' ' + projectMonths[i][1]);
 	          if (date.getMonth() == projectMonths[i][0] && date.getFullYear() == projectMonths[i][1]) {
-	            projectMonths[i][2] = projectMonths[i][2] + _this3.dayData[j][1];
-	            projectMonths[i][3] = projectMonths[i][3] + _this3.dayData[j][2];
+	            console.log('match');
+	            projectMonths[i][2] = projectMonths[i][2] + parseInt(_this3.dayData[1][j]);
+	            projectMonths[i][3] = projectMonths[i][3] + parseInt(_this3.dayData[2][j]);
 	          }
 	        }
-	        console.log(projectMonths[i][2]);
+	        console.log(projectMonths[i][0] + ' ' + projectMonths[i][1] + ' ' + projectMonths[i][2]);
 	      }
 	
 	      // let monthlyCostTrace = this.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
@@ -9081,7 +9084,7 @@
 /* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
