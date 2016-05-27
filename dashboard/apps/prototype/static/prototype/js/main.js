@@ -55,7 +55,7 @@ class ProjectCostFigure extends Figure {
     this.incrementLengths = ['day', 'week', 'month', 'year'];
     this.incrementLength = this.incrementLengths[3];
     this.startDate = undefined;
-    this.monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    this.monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     this.getMonthData = () => {
 
@@ -63,10 +63,9 @@ class ProjectCostFigure extends Figure {
 
       monthlyBreakdowns = this.calcMonthlyData(monthlyBreakdowns);
 
-      let monthCostTrace = this.makeTraces(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
-      let cumulCostTrace = this.makeTraces(monthlyBreakdowns, 'cumulCost', 'Cumulative Cost', 'line');
-      cumulCostTrace.type = '';
-      cumulCostTrace.mode = 'lines';
+      let monthCostTrace = this.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
+      let cumulCostTrace = this.makeCumulTrace(monthlyBreakdowns);
+
       let traces = [monthCostTrace, cumulCostTrace];
 
       Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
@@ -74,17 +73,16 @@ class ProjectCostFigure extends Figure {
 
   }
 
-  makeTraces(monthlyBreakdowns, y_series, name, type) {
+  makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
 
     let x_axis = [];
     let y_axis = [];
 
     for (let month of monthlyBreakdowns) {
 
-      // if (month[y_series] != 0) {
-        x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
-        y_axis.push(month[y_series]);
-      // }
+      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+      y_axis.push(month[y_series]);
+
     }
 
     let trace = {
@@ -92,7 +90,29 @@ class ProjectCostFigure extends Figure {
       y: y_axis,
       name: name,
       type: type
+    };
+    return trace
+  }
+
+  makeCumulTrace(monthlyBreakdowns) {
+
+    let x_axis = [];
+    let y_axis = [];
+    let cumulCost = 0;
+    for (let month of monthlyBreakdowns) {
+      cumulCost += month.monthCost;
+
+      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+      y_axis.push(cumulCost);
+
     }
+
+    let trace = {
+      x: x_axis,
+      y: y_axis,
+      name: name,
+      mode: 'lines'
+    };
     return trace
   }
 
