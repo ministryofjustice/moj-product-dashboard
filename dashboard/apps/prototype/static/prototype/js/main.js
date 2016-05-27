@@ -50,9 +50,7 @@ class ProjectCostFigure extends Figure {
 
   constructor(element) {
     super(element);
-    this.days = [];
-    this.costs = [];
-    this.times = [];
+    this.dayData = [];
     this.initialEndDate = new Date();
     this.incrementLengths = ['day', 'week', 'month', 'year'];
     this.incrementLength = this.incrementLengths[3];
@@ -78,94 +76,58 @@ class ProjectCostFigure extends Figure {
       let year = this.startDate.getFullYear();
 
       let thisYear =  new Date().getFullYear();
-      console.log(thisYear);
       let projectMonths = [];
-      let monthlyCosts = [];
-      let monthlyTimes = [];
-      let cumulativeCosts = [];
-      let cumulativeCost = 0;
-      while (year <= thisYear) {
+      // let monthlyCosts = [];
 
-        while (month <= 12) {
-          // let firstDayOfMonth = new Date(year, month);
-          let monthlyCost = 0;
-          let monthlyTime = 0;
+      for (year; year <= thisYear; year++) {
 
-          for (let i = 0; i < this.days.length, i++;) {
+        for (month; month <= 12; month++) {
 
-            if (days[i].getFullYear() == year && days[i].getMonth() == month) {
-              monthlyCost = monthlyCost + this.costs[i];
-              cumulativeCost = cumulativeCost + monthlyCost;
-              monthlyTime = monthlyTime + this.times[i];
-            }
+          projectMonths.push([month, year, 0, 0]);
 
-          }
-
-          projectMonths.push(month + ' ' + year);
-          monthlyCosts.push(monthlyCost);
-          monthlyTimes.push(monthlyTime);
-          cumulativeCosts.push(cumulativeCost);
-          month++;
         }
 
-
-        console.log(year);
-        console.log('one iteration');
         month = 1;
-        year++;
+
       }
-      // console.log(monthlyCosts);
-      let monthlyCostTrace = this.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
-      // console.log('here');
-      console.log(monthlyCostTrace);
-      Plotly.newPlot(this.element, [monthlyCostTrace], {displaylogo: false});
-      // console.log('not here');
+      console.log(projectMonths);
+
+      for (let i = 0; i < projectMonths.length; i++) {
+
+        for (let j = 0; j < this.dayData.length; j++) {
+
+          let date = new Date(this.dayData[0][j]);
+          if (date.getMonth() == projectMonths[i][0] && date.getFullYear() == projectMonths[i][1]) {
+            projectMonths[i][2] = projectMonths[i][2] + this.dayData[j][1];
+            projectMonths[i][3] = projectMonths[i][3] + this.dayData[j][2];
+          }
+
+        }
+        console.log(projectMonths[i][2]);
+
+      }
+
+      // let monthlyCostTrace = this.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
+      // console.log(monthlyCostTrace);
+      // let traces = [];
+      // traces[0] = monthlyCostTrace;
+      // Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
     };
 
   }
 
   handleResponse(json) {
 
-    // this.rawData = json.data;
-    // this.initialStartDate = new Date(json.start_date);
     this.endDate = new Date(json.end_date);
     this.startDate = new Date(json.start_date);
 
-    for (let value of json.data.days) {
-      this.days.push(new Date(value))
-    }
-
-    // this.days = json.data.days;
-    this.costs = json.data.costs;
-    this.times = json.data.times;
-    console.log(this.costs);
-
-    // console.log(this.days);
-
-    // let test = () => this.getMonthData();
-    // test();
+    this.dayData = json.data;
+    // console.log(this.dayData);
+    // this.costs = json.data.costs;
+    // this.times = json.data.times;
     this.getMonthData();
 
   }
-
-  getMonthData() {
-
-    month = this.startDate.getMonth();
-    year = this.startDate.getFullYear();
-
-    months = [];
-
-
-
-    while (year <= new Date().getFullYear()) {
-
-      console.log('one iteration');
-      year++;
-    }
-
-  }
-
-
 
 }
 

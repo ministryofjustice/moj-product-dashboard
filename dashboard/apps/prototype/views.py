@@ -55,7 +55,7 @@ def send_figure(request):
 
     figure = get_figure(request_data['requested_figure'], request_data)
 
-    return JsonResponse(figure)
+    return JsonResponse(figure, safe=False)
 
 
 def data_response(request):

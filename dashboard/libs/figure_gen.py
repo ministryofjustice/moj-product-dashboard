@@ -18,17 +18,14 @@ class Figures(object):
         if not data['projects']:
             return gen_empty_figure()
 
-        # Consider a more sophisticated way to deal with multiple projects being passed in
         project = data['projects'][0]
-
         persons = get_persons_on_project(project)
-
         rates = {}
+
         for person in persons:
             rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
 
         tasks = project.tasks.all()
-
         start_date = tasks.order_by('start_date')[0].start_date
 
         if project.end_date:
@@ -37,18 +34,16 @@ class Figures(object):
             end_date = date.today()
 
         all_days = get_workdays_list(start_date, end_date)
-
         costs = []
         times = []
 
         for day in all_days:
-
             day_time = 0
             day_cost = 0
             for task in tasks:
 
                 time = task.time_spent(day, day)
-                cost = rates[task.person.float_id]
+                cost = rates[task.person.float_id] * time
 
                 day_time += time
                 day_cost += cost
@@ -57,20 +52,15 @@ class Figures(object):
             times.append(day_time)
 
         data = {
-            'data': {
-                'days': all_days,
-                'costs': costs,
-                'times': times
-            },
             'start_date': start_date,
-            'end_date': end_date
+            'end_date': end_date,
+            'data': [all_days, costs, times]
         }
 
         return data
 
     @staticmethod
     def staff_split(data):
-        # tasks = get_tasks(data['start_date'], data['end_date'])
         contractor_percs = []
         cs_percs = []
         for project in data['projects']:
@@ -88,12 +78,7 @@ class Figures(object):
                 cs_percs.append((num_civil_servants / (num_contractors + num_civil_servants)) * 100)
 
         project_names = [project.name for project in data['projects']]
-
-        # cs_trace = get_trace(project_names, [perc for perc in cs_percs], 'Civil Servants')
         cs_trace = get_trace(project_names, cs_percs, 'Civil Servants')
-
-        # contr_trace = get_trace(project_names, [perc for perc in contractor_percs], 'Contractors')
-
         contr_trace = get_trace(project_names, contractor_percs, 'Contractors')
 
         layout = get_layout(barmode='stack')

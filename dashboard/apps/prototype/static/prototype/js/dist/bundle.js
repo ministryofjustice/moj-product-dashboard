@@ -8188,9 +8188,7 @@
 	
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
 	
-	    _this3.days = [];
-	    _this3.costs = [];
-	    _this3.times = [];
+	    _this3.dayData = [];
 	    _this3.initialEndDate = new Date();
 	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
 	    _this3.incrementLength = _this3.incrementLengths[3];
@@ -8214,46 +8212,38 @@
 	      var year = _this3.startDate.getFullYear();
 	
 	      var thisYear = new Date().getFullYear();
-	      console.log(thisYear);
 	      var projectMonths = [];
-	      var monthlyCosts = [];
-	      var monthlyTimes = [];
-	      var cumulativeCosts = [];
-	      var cumulativeCost = 0;
-	      while (year <= thisYear) {
+	      // let monthlyCosts = [];
 	
-	        while (month <= 12) {
-	          // let firstDayOfMonth = new Date(year, month);
-	          var monthlyCost = 0;
-	          var monthlyTime = 0;
+	      for (year; year <= thisYear; year++) {
 	
-	          for (var i = 0; i < _this3.days.length, i++;) {
+	        for (month; month <= 12; month++) {
 	
-	            if (days[i].getFullYear() == year && days[i].getMonth() == month) {
-	              monthlyCost = monthlyCost + _this3.costs[i];
-	              cumulativeCost = cumulativeCost + monthlyCost;
-	              monthlyTime = monthlyTime + _this3.times[i];
-	            }
-	          }
-	
-	          projectMonths.push(month + ' ' + year);
-	          monthlyCosts.push(monthlyCost);
-	          monthlyTimes.push(monthlyTime);
-	          cumulativeCosts.push(cumulativeCost);
-	          month++;
+	          projectMonths.push([month, year, 0, 0]);
 	        }
 	
-	        console.log(year);
-	        console.log('one iteration');
 	        month = 1;
-	        year++;
 	      }
-	      // console.log(monthlyCosts);
-	      var monthlyCostTrace = _this3.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
-	      // console.log('here');
-	      console.log(monthlyCostTrace);
-	      _core2.default.newPlot(_this3.element, [monthlyCostTrace], { displaylogo: false });
-	      // console.log('not here');
+	      console.log(projectMonths);
+	
+	      for (var i = 0; i < projectMonths.length; i++) {
+	
+	        for (var j = 0; j < _this3.dayData.length; j++) {
+	
+	          var date = new Date(_this3.dayData[0][j]);
+	          if (date.getMonth() == projectMonths[i][0] && date.getFullYear() == projectMonths[i][1]) {
+	            projectMonths[i][2] = projectMonths[i][2] + _this3.dayData[j][1];
+	            projectMonths[i][3] = projectMonths[i][3] + _this3.dayData[j][2];
+	          }
+	        }
+	        console.log(projectMonths[i][2]);
+	      }
+	
+	      // let monthlyCostTrace = this.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
+	      // console.log(monthlyCostTrace);
+	      // let traces = [];
+	      // traces[0] = monthlyCostTrace;
+	      // Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
 	    };
 	
 	    return _this3;
@@ -8263,62 +8253,14 @@
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
 	
-	      // this.rawData = json.data;
-	      // this.initialStartDate = new Date(json.start_date);
 	      this.endDate = new Date(json.end_date);
 	      this.startDate = new Date(json.start_date);
 	
-	      var _iteratorNormalCompletion = true;
-	      var _didIteratorError = false;
-	      var _iteratorError = undefined;
-	
-	      try {
-	        for (var _iterator = json.data.days[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	          var value = _step.value;
-	
-	          this.days.push(new Date(value));
-	        }
-	
-	        // this.days = json.data.days;
-	      } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	      } finally {
-	        try {
-	          if (!_iteratorNormalCompletion && _iterator.return) {
-	            _iterator.return();
-	          }
-	        } finally {
-	          if (_didIteratorError) {
-	            throw _iteratorError;
-	          }
-	        }
-	      }
-	
-	      this.costs = json.data.costs;
-	      this.times = json.data.times;
-	      console.log(this.costs);
-	
-	      // console.log(this.days);
-	
-	      // let test = () => this.getMonthData();
-	      // test();
+	      this.dayData = json.data;
+	      // console.log(this.dayData);
+	      // this.costs = json.data.costs;
+	      // this.times = json.data.times;
 	      this.getMonthData();
-	    }
-	  }, {
-	    key: 'getMonthData',
-	    value: function getMonthData() {
-	
-	      month = this.startDate.getMonth();
-	      year = this.startDate.getFullYear();
-	
-	      months = [];
-	
-	      while (year <= new Date().getFullYear()) {
-	
-	        console.log('one iteration');
-	        year++;
-	      }
 	    }
 	  }]);
 	
