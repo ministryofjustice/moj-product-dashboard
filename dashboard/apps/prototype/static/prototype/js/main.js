@@ -55,28 +55,50 @@ class ProjectCostFigure extends Figure {
     this.incrementLengths = ['day', 'week', 'month', 'year'];
     this.incrementLength = this.incrementLengths[3];
     this.startDate = undefined;
-
-
-    this.getMonthTrace = (name, months, values) => {
-
-      let costTrace = {
-        name : name,
-        x: months,
-        y: values,
-        type: 'bar'
-      };
-
-      return costTrace;
-
-    };
+    this.monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     this.getMonthData = () => {
 
       let monthlyBreakdowns = this.getMonthsInProject();
 
-      // console.log(projectMonths);
+      monthlyBreakdowns = this.calcMonthlyData(monthlyBreakdowns);
 
-      for (let i = 0; i < monthlyBreakdowns.length; i++) {
+      let monthCostTrace = this.makeTraces(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
+      let cumulCostTrace = this.makeTraces(monthlyBreakdowns, 'cumulCost', 'Cumulative Cost', 'line');
+      cumulCostTrace.type = '';
+      cumulCostTrace.mode = 'lines';
+      let traces = [monthCostTrace, cumulCostTrace];
+
+      Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
+    };
+
+  }
+
+  makeTraces(monthlyBreakdowns, y_series, name, type) {
+
+    let x_axis = [];
+    let y_axis = [];
+
+    for (let month of monthlyBreakdowns) {
+
+      // if (month[y_series] != 0) {
+        x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+        y_axis.push(month[y_series]);
+      // }
+    }
+
+    let trace = {
+      x: x_axis,
+      y: y_axis,
+      name: name,
+      type: type
+    }
+    return trace
+  }
+
+  calcMonthlyData(monthlyBreakdowns) {
+
+    for (let i = 0; i < monthlyBreakdowns.length; i++) {
 
         for (let j = 0; j < this.data.days.length; j++) {
 
@@ -87,9 +109,7 @@ class ProjectCostFigure extends Figure {
 
             monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
             monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
-            
-            // projectMonths[i][2] = projectMonths[i][2] + parseInt( this.data.costs[j] );
-            // projectMonths[i][3] = projectMonths[i][3] + projectMonths[i][2];
+
           }
 
         }
@@ -97,12 +117,7 @@ class ProjectCostFigure extends Figure {
 
       }
 
-      // let monthlyCostTrace = this.getMonthTrace('Monthly Cost', projectMonths, monthlyCosts);
-      // console.log(monthlyCostTrace);
-      // let traces = [];
-      // traces[0] = monthlyCostTrace;
-      // Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
-    };
+    return monthlyBreakdowns;
 
   }
 
