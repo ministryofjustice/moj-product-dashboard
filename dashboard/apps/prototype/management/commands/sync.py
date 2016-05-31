@@ -166,6 +166,11 @@ def sync_tasks(data_dir):
             start_date = datetime.strptime(
                 task['start_date'], '%Y-%m-%d').date()
             end_date = datetime.strptime(task['end_date'], '%Y-%m-%d').date()
+            if start_date > end_date:
+                logger.warning(
+                    'found task with start date greater than end date. skip!'
+                    ' task data %s', task)
+                continue
             useful_data = {
                 'name': task['task_name'],
                 'float_id': task['task_id'],

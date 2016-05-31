@@ -58,9 +58,15 @@ class Command(BaseCommand):
             logger.info('-' * 20)
             print_person(person)
             for task in person_to_task[person]:
-                time_cost, money_cost = print_task(task, start_date, end_date)
-                total_time += time_cost
-                total_money += money_cost
+                try:
+                    time_cost, money_cost = print_task(
+                        task, start_date, end_date)
+                except ValueError as exc:
+                    logger.warning('found data problem in task %s', task)
+                    continue
+                else:
+                    total_time += time_cost
+                    total_money += money_cost
         logger.info('-' * 20)
         logger.info('total spendings {:.5f} man days, £ {:.2f}'.format(
             total_time, total_money))

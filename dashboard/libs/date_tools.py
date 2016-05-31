@@ -60,13 +60,16 @@ def get_overlap(time_window0, time_window1):
     start and end of a time window
     :return: a tuple of date/datetime objects represeting the start and
     end of a time window or None if no overlapping found
+    :raise: ValueError
     """
     sdate0, edate0 = time_window0
     sdate1, edate1 = time_window1
 
     error = 'start date {} is greater than end date {}'
-    assert sdate0 <= edate0, error.format(sdate0, edate0)
-    assert sdate1 <= edate1, error.format(sdate1, edate1)
+    if edate0 < sdate0:
+        raise ValueError(error.format(sdate0, edate0))
+    if edate1 < sdate1:
+        raise ValueError(error.format(sdate1, edate1))
 
     if sdate1 < sdate0:
         if edate1 < sdate0:
