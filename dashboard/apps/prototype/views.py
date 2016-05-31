@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseBadRequest
-from django.http.response import HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 
 from .models import Person, Project, Client, Task, Rate
