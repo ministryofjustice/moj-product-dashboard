@@ -1,6 +1,5 @@
-from datetime import datetime
-
-from dashboard.libs.date_tools import get_workdays, get_bank_holidays
+from dashboard.libs.date_tools import (
+    get_workdays, get_bank_holidays, get_overlap, parse)
 import pytest
 
 
@@ -15,9 +14,7 @@ import pytest
     ('2016-02-01', '2016-02-28', 20),  # Feb 2016
 ])
 def test_get_work_days(start_date, end_date, expected):
-    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-    workdays = get_workdays(start_date, end_date)
+    workdays = get_workdays(parse(start_date), parse(end_date))
     assert workdays == expected
 
 
@@ -29,7 +26,7 @@ def test_get_work_days(start_date, end_date, expected):
     '2016-12-27',  # christmas day (substitue day)
 ])
 def test_get_bank_holidays_good_days(day):
-    assert datetime.strptime(day, '%Y-%m-%d').date() in get_bank_holidays(), \
+    assert parse(day) in get_bank_holidays(), \
         '{} is a bank holiday!'.format(day)
 
 
@@ -38,5 +35,24 @@ def test_get_bank_holidays_good_days(day):
     '2016-08-01',  # summer bank holiday (Scotland)
 ])
 def test_get_bank_holidays_bad_days(day):
-    assert datetime.strptime(day, '%Y-%m-%d').date() not in \
-           get_bank_holidays()
+    assert parse(day) not in get_bank_holidays()
+
+
+@pytest.mark.parametrize(
+    "start_date0, end_date0, start_date1, end_date1, expected", [
+        # no overlap
+        ('2016-01-01', '2016-01-31', '2015-12-01', '2015-12-31', None),
+        ('2015-12-01', '2015-12-31', '2016-01-01', '2016-01-31', None),
+        # one time window is part of the other
+        ('2015-12-01', '2016-01-31', '2015-12-31', '2016-01-01',
+         ('2015-12-31', '2016-01-01')),
+        # intersection is part of both time windows
+        ('2015-12-01', '2016-01-01', '2015-12-31', '2016-01-31',
+         ('2015-12-31', '2016-01-01')),
+    ])
+def test_get_overlap(start_date0, end_date0, start_date1, end_date1, expected):
+    overlap = get_overlap((parse(start_date0), parse(end_date0)),
+                          (parse(start_date1), parse(end_date1)))
+    if expected:
+        expected = parse(expected[0]), parse(expected[1])
+    assert expected == overlap

@@ -52,8 +52,15 @@ class Command(BaseCommand):
         person_to_task = {}
         for task in tasks:
             person_to_task.setdefault(task.person, []).append(task)
+        total_time = 0
+        total_money = 0
         for person in person_to_task:
             logger.info('-' * 20)
             print_person(person)
             for task in person_to_task[person]:
-                print_task(task, start_date, end_date)
+                time_cost, money_cost = print_task(task, start_date, end_date)
+                total_time += time_cost
+                total_money += money_cost
+        logger.info('-' * 20)
+        logger.info('total spendings {:.5f} man days, £ {:.2f}'.format(
+            total_time, total_money))
