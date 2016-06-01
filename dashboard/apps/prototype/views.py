@@ -36,7 +36,8 @@ def index(request):
         return redirect('/?projectid={}'.format(project_id))
     try:
         project_id = int(project_id)
-    except ValueError:
+        project = Project.objects.get(id=project_id)
+    except (ValueError, Project.DoesNotExist):
         # TODO better error page
         return HttpResponseBadRequest(
             'invalid projectid "{}"'.format(project_id))
@@ -45,7 +46,7 @@ def index(request):
         for area in Client.objects.all()
     }
     areas = OrderedDict(sorted([(k, v) for k, v in areas.items() if v]))
-    context = {'areas': areas,  'project_id': project_id}
+    context = {'areas': areas,  'project': project}
     return render(request, 'index.html', context)
 
 
