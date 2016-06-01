@@ -1,7 +1,7 @@
 from datetime import date
 
-from dashboard.libs.queries import (get_areas, get_persons, get_all_projects,
-                                    get_dates)
+from dashboard.apps.prototype.models import Project
+from dashboard.libs.queries import get_dates
 from dashboard.libs.date_tools import get_workdays_list
 from dashboard.libs.rate_generator import get_reference_rate
 
@@ -16,10 +16,10 @@ class Figures(object):
     @staticmethod
     def project_cost(data):
 
-        if not data['projects']:
+        if not data['project']:
             return gen_empty_figure()
 
-        project = data['projects'][0]
+        project = data['project']
         print('>>>>>>>>>>> ' + str(project))
         persons = get_persons_on_project(project)
         rates = {}
@@ -143,11 +143,25 @@ def get_trace(x_axis, y_axis, name='trace', trace_type='bar'):
 
 
 def get_figure(requested_figure, request_data):
-    start_date, end_date = get_dates(request_data['start_date'], request_data['end_date'])
+    start_date, end_date = get_dates(request_data['start_date'],
+                                     request_data['end_date'])
+    # TODO we should split it into two views one for singular project
+    # the other for a list
+    if 'projectid' in request_data:
+        project = Project.objects.get(id=request_data['projectid'])
+    else:
+        project = None
+
+    if 'projectids' in request_data:
+        projects = Project.objects.filter(id__in=request_data['projectids'])
+    else:
+        projects = None
+
     data = {
-        'persons': get_persons(request_data['persons']),
-        'areas': get_areas(request_data['areas']),
-        'projects': get_all_projects(request_data['projects']),  # Consider whether to limit by area here?
+        #  'persons': get_persons(request_data['persons']),
+        #  'areas': get_areas(request_data['areas']),
+        'project': project,
+        'projects': projects,
         'start_date': start_date,
         'end_date': end_date
     }
