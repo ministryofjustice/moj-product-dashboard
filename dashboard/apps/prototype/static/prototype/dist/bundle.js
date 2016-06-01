@@ -8378,7 +8378,7 @@
 	var projectTestRequest = {
 	
 	  requested_figure: 'project_cost',
-	  projects: ['CLA Public'],
+	  projects: ['claim for crown'],
 	  persons: [],
 	  areas: [],
 	  start_date: '2015-01-01',

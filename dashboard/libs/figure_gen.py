@@ -19,6 +19,7 @@ class Figures(object):
             return gen_empty_figure()
 
         project = data['projects'][0]
+        print('>>>>>>>>>>> ' + str(project))
         persons = get_persons_on_project(project)
         rates = {}
 
