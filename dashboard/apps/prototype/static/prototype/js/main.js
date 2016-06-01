@@ -2,8 +2,15 @@ import 'whatwg-fetch';
 import Cookies from 'js-cookie';
 import Plotly from 'plotly.js/lib/core';
 import * as bar from 'plotly.js/lib/bar';
-
 Plotly.register([bar]);
+
+import $ from 'jquery';
+import select2 from 'select2';
+
+require('select2/dist/css/select2.min.css');
+require('../styles/gov-uk-elements.css');
+require('../styles/main.css');
+
 
 class Figure {
 
@@ -180,40 +187,32 @@ class ProjectCostFigure extends Figure {
 }
 
 var testRequest = {
-
   requested_figure : 'staff_split',
-
   projects : ['Digital'],
-
   persons : [],
-
   areas : [],
-
   start_date: '2015-01-01',
-
   end_date: '2016-05-23'
-
 };
+
 
 var projectTestRequest = {
 
   requested_figure : 'project_cost',
-
   projects : ['CLA Public'],
-
   persons : [],
-
   areas : [],
-
   start_date: '2015-01-01',
-
   end_date: '2016-05-23'
 
 };
 
 
 //Run on page load
-function onLoad() {
+// function onLoad() {
+// =======
+function plot() {
+
   const figA = document.getElementById('fig-a');
   const figB = document.getElementById('fig-b');
   const figC = document.getElementById('fig-c');
@@ -228,6 +227,20 @@ function onLoad() {
   fB.postRequestFigure('/getfig/', testRequest);
   fC.postRequestFigure('/getfig/', projectTestRequest);
   fD.getRequestFigure('/getrand/');
-}
+};
 
-document.addEventListener("DOMContentLoaded", () => onLoad());
+function selectProject(projectId) {
+  const url = [location.protocol, '//', location.host, location.pathname].join('');
+  window.location.href = url + '?projectid=' + projectId;
+};
+
+$(() => {
+  // plot
+  plot();
+  // dropdown project selector
+  $('#projects').select2().on("select2:select", (e) => {
+    const projectId = e.params.data.id;
+    selectProject(projectId);
+  });
+})
+

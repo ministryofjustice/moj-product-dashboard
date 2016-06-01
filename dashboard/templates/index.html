@@ -7,74 +7,63 @@
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title text-center">Claim for Crown Court Defence</h3>
-      </div>
-      <div class="panel-body">
-        <div class="row">
-          <div class="col-md-4">
-            <table class="table table-hover">
-              <tr>
-                <th class="active">Today</th>
-                <td class="h4">{{ today }}</td>
-              </tr>
-              <tr>
-                <th class="active">Current phase</th>
-                <td class="danger">Beta</td>
-              </tr>
-              <tr>
-                <th class="active">Service Area</th>
-                <td>LAA</td>
-              </tr>
-              <tr>
-                <th class="active">Service Manager</th>
-                <td>Liz Citron</td>
-              </tr>
-              <tr>
-                <th class="active">Product Manager</th>
-                <td>Stuart Hollands</td>
-              </tr>
-              <tr>
-                <th class="active">Delivery Manager</th>
-                <td>Rob Stirling</td>
-              </tr>
-            </table>
-          </div>
-          <div class="col-md-8">
+    <div class="column-one-quarter">
+      <label class="heading-medium" for="project-name"><strong>Project:</strong></label>
+    </div>
+    <div class="column-three-quarters">
+      <select id="projects">
+        {% for area_name, projects in areas.items %}
+          <optgroup label="{{ area_name }}">
+          {% for id, name in projects.items %}
+            {% if id == project_id %}
+            <option value="{{ id }}" selected>{{ name }}</option>
+            {% else %}
+            <option value="{{ id }}">{{ name }}</option>
+            {% endif %}
+          {% endfor %}
+          </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="panel">
+      <table class="table table-hover">
+        <tr>
+          <th>Current phase</th>
+          <td>Beta</td>
+        </tr>
+        <tr>
+          <th>Service Area</th>
+          <td>LAA</td>
+        </tr>
+        <tr>
+          <th>Service Manager</th>
+          <td>Liz Citron</td>
+        </tr>
+        <tr>
+          <th>Product Manager</th>
+          <td>Stuart Hollands</td>
+        </tr>
+        <tr>
+          <th>Delivery Manager</th>
+          <td>Rob Stirling</td>
+        </tr>
+      </table>
+    </div>
 
-          </div>
+    <div class="panel">
+      <h3 class="heading-medium">Expenditure</h3>
+        <div class="grid-row">
+          <div class="column-one-half" id="fig-a"></div>
+          <div class="column-one-half" id="fig-b"></div>
         </div>
-      </div>
     </div>
 
     <div class="panel panel-primary">
-      <div class="panel-heading">
-        <h3 class="panel-title">Expenditure</h3>
-      </div>
+      <h3 class="heading-medium">Contract Expirations &amp; Other Risks</h3>
       <div class="panel-body">
         <div class="grid-row">
-          <div class="column-one-half" id="fig-a">
-
-          </div>
-          <div class="column-one-half" id="fig-b">
-
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel panel-primary">
-      <div class="panel-heading">
-        <h3 class="panel-title">Contract Expirations &amp; Other Risks</h3>
-      </div>
-      <div class="panel-body">
-        <div class="grid-row">
-          <div class="column-one-half" id="fig-c">
-          </div>
-          <div class="column-one-half" id="fig-d">
-
-          </div>
+          <div class="column-one-half" id="fig-c"></div>
+          <div class="column-one-half" id="fig-d"></div>
         </div>
       </div>
     </div>
