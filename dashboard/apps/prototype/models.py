@@ -199,17 +199,17 @@ class Task(models.Model):
         if end_date <= self.start_date:
             start_date = end_date
 
-        slice = get_overlap(
+        timewindow = get_overlap(
             (start_date, end_date), (self.start_date, self.end_date))
 
-        if not slice:
+        if not timewindow:
             return 0
-        if slice == (self.start_date, self.end_date):
+        if timewindow == (self.start_date, self.end_date):
             return self.days
 
-        slice_workdays = get_workdays(*slice)
+        timewindow_workdays = get_workdays(*timewindow)
 
-        return Decimal(slice_workdays) / Decimal(self.workdays) * self.days
+        return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
 
     def money_spent(self, start_date=None, end_date=None):
         """
@@ -221,15 +221,15 @@ class Task(models.Model):
         start_date = start_date or self.start_date
         end_date = end_date or self.end_date
 
-        slice = get_overlap(
+        timewindow = get_overlap(
             (start_date, end_date), (self.start_date, self.end_date))
 
-        if not slice:
+        if not timewindow:
             return 0
 
-        rate = self.person.rate_between(*slice)
+        rate = self.person.rate_between(*timewindow)
         if not rate:
             return 0
-        slice_workdays = get_workdays(*slice)
-        days = Decimal(slice_workdays) / Decimal(self.workdays) * self.days
+        timewindow_workdays = get_workdays(*timewindow)
+        days = Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
         return rate * days
