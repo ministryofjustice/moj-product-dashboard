@@ -2,7 +2,8 @@ import json
 from collections import OrderedDict
 
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import (JsonResponse, HttpResponseBadRequest,
+                         HttpResponseNotFound)
 from django.contrib.auth.decorators import login_required
 
 from .models import Project, Client
@@ -39,8 +40,8 @@ def index(request):
         project = Project.objects.get(id=project_id)
     except (ValueError, Project.DoesNotExist):
         # TODO better error page
-        return HttpResponseBadRequest(
-            'invalid projectid "{}"'.format(project_id))
+        return HttpResponseNotFound(
+            'cannot find project with projectid={}'.format(project_id))
     areas = {
         area.name: {p.id: p.name for p in area.projects.all()}
         for area in Client.objects.all()
