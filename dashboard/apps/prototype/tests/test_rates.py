@@ -42,4 +42,3 @@ class RateTestCase(TestCase):
         self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2016, 5, 31)), '240')
 
         self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2020, 5, 30)), '229.61')
-

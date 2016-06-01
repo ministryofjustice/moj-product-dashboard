@@ -70,9 +70,10 @@ class RatesManager(models.Manager):
             .first()
 
     def between(self, start_date, end_date):
-        rates = list(self.get_queryset()
-            .filter(start_date__lte=end_date, start_date__gt=start_date)
-            .order_by('start_date'))
+        rates = list(self.get_queryset().
+                     filter(start_date__lte=end_date,
+                            start_date__gt=start_date)
+                     .order_by('start_date'))
         first = self.on(start_date)
         if first:
             rates.insert(0, first)

@@ -1,6 +1,7 @@
 from datetime import date
 
-from dashboard.libs.queries import get_areas, get_persons, get_all_projects, get_tasks, get_dates
+from dashboard.libs.queries import (get_areas, get_persons, get_all_projects,
+                                    get_dates)
 from dashboard.libs.date_tools import get_workdays_list
 from dashboard.libs.rate_generator import get_reference_rate
 
@@ -152,7 +153,7 @@ def get_figure(requested_figure, request_data):
     }
     try:
         figure = (getattr(Figures, requested_figure)(data))
-    except AttributeError as err:
+    except AttributeError:
         figure = {}
         print('error: no such trace available')
 

@@ -3,11 +3,6 @@ some helper functions for creating commands
 """
 import logging
 
-from django.core.management.base import CommandError
-from django.db.models import Q
-
-from dashboard.apps.prototype.models import Person, Project, Client
-
 
 def get_logger():
     LOGGING = {
