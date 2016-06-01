@@ -14,52 +14,46 @@ class Figures(object):
     """
 
     @staticmethod
-    def project_cost(data):
+    def single_project(data):
 
+        # Get a single project
         if not data['projects']:
             return gen_empty_figure()
 
         project = data['projects'][0]
         print('>>>>>>>>>>> ' + str(project))
-        persons = get_persons_on_project(project)
-        rates = {}
 
-        for person in persons:
-            rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
+        persons = get_persons_on_project(project)
 
         tasks = project.tasks.all()
+
+        rates = demo_get_rates(persons)
+
+        # Get the first day on the earliest task
+        # Change to tasks.order_by('start_date').first() ?
         start_date = tasks.order_by('start_date')[0].start_date
 
+        # Set the end date, if possible using data in the database
         if project.end_date:
-            end_date = project
+            end_date = project.end_date
         else:
             end_date = date.today()
 
-        all_days = get_workdays_list(start_date, end_date)
-        costs = []
-        times = []
+        # Get a list of the working days which occurred during the project's life-span
+        project_working_days = get_workdays_list(start_date, end_date)
 
-        for day in all_days:
-            day_time = 0
-            day_cost = 0
-            for task in tasks:
+        day_data = get_day_data(project_working_days, tasks, rates)
 
-                time = task.time_spent(day, day)
-                cost = rates[task.person.float_id] * time
+        persons_data = get_persons_data(project)
 
-                day_time += time
-                day_cost += cost
-
-            costs.append(day_cost)
-            times.append(day_time)
-
-        data = {
+        single_project_data = {
             'start_date': start_date,
             'end_date': end_date,
-            'data': {'days': all_days, 'costs': costs, 'times': times}
+            'active_days': day_data,
+            'persons': persons_data
         }
-        # import ipdb; ipdb.set_trace()
-        return data
+
+        return single_project_data
 
     @staticmethod
     def staff_split(data):
@@ -91,6 +85,55 @@ class Figures(object):
         }
 
         return figure
+
+
+def get_persons_data(project):
+    persons = get_persons_on_project(project)
+    persons_data = []
+    for person in persons:
+        persons_data.append({'name': person.name, 'is_contractor': person.is_contractor,
+                             'job_title': person.job_title})
+
+    return persons_data
+
+
+def demo_get_rates(persons):
+    rates = {}
+
+    for person in persons:
+        rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
+
+    return rates
+
+
+def get_day_data(days, tasks, rates):
+
+    active_days = []
+
+    for day in days:
+        day_time = 0
+        day_cost = 0
+
+        # Loop through all tasks and get the cost incurred on the given day, if any
+        # ...this is probably needlessly slow. Probably an easier way to filter out tasks not
+        # occurring on this day
+        # import ipdb; ipdb.set_trace()
+        for task in tasks:
+
+            time = task.time_spent(day, day)
+
+            if time:
+                cost = task.person.rate_on(day) * time
+                # cost = rates[task.person.float_id] * time
+            else:
+                cost = 0
+
+            day_time += time
+            day_cost += cost
+
+        active_days.append({'date': day, 'cost': day_cost, 'person_days': day_time})
+
+    return active_days
 
 
 def gen_empty_figure():
@@ -142,7 +185,7 @@ def get_trace(x_axis, y_axis, name='trace', trace_type='bar'):
     return trace
 
 
-def get_figure(requested_figure, request_data):
+def get_data(requested_data, request_data):
     start_date, end_date = get_dates(request_data['start_date'], request_data['end_date'])
     data = {
         'persons': get_persons(request_data['persons']),
@@ -151,10 +194,15 @@ def get_figure(requested_figure, request_data):
         'start_date': start_date,
         'end_date': end_date
     }
-    try:
-        figure = (getattr(Figures, requested_figure)(data))
-    except AttributeError:
-        figure = {}
-        print('error: no such trace available')
+
+    # try:
+    #     print(requested_data)
+    #     figure = getattr(Figures, requested_data)(data)
+    # except AttributeError as err:
+    #     figure = {}
+    #     print('error: no such trace available')
+
+    figure = getattr(Figures, requested_data)(data)
+
 
     return figure

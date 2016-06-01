@@ -57,7 +57,6 @@ class ProjectCostFigure extends Figure {
 
   constructor(element) {
     super(element);
-    this.data = {};
     this.incrementLengths = ['day', 'week', 'month', 'year'];
     this.startDate = undefined;
     this.monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -173,8 +172,9 @@ class ProjectCostFigure extends Figure {
 
     this.startDate = new Date(json.start_date);
 
-    this.data = json.data;
-    this.getMonthData();
+    this.data = json;
+    console.log(this.data);
+    // this.getMonthData();
 
   }
 
@@ -192,7 +192,7 @@ var testRequest = {
 
 var projectTestRequest = {
 
-  requested_figure : 'project_cost',
+  requested_data : 'single_project',
   projects : ['claim for crown'],
   persons : [],
   areas : [],
@@ -209,21 +209,21 @@ function plot() {
   const figC = document.getElementById('fig-c');
   const figD = document.getElementById('fig-d');
 
-  const fA = new Figure(figA);
-  const fB = new Figure(figB);
+  // const fA = new Figure(figA);
+  // const fB = new Figure(figB);
   const fC = new ProjectCostFigure(figC);
-  const fD = new Figure(figD);
+  // const fD = new Figure(figD);
 
-  fA.postRequestFigure('/getfig/', testRequest);
-  fB.postRequestFigure('/getfig/', testRequest);
-  fC.postRequestFigure('/getfig/', projectTestRequest);
-  fD.postRequestFigure('/getfig/', testRequest);
-};
+  // fA.postRequestFigure('/getdata/', testRequest);
+  // fB.postRequestFigure('/getdata/', testRequest);
+  fC.postRequestFigure('/getdata/', projectTestRequest);
+  // fD.postRequestFigure('/getdata/', testRequest);
+}
 
 function selectProject(projectId) {
   const url = [location.protocol, '//', location.host, location.pathname].join('');
   window.location.href = url + '?projectid=' + projectId;
-};
+}
 
 $(() => {
   // plot

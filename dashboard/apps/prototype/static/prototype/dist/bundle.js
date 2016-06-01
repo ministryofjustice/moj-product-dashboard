@@ -8200,7 +8200,6 @@
 	
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
 	
-	    _this3.data = {};
 	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
 	    _this3.startDate = undefined;
 	    _this3.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -8358,8 +8357,9 @@
 	
 	      this.startDate = new Date(json.start_date);
 	
-	      this.data = json.data;
-	      this.getMonthData();
+	      this.data = json;
+	      console.log(this.data);
+	      // this.getMonthData();
 	    }
 	  }]);
 	
@@ -8377,7 +8377,7 @@
 	
 	var projectTestRequest = {
 	
-	  requested_figure: 'project_cost',
+	  requested_data: 'single_project',
 	  projects: ['claim for crown'],
 	  persons: [],
 	  areas: [],
@@ -8393,21 +8393,21 @@
 	  var figC = document.getElementById('fig-c');
 	  var figD = document.getElementById('fig-d');
 	
-	  var fA = new Figure(figA);
-	  var fB = new Figure(figB);
+	  // const fA = new Figure(figA);
+	  // const fB = new Figure(figB);
 	  var fC = new ProjectCostFigure(figC);
-	  var fD = new Figure(figD);
+	  // const fD = new Figure(figD);
 	
-	  fA.postRequestFigure('/getfig/', testRequest);
-	  fB.postRequestFigure('/getfig/', testRequest);
-	  fC.postRequestFigure('/getfig/', projectTestRequest);
-	  fD.postRequestFigure('/getfig/', testRequest);
-	};
+	  // fA.postRequestFigure('/getdata/', testRequest);
+	  // fB.postRequestFigure('/getdata/', testRequest);
+	  fC.postRequestFigure('/getdata/', projectTestRequest);
+	  // fD.postRequestFigure('/getdata/', testRequest);
+	}
 	
 	function selectProject(projectId) {
 	  var url = [location.protocol, '//', location.host, location.pathname].join('');
 	  window.location.href = url + '?projectid=' + projectId;
-	};
+	}
 	
 	(0, _jquery2.default)(function () {
 	  // plot
@@ -9179,7 +9179,7 @@
 /* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -61446,7 +61446,7 @@
 /* 478 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;var require;/*!
+	var require;var require;var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	 * Select2 4.0.3
 	 * https://select2.github.io
 	 *

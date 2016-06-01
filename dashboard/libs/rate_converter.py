@@ -11,7 +11,7 @@ from .date_tools import get_workdays
 
 
 RATE_TYPES = Choices(
-    ('DAY',  1, 'Dayly rate'),
+    ('DAY',  1, 'Daily rate'),
     ('MONTH',   2, 'Monthly salary'),
     ('YEAR', 3, 'Yearly salary'),
 )
