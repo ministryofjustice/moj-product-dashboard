@@ -58,9 +58,7 @@ class ProjectCostFigure extends Figure {
   constructor(element) {
     super(element);
     this.data = {};
-    this.initialEndDate = new Date();
     this.incrementLengths = ['day', 'week', 'month', 'year'];
-    this.incrementLength = this.incrementLengths[3];
     this.startDate = undefined;
     this.monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -132,7 +130,7 @@ class ProjectCostFigure extends Figure {
           let date = new Date(this.data.days[j]);
 
           if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
-            console.log('match');
+
 
             monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
             monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
@@ -140,8 +138,6 @@ class ProjectCostFigure extends Figure {
           }
 
         }
-        console.log(monthlyBreakdowns[i].monthNum + ' ' + monthlyBreakdowns[i].yearNum + ' ' + monthlyBreakdowns[i].monthCost + ' ' + monthlyBreakdowns[i].cumulCost);
-
       }
 
     return monthlyBreakdowns;
@@ -175,11 +171,9 @@ class ProjectCostFigure extends Figure {
 
   handleResponse(json) {
 
-    this.endDate = new Date(json.end_date);
     this.startDate = new Date(json.start_date);
 
     this.data = json.data;
-    console.log(this.data);
     this.getMonthData();
 
   }
@@ -208,9 +202,6 @@ var projectTestRequest = {
 };
 
 
-//Run on page load
-// function onLoad() {
-// =======
 function plot() {
 
   const figA = document.getElementById('fig-a');
@@ -223,10 +214,10 @@ function plot() {
   const fC = new ProjectCostFigure(figC);
   const fD = new Figure(figD);
 
-  fA.getRequestFigure('/comp/');
+  fA.postRequestFigure('/getfig/', testRequest);
   fB.postRequestFigure('/getfig/', testRequest);
   fC.postRequestFigure('/getfig/', projectTestRequest);
-  fD.getRequestFigure('/getrand/');
+  fD.postRequestFigure('/getfig/', testRequest);
 };
 
 function selectProject(projectId) {
