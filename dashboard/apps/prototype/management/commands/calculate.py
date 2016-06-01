@@ -28,6 +28,27 @@ class Command(BaseCommand):
         parser.add_argument('-a', '--areas', nargs='*', type=str)
         parser.add_argument('-n', '--names', nargs='*', type=str)
 
+    @staticmethod
+    def _print_tasks(person_to_task, start_date, end_date):
+        total_time = 0
+        total_money = 0
+        for person in person_to_task:
+            logger.info('-' * 20)
+            print_person(person)
+            for task in person_to_task[person]:
+                try:
+                    time_cost, money_cost = print_task(
+                        task, start_date, end_date)
+                except ValueError:
+                    logger.warning('found data problem in task %s', task)
+                    continue
+                else:
+                    total_time += time_cost
+                    total_money += money_cost
+        logger.info('-' * 20)
+        logger.info('total spendings {:.5f} man days, £ {:.2f}'.format(
+            total_time, total_money))
+
     def handle(self, *args, **options):
         start_date = options['start_date']
         end_date = options['end_date']
@@ -52,21 +73,4 @@ class Command(BaseCommand):
         person_to_task = {}
         for task in tasks:
             person_to_task.setdefault(task.person, []).append(task)
-        total_time = 0
-        total_money = 0
-        for person in person_to_task:
-            logger.info('-' * 20)
-            print_person(person)
-            for task in person_to_task[person]:
-                try:
-                    time_cost, money_cost = print_task(
-                        task, start_date, end_date)
-                except ValueError as exc:
-                    logger.warning('found data problem in task %s', task)
-                    continue
-                else:
-                    total_time += time_cost
-                    total_money += money_cost
-        logger.info('-' * 20)
-        logger.info('total spendings {:.5f} man days, £ {:.2f}'.format(
-            total_time, total_money))
+        self._print_tasks(person_to_task, start_date, end_date)
