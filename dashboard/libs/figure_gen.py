@@ -1,4 +1,8 @@
+from datetime import date
+
 from dashboard.libs.queries import get_areas, get_persons, get_all_projects, get_tasks, get_dates
+from dashboard.libs.date_tools import get_workdays_list
+from dashboard.libs.rate_generator import get_reference_rate
 
 
 class Figures(object):
@@ -7,9 +11,57 @@ class Figures(object):
     in this class and then set the 'requested_figure'
     attribute in the request JSON to the name of the method.
     """
+
+    @staticmethod
+    def project_cost(data):
+
+        if not data['projects']:
+            return gen_empty_figure()
+
+        project = data['projects'][0]
+        print('>>>>>>>>>>> ' + str(project))
+        persons = get_persons_on_project(project)
+        rates = {}
+
+        for person in persons:
+            rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
+
+        tasks = project.tasks.all()
+        start_date = tasks.order_by('start_date')[0].start_date
+
+        if project.end_date:
+            end_date = project
+        else:
+            end_date = date.today()
+
+        all_days = get_workdays_list(start_date, end_date)
+        costs = []
+        times = []
+
+        for day in all_days:
+            day_time = 0
+            day_cost = 0
+            for task in tasks:
+
+                time = task.time_spent(day, day)
+                cost = rates[task.person.float_id] * time
+
+                day_time += time
+                day_cost += cost
+
+            costs.append(day_cost)
+            times.append(day_time)
+
+        data = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'data': {'days': all_days, 'costs': costs, 'times': times}
+        }
+        # import ipdb; ipdb.set_trace()
+        return data
+
     @staticmethod
     def staff_split(data):
-        # tasks = get_tasks(data['start_date'], data['end_date'])
         contractor_percs = []
         cs_percs = []
         for project in data['projects']:
@@ -27,10 +79,8 @@ class Figures(object):
                 cs_percs.append((num_civil_servants / (num_contractors + num_civil_servants)) * 100)
 
         project_names = [project.name for project in data['projects']]
-
-        cs_trace = get_trace(project_names, [perc for perc in cs_percs], 'Civil Servants')
-
-        contr_trace = get_trace(project_names, [perc for perc in contractor_percs], 'Contractors')
+        cs_trace = get_trace(project_names, cs_percs, 'Civil Servants')
+        contr_trace = get_trace(project_names, contractor_percs, 'Contractors')
 
         layout = get_layout(barmode='stack')
 
@@ -40,6 +90,16 @@ class Figures(object):
         }
 
         return figure
+
+
+def gen_empty_figure():
+
+    figure = {
+        'data': [{}],
+        'layout': {},
+    }
+
+    return figure
 
 
 def get_layout(**kwargs):

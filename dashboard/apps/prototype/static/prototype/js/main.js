@@ -53,6 +53,133 @@ class Figure {
 
 }
 
+class ProjectCostFigure extends Figure {
+
+  constructor(element) {
+    super(element);
+    this.data = {};
+    this.incrementLengths = ['day', 'week', 'month', 'year'];
+    this.startDate = undefined;
+    this.monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    this.getMonthData = () => {
+
+      let monthlyBreakdowns = this.getMonthsInProject();
+
+      monthlyBreakdowns = this.calcMonthlyData(monthlyBreakdowns);
+
+      let monthCostTrace = this.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
+      let cumulCostTrace = this.makeCumulTrace(monthlyBreakdowns);
+
+      let traces = [monthCostTrace, cumulCostTrace];
+
+      Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
+    };
+
+  }
+
+  makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
+
+    let x_axis = [];
+    let y_axis = [];
+
+    for (let month of monthlyBreakdowns) {
+
+      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+      y_axis.push(month[y_series]);
+
+    }
+
+    let trace = {
+      x: x_axis,
+      y: y_axis,
+      name: name,
+      type: type
+    };
+    return trace
+  }
+
+  makeCumulTrace(monthlyBreakdowns) {
+
+    let x_axis = [];
+    let y_axis = [];
+    let cumulCost = 0;
+    for (let month of monthlyBreakdowns) {
+      cumulCost += month.monthCost;
+
+      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+      y_axis.push(cumulCost);
+
+    }
+
+    let trace = {
+      x: x_axis,
+      y: y_axis,
+      name: name,
+      mode: 'lines'
+    };
+    return trace
+  }
+
+  calcMonthlyData(monthlyBreakdowns) {
+
+    for (let i = 0; i < monthlyBreakdowns.length; i++) {
+
+        for (let j = 0; j < this.data.days.length; j++) {
+
+          let date = new Date(this.data.days[j]);
+
+          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
+
+
+            monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
+            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
+
+          }
+
+        }
+      }
+
+    return monthlyBreakdowns;
+
+  }
+
+  getMonthsInProject() {
+
+    let month = this.startDate.getMonth();
+    let year = this.startDate.getFullYear();
+    let thisYear = new Date().getFullYear();
+    let monthlyBreakdowns = [];
+
+    for (year; year <= thisYear; year++) {
+
+      for (month; month <= 12; month++) {
+
+        monthlyBreakdowns.push({
+            monthNum: month,
+            yearNum: year,
+            monthCost: 0,
+            cumulCost: 0,
+            monthTimeSpent: 0
+          });
+
+      }
+      month = 1;
+    }
+    return monthlyBreakdowns;
+  }
+
+  handleResponse(json) {
+
+    this.startDate = new Date(json.start_date);
+
+    this.data = json.data;
+    this.getMonthData();
+
+  }
+
+}
+
 var testRequest = {
   requested_figure : 'staff_split',
   projects : ['Digital'],
@@ -62,7 +189,21 @@ var testRequest = {
   end_date: '2016-05-23'
 };
 
+
+var projectTestRequest = {
+
+  requested_figure : 'project_cost',
+  projects : ['claim for crown'],
+  persons : [],
+  areas : [],
+  start_date: '2015-01-01',
+  end_date: '2016-05-23'
+
+};
+
+
 function plot() {
+
   const figA = document.getElementById('fig-a');
   const figB = document.getElementById('fig-b');
   const figC = document.getElementById('fig-c');
@@ -70,13 +211,13 @@ function plot() {
 
   const fA = new Figure(figA);
   const fB = new Figure(figB);
-  const fC = new Figure(figC);
+  const fC = new ProjectCostFigure(figC);
   const fD = new Figure(figD);
 
-  fA.getRequestFigure('/comp/');
+  fA.postRequestFigure('/getfig/', testRequest);
   fB.postRequestFigure('/getfig/', testRequest);
-  fC.getRequestFigure('/getrand/');
-  fD.getRequestFigure('/getrand/');
+  fC.postRequestFigure('/getfig/', projectTestRequest);
+  fD.postRequestFigure('/getfig/', testRequest);
 };
 
 function selectProject(projectId) {

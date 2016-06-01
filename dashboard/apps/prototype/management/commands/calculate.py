@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from django.core.management.base import BaseCommand, CommandError
 
 from dashboard.libs.queries import (
-    get_areas, get_persons, get_projects, get_tasks, valid_date,
+    get_areas, get_persons, get_projects, get_tasks, valid_date, tasks_by_person_proj,
     NoMatchFound)
 from .helpers import print_person, print_task, logger
 
@@ -48,10 +48,7 @@ class Command(BaseCommand):
             raise CommandError(exc.args)
 
         tasks = get_tasks(start_date, end_date, logger)
-        if persons:
-            tasks = tasks.filter(person__in=persons)
-        if projects:
-            tasks = tasks.filter(project__in=projects)
+        tasks = tasks_by_person_proj(tasks, persons, projects)
         person_to_task = {}
         for task in tasks:
             person_to_task.setdefault(task.person, []).append(task)
