@@ -1,14 +1,11 @@
-import datetime
 import json
-from dateutil import relativedelta
-import random
 from collections import OrderedDict
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 
-from .models import Person, Project, Client, Task, Rate
+from .models import Project, Client
 from dashboard.libs.figure_gen import get_figure
 
 

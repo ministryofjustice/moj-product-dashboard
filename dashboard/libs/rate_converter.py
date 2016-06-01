@@ -153,5 +153,3 @@ class RateConverter():
         segments = month_segments(self, start_date, end_date)
 
         return average_rate_from_segments(segments, total_workdays)
-
-

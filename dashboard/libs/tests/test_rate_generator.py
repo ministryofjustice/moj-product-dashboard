@@ -1,5 +1,3 @@
-from datetime import date
-
 import pytest
 
 from dashboard.libs.rate_generator import get_reference_rate, gen_rates
