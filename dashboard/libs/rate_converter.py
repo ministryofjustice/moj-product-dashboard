@@ -129,7 +129,7 @@ class RateConverter():
         param: end_date: date - object end of time period for average
         return: Decimal object - average day rate
         """
-        if self.rate_type is RATE_TYPES.DAY:
+        if self.rate_type == RATE_TYPES.DAY:
             return self.rate
 
         if not on:
@@ -146,7 +146,7 @@ class RateConverter():
         param: end_date: date - object end of time period for average
         return: Decimal object - average day rate
         """
-        if self.rate_type is RATE_TYPES.DAY:
+        if self.rate_type == RATE_TYPES.DAY:
             return self.rate
 
         total_workdays = dec_workdays(start_date, end_date)

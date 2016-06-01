@@ -6,7 +6,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy
 
-from dashboard.libs.date_tools import get_workdays
+from dashboard.libs.date_tools import get_workdays, get_overlap
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 
@@ -193,26 +193,43 @@ class Task(models.Model):
         start_date = start_date or self.start_date
         end_date = end_date or self.end_date
 
-        if start_date < self.start_date:
-            if end_date < self.start_date:
-                slice = None
-            elif end_date <= self.end_date:
-                slice = self.start_date, end_date
-            else:
-                slice = self.start_date, self.end_date
-        elif start_date <= self.end_date:
-            if end_date <= self.end_date:
-                slice = start_date, end_date
-            else:
-                slice = start_date, self.end_date
-        else:
-            slice = None
+        # sanitise the time window
+        if start_date >= self.end_date:
+            end_date = start_date
+        if end_date <= self.start_date:
+            start_date = end_date
 
-        if not slice:
+        timewindow = get_overlap(
+            (start_date, end_date), (self.start_date, self.end_date))
+
+        if not timewindow:
             return 0
-        if slice == (self.start_date, self.end_date):
+        if timewindow == (self.start_date, self.end_date):
             return self.days
 
-        slice_workdays = get_workdays(*slice)
+        timewindow_workdays = get_workdays(*timewindow)
 
-        return Decimal(slice_workdays) / Decimal(self.workdays) * self.days
+        return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
+
+    def money_spent(self, start_date=None, end_date=None):
+        """
+        get the money spent on the task during a time window.
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: cost in pound, a decimal
+        """
+        start_date = start_date or self.start_date
+        end_date = end_date or self.end_date
+
+        timewindow = get_overlap(
+            (start_date, end_date), (self.start_date, self.end_date))
+
+        if not timewindow:
+            return 0
+
+        rate = self.person.rate_between(*timewindow)
+        if not rate:
+            return 0
+        timewindow_workdays = get_workdays(*timewindow)
+        days = Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
+        return rate * days

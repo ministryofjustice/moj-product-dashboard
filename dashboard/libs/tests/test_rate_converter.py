@@ -24,6 +24,11 @@ from ..rate_converter import RateConverter, RATE_TYPES
     (date(2014, 1, 1), '60000', RATE_TYPES.YEAR, '237.15'),  # 2014
     (date(2015, 1, 1), '60000', RATE_TYPES.YEAR, '237.15'),  # 2015
     (date(2016, 1, 1), '60000', RATE_TYPES.YEAR, '237.15'),  # 2016
+
+    # use original values
+    (date(2016, 1, 1), '500', RATE_TYPES.DAY.original_value, '500'),
+    (date(2016, 12, 1), '4600', RATE_TYPES.MONTH.original_value, '230'),
+    (date(2016, 1, 1), '60000', RATE_TYPES.YEAR.original_value, '237.15'),
 ])
 def test_rate_at_certain_time(on, rate, rate_type, expected):
     converter = RateConverter(Decimal(rate), rate_type)

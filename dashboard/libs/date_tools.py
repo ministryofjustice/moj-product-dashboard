@@ -49,3 +49,40 @@ def get_workdays_list(start_date, end_date):
         d.weekday() < 5 and d.strftime('%Y-%m-%d') not in bank_holidays]
 
     return workdays
+
+
+def get_overlap(time_window0, time_window1):
+    """
+    get the overlap of two time windows
+    :param time_window0: a tuple of date/datetime objects represeting the
+    start and end of a time window
+    :param time_window1: a tuple of date/datetime objects represeting the
+    start and end of a time window
+    :return: a tuple of date/datetime objects represeting the start and
+    end of a time window or None if no overlapping found
+    :raise: ValueError
+    """
+    sdate0, edate0 = time_window0
+    sdate1, edate1 = time_window1
+
+    error = 'start date {} is greater than end date {}'
+    if edate0 < sdate0:
+        raise ValueError(error.format(sdate0, edate0))
+    if edate1 < sdate1:
+        raise ValueError(error.format(sdate1, edate1))
+
+    if sdate1 < sdate0:
+        if edate1 < sdate0:
+            overlap = None
+        elif edate1 <= edate0:
+            overlap = sdate0, edate1
+        else:
+            overlap = sdate0, edate0
+    elif sdate1 <= edate0:
+        if edate1 <= edate0:
+            overlap = sdate1, edate1
+        else:
+            overlap = sdate1, edate0
+    else:
+        overlap = None
+    return overlap
