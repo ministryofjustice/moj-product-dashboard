@@ -6,6 +6,7 @@ Plotly.register([bar]);
 
 import $ from 'jquery';
 import select2 from 'select2';
+import URI from 'urijs';
 
 require('select2/dist/css/select2.min.css');
 require('../styles/gov-uk-elements.css');
@@ -182,7 +183,7 @@ class ProjectCostFigure extends Figure {
 
 var testRequest = {
   requested_figure : 'staff_split',
-  projects : ['Digital'],
+  projectids : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   persons : [],
   areas : [],
   start_date: '2015-01-01',
@@ -190,48 +191,46 @@ var testRequest = {
 };
 
 
-var projectTestRequest = {
-
-  requested_figure : 'project_cost',
-  projects : ['claim for crown'],
-  persons : [],
-  areas : [],
-  start_date: '2015-01-01',
-  end_date: '2016-05-23'
-
-};
-
-
-function plot() {
+function plotProject(id) {
 
   const figA = document.getElementById('fig-a');
   const figB = document.getElementById('fig-b');
   const figC = document.getElementById('fig-c');
   const figD = document.getElementById('fig-d');
 
-  const fA = new Figure(figA);
+  const fA = new ProjectCostFigure(figA);
+  const fC = new Figure(figC);
   const fB = new Figure(figB);
-  const fC = new ProjectCostFigure(figC);
   const fD = new Figure(figD);
 
-  fA.postRequestFigure('/getfig/', testRequest);
+  fA.postRequestFigure('/getfig/', {projectid: id, requested_figure: 'project_cost', start_date: '2015-01-01', end_date: '2016-08-01'});
   fB.postRequestFigure('/getfig/', testRequest);
-  fC.postRequestFigure('/getfig/', projectTestRequest);
+  fC.postRequestFigure('/getfig/', testRequest);
   fD.postRequestFigure('/getfig/', testRequest);
 };
 
-function selectProject(projectId) {
-  const url = [location.protocol, '//', location.host, location.pathname].join('');
-  window.location.href = url + '?projectid=' + projectId;
+/**
+ * get projectId based on the query string
+ */
+function getProjectId() {
+  const projectId = URI(window.location.href).query(true).projectid;
+  console.log('projectId:', projectId);
+  return projectId;
 };
 
+
+function loadProject(id) {
+  const url = [location.protocol, '//', location.host, location.pathname].join('');
+  window.location.href = url + '?projectid=' + id;
+};
+
+
 $(() => {
-  // plot
-  plot();
+  const projectId = getProjectId();
+  // plot project
+  plotProject(projectId);
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
-    const projectId = e.params.data.id;
-    selectProject(projectId);
+    loadProject(e.params.data.id);
   });
 })
-
