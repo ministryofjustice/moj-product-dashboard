@@ -14,11 +14,19 @@ class TaskTimeSpentTestCase(TestCase):
         # actual working days is 6. given the time for the task is 3 days,
         # 0.5 day is spent daily during each of the 6 working days.
         self.task_0 = Task.objects.create(
-            name='task_0', person_id=0, project_id=0,
+            name='task_0', person_id=0, project_id=0, float_id=0,
             start_date=date(2016, 4, 27),
             end_date=date(2016, 5, 5),
-            days=3,
-            raw_data={}
+            days=3
+        )
+
+        # task_1 is a task for bank holiday over Easter holiday
+        self.task_1 = Task.objects.create(
+            name='day off over Easter', person_id=0, project_id=1,
+            float_id=1,
+            start_date=date(2016, 3, 25),
+            end_date=date(2016, 3, 28),
+            days=2
         )
 
     def test_no_time_window_specified(self):
@@ -51,3 +59,8 @@ class TaskTimeSpentTestCase(TestCase):
         days = self.task_0.time_spent(start_date=date(2016, 4, 15),
                                       end_date=date(2016, 5, 2))
         self.assertEqual(days, Decimal('1.5'))
+
+    def test_bank_holiday_only(self):
+        days = self.task_1.time_spent(start_date=date(2016, 3, 25),
+                                      end_date=date(2016, 3, 25))
+        self.assertEqual(days, Decimal('0'))

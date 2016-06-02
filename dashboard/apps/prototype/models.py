@@ -199,6 +199,11 @@ class Task(models.Model):
         if end_date <= self.start_date:
             start_date = end_date
 
+        # we shouldn't have these, but it can happen
+        # where some tasks spread over holidays only
+        if self.workdays == 0:
+            return 0
+
         timewindow = get_overlap(
             (start_date, end_date), (self.start_date, self.end_date))
 
