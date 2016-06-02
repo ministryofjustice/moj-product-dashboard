@@ -2,8 +2,9 @@ from decimal import Decimal
 from datetime import date
 
 from django.test import TestCase
+from model_mommy import mommy
 
-from dashboard.apps.prototype.models import Task
+from dashboard.apps.prototype.models import Person, Project, Task, Rate
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -64,3 +65,67 @@ class TaskTimeSpentTestCase(TestCase):
         days = self.task_1.time_spent(start_date=date(2016, 3, 25),
                                       end_date=date(2016, 3, 25))
         self.assertEqual(days, Decimal('0'))
+
+
+class TaskMoneySpentTestCase(TestCase):
+
+    def setUp(self):
+        person = mommy.make(Person)
+        mommy.make(Rate, start_date=date(2015, 1, 1), rate=Decimal('400'),
+                   person=person)
+        self.task_0 = mommy.make(
+            Task, project=mommy.make(Project),
+            person=person,
+            start_date=date(2016, 6, 1),
+            end_date=date(2016, 6, 10),
+            days=8)
+
+    def test_task_total_spending(self):
+        assert self.task_0.money_spent() == 400 * 8
+
+    def test_task_weekday_spending(self):
+        assert self.task_0.money_spent(
+            date(2016, 6, 1), date(2016, 6, 3)) == 400 * 3
+
+    def test_task_weekend_spending_is_zero(self):
+        assert self.task_0.money_spent(
+            date(2016, 6, 4), date(2016, 6, 5)) == 0
+
+    def test_task_weekday_plus_weekend_spending(self):
+        assert self.task_0.money_spent(
+            date(2016, 6, 1), date(2016, 6, 5)) == 400 * 3
+
+    def test_task_spending_after_end_date_is_zero(self):
+        assert self.task_0.money_spent(
+            date(2016, 6, 11), date(2016, 6, 12)) == 0
+
+    def test_task_spending_before_staart_date_is_zero(self):
+        assert self.task_0.money_spent(
+            date(2016, 5, 25), date(2016, 5, 31)) == 0
+
+
+class TaskString(TestCase):
+
+    def test_task_without_name(self):
+        task_without_name = mommy.make(
+            Task, project=mommy.make(Project, name='project 0'),
+            person=mommy.make(Person, name='John'),
+            start_date=date(2016, 6, 1),
+            end_date=date(2016, 6, 10),
+            days=8)
+        expected = 'John on project 0 from 2016-06-01 to 2016-06-10 for 8 days'
+        assert str(task_without_name) == expected
+
+    def test_task_with_name(self):
+        task_with_name = mommy.make(
+            Task,
+            name='task 0',
+            project=mommy.make(Project, name='project 0'),
+            person=mommy.make(Person, name='John'),
+            start_date=date(2016, 6, 1),
+            end_date=date(2016, 6, 10),
+            days=8)
+        expected = (
+            'task 0 - John on project 0'
+            ' from 2016-06-01 to 2016-06-10 for 8 days')
+        assert str(task_with_name) == expected
