@@ -4,6 +4,7 @@
 tools for dealing with dates
 """
 from datetime import datetime, timedelta
+from calendar import monthrange, month_abbr
 from functools import lru_cache
 
 from numpy import busday_count
@@ -86,3 +87,54 @@ def get_overlap(time_window0, time_window1):
     else:
         overlap = None
     return overlap
+
+
+def get_time_windows(start_date, end_date, increment='month'):
+    """
+    get a list of paired start and end dates
+    :param start_date: the start date for the overall period
+    :param end_date: the end date for the overall period
+    :param increment: day, week or month
+    :return: a list of lists, each with two date objects
+    """
+    time_windows = []
+
+    if increment == 'month':
+
+        if start_date.day != 1:
+            start_date = datetime.date(start_date.year, start_date.month, 1)
+
+        while start_date < end_date:
+            month_range = [start_date,
+                           datetime.date(start_date.year, start_date.month, monthrange(start_date.year,
+                                                                                       start_date.month)[1]),
+                           '%s %s' % (month_abbr(start_date.month), str(start_date.year))]
+
+            time_windows.append(month_range)
+            start_date = month_range[1] + timedelta(days=1)
+
+    elif increment == 'week':
+
+        if start_date.isoweekday() != 1:
+            start_date = datetime.date(start_date.year, start_date.month,
+                                       start_date.day - start_date.isoweekday() - 1)
+
+        while start_date < end_date:
+            week_range = [start_date,
+                          start_date + timedelta(days=6),
+                          'w/c %s/%s/%s' % (str(start_date.day), month_abbr(start_date.month), str(start_date.year))]
+
+            time_windows.append(week_range)
+            start_date = week_range[1] + timedelta(days=1)
+
+    elif increment == 'day':
+
+        while start_date <= end_date:
+            day_range = [start_date,
+                         start_date,
+                         '%s/%s/%s' % (str(start_date.day), str(start_date.month), str(start_date.year))]
+
+            time_windows.append(day_range)
+            start_date = day_range[1] + timedelta(days=1)
+
+    return time_windows

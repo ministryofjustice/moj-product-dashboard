@@ -2,7 +2,7 @@ from datetime import date
 
 from dashboard.apps.prototype.models import Project
 from dashboard.libs.queries import get_dates
-from dashboard.libs.date_tools import get_workdays_list
+from dashboard.libs.date_tools import get_workdays_list, get_time_windows
 from dashboard.apps.prototype.models import Project, Person, Task
 
 
@@ -26,20 +26,17 @@ class Figures(object):
         else:
             end_date = date.today()
 
-        project_working_days = get_workdays_list(start_date, end_date)
+        time_windows = get_time_windows(start_date, end_date)
 
-        day_data = get_day_data(project_working_days, tasks)
+        response = []
+        for window in time_windows:
+            time = project.time_spent(window[0], window[1])
+            cost = project.money_spent(window[0], window[1])
+            label = window[2]
 
-        persons_data = get_persons_data(project)
+            response.append({'time': time, 'cost': cost, 'label': label})
 
-        single_project_data = {
-            'start_date': start_date,
-            'end_date': end_date,
-            'active_days': day_data,
-            'persons': persons_data
-        }
-
-        return single_project_data
+        return response
 
 
 def get_persons_data(project):

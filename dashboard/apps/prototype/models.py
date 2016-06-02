@@ -150,6 +150,35 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+    def money_spent(self, start_date, end_date):
+        """
+        get the money spent on the project during a time window.
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: cost in pound, a decimal
+        """
+        cost = Decimal()
+        for task in self.tasks.filter(end_date__gte=start_date, start_date__lte=end_date):
+            cost += task.money_spent(start_date, end_date)
+
+        return cost
+
+    def time_spent(self, start_date, end_date):
+        """
+        get the days spent on the task during a time window.
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: number of days, a decimal
+        """
+        cost = Decimal()
+        for task in self.tasks.filter(end_date__gte=start_date, start_date__lte=end_date):
+            cost += task.time_spent(start_date, end_date)
+
+        return cost
+
+    # def staff_split(self, start_date, end_date):
+    #
+    #     for task in self.tasks.filter(end_date__gte=start_date, start_date__lte=end_date):
 
 class Task(models.Model):
     name = models.CharField(max_length=128, null=True)
@@ -174,6 +203,7 @@ class Task(models.Model):
                 self.start_date.strftime('%Y-%m-%d'),
                 self.end_date.strftime('%Y-%m-%d'),
                 self.days)
+
 
     @property
     def workdays(self):
