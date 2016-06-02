@@ -20,7 +20,6 @@ class Figure {
     //   throw new TypeError("Figure class is abstract and should not be instantiated");
     // }
     this.element = element;
-    this.data = {};
     this.traces = [];
   }
 
@@ -33,8 +32,7 @@ class Figure {
   }
 
   handleResponse(json) {
-    this.data = json;
-    console.log(this.data)
+    console.log(json)
   }
 
   getRequestFigure (url) {
@@ -66,20 +64,49 @@ class SingleProjectFigure extends Figure {
 
   constructor(element) {
     super(element);
+    this.traceType = undefined;
   }
 
   handleResponse(json) {
     super.handleResponse(json);
+    SingleProjectFigure.data = json;
     this.makeTraces();
-    this.plot();
-
   }
 
   makeTraces() {
 
+    if (this.traceType == 'cost') { this.makeCostTrace(); }
+    if (this.traceType == 'cumulative') {}
+
+    console.log('>>>>>' + this.traces);
+    this.plot();
+
+  }
+
+  display(url, traceType) {
+    this.getData(url);
+    this.traceType = traceType;
+  }
+
+  updateData(url) {
+    this.postRequestFigure(url, SingleProjectFigure.requestData);
+  }
+
+  getData(url) {
+    if (SingleProjectFigure.data != {}) {
+      this.updateData(url);
+    }
+    else {
+      console.log('Data already aquired, use updateData to refresh');
+      this.plot();
+    }
+  }
+
+  makeCostTrace() {
+
     let costTrace = this.newTrace();
 
-    for (let timeWindow of this.data) {
+    for (let timeWindow of SingleProjectFigure.data) {
 
       costTrace.x.push(timeWindow.label);
       costTrace.y.push(timeWindow.cost);
@@ -90,28 +117,18 @@ class SingleProjectFigure extends Figure {
 
   }
 
-
 }
 
+SingleProjectFigure.data = {};
 
-var testRequest = {
-  requested_figure : 'staff_split',
-  projectids : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  persons : [],
-  areas : [],
-  start_date: '2015-01-01',
-  end_date: '2016-05-23'
-};
-
-
-var projectTestRequest = {
+SingleProjectFigure.requestData = {
 
   request_type : 'single_project',
   project_id : 52,
   start_date: '2015-01-01',
   end_date: '2016-06-01',
-  time_increment: 'day',
-  filter_empty: true
+  time_increment: 'month',
+  filter_empty: false
 
 };
 
@@ -119,20 +136,10 @@ var projectTestRequest = {
 function plot() {
 
   const figA = document.getElementById('fig-a');
-  const figB = document.getElementById('fig-b');
-  const figC = document.getElementById('fig-c');
-
   const fA = new SingleProjectFigure(figA);
-  // const fB = new MonthCumulFigure(figB);
-  // const fC = new StaffSplitFigure(figC);
 
-  // console.log(document.getElementById('projects').value);
-
-  // fA.postRequestFigure('/getdata/', projectTestRequest);
-  // fB.postRequestFigure('/getdata/', projectTestRequest);
-  // fC.postRequestFigure('/getdata/', projectTestRequest);
-
-  fA.postRequestFigure('/getdata/', projectTestRequest)
+  // fA.getData('/getdata/');
+  fA.display('/getdata/', 'cost');
 
 }
 

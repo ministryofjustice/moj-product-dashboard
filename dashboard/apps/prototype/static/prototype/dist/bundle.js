@@ -8149,7 +8149,6 @@
 	    //   throw new TypeError("Figure class is abstract and should not be instantiated");
 	    // }
 	    this.element = element;
-	    this.data = {};
 	    this.traces = [];
 	  }
 	
@@ -8166,8 +8165,7 @@
 	  }, {
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
-	      this.data = json;
-	      console.log(this.data);
+	      console.log(json);
 	    }
 	  }, {
 	    key: 'getRequestFigure',
@@ -8212,19 +8210,55 @@
 	  function SingleProjectFigure(element) {
 	    _classCallCheck(this, SingleProjectFigure);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(SingleProjectFigure).call(this, element));
+	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SingleProjectFigure).call(this, element));
+	
+	    _this3.traceType = undefined;
+	    return _this3;
 	  }
 	
 	  _createClass(SingleProjectFigure, [{
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
 	      _get(Object.getPrototypeOf(SingleProjectFigure.prototype), 'handleResponse', this).call(this, json);
+	      SingleProjectFigure.data = json;
 	      this.makeTraces();
-	      this.plot();
 	    }
 	  }, {
 	    key: 'makeTraces',
 	    value: function makeTraces() {
+	
+	      if (this.traceType == 'cost') {
+	        this.makeCostTrace();
+	      }
+	      if (this.traceType == 'cumulative') {}
+	
+	      console.log('>>>>>' + this.traces);
+	      this.plot();
+	    }
+	  }, {
+	    key: 'display',
+	    value: function display(url, traceType) {
+	      this.getData(url);
+	      this.traceType = traceType;
+	    }
+	  }, {
+	    key: 'updateData',
+	    value: function updateData(url) {
+	      this.postRequestFigure(url, SingleProjectFigure.requestData);
+	    }
+	  }, {
+	    key: 'getData',
+	    value: function getData(url) {
+	      if (SingleProjectFigure.data != {}) {
+	        this.updateData(url);
+	      } else {
+	        console.log('Data already aquired, use updateData to refresh');
+	        this.plot();
+	      }
+	    }
+	  }, {
+	    key: 'makeCostTrace',
+	    value: function makeCostTrace() {
 	
 	      var costTrace = this.newTrace();
 	
@@ -8233,7 +8267,7 @@
 	      var _iteratorError = undefined;
 	
 	      try {
-	        for (var _iterator = this.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	        for (var _iterator = SingleProjectFigure.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var timeWindow = _step.value;
 	
 	
@@ -8262,43 +8296,26 @@
 	  return SingleProjectFigure;
 	}(Figure);
 	
-	var testRequest = {
-	  requested_figure: 'staff_split',
-	  projectids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-	  persons: [],
-	  areas: [],
-	  start_date: '2015-01-01',
-	  end_date: '2016-05-23'
-	};
+	SingleProjectFigure.data = {};
 	
-	var projectTestRequest = {
+	SingleProjectFigure.requestData = {
 	
 	  request_type: 'single_project',
 	  project_id: 52,
 	  start_date: '2015-01-01',
 	  end_date: '2016-06-01',
-	  time_increment: 'day',
-	  filter_empty: true
+	  time_increment: 'month',
+	  filter_empty: false
 	
 	};
 	
 	function plot() {
 	
 	  var figA = document.getElementById('fig-a');
-	  var figB = document.getElementById('fig-b');
-	  var figC = document.getElementById('fig-c');
-	
 	  var fA = new SingleProjectFigure(figA);
-	  // const fB = new MonthCumulFigure(figB);
-	  // const fC = new StaffSplitFigure(figC);
 	
-	  // console.log(document.getElementById('projects').value);
-	
-	  // fA.postRequestFigure('/getdata/', projectTestRequest);
-	  // fB.postRequestFigure('/getdata/', projectTestRequest);
-	  // fC.postRequestFigure('/getdata/', projectTestRequest);
-	
-	  fA.postRequestFigure('/getdata/', projectTestRequest);
+	  // fA.getData('/getdata/');
+	  fA.display('/getdata/', 'cost');
 	}
 	
 	/**
@@ -9086,7 +9103,7 @@
 /* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -61353,7 +61370,7 @@
 /* 478 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;var require;/*!
+	var require;var require;var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	 * Select2 4.0.3
 	 * https://select2.github.io
 	 *
