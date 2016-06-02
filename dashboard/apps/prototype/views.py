@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.http import (JsonResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Project, Client
 from dashboard.libs.figure_gen import get_figure
@@ -65,3 +66,15 @@ def send_figure(request):
     figure = get_figure(request_data['requested_figure'], request_data)
 
     return JsonResponse(figure, safe=False)
+
+
+#  @login_required
+@csrf_exempt
+def project_json(request):
+    """
+    send json for a project profilet
+    """
+    # TODO handle errors
+    request_data = json.loads(request.body.decode())
+    project = Project.objects.get(id=request_data['projectid'])
+    return JsonResponse(project.profile())

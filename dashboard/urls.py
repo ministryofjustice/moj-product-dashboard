@@ -18,12 +18,13 @@ from django.conf import settings
 from django.contrib import admin
 from moj_irat.views import PingJsonView, HealthcheckView
 
-from dashboard.apps.prototype.views import index, send_figure
+from dashboard.apps.prototype.views import index, send_figure, project_json
 from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     url(r'^$', index),
+    url(r'^project.json/', project_json),
     url(r'^getfig/', send_figure),
     url(r'^admin/', admin.site.urls),
     url(r'^login/', auth_views.login),

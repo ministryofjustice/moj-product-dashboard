@@ -6,7 +6,8 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy
 
-from dashboard.libs.date_tools import get_workdays, get_overlap
+from dashboard.libs.date_tools import (
+    get_workdays, get_overlap, slice_time_window)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 
@@ -146,6 +147,33 @@ class Project(models.Model):
     live_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     raw_data = JSONField(null=True)
+
+    @property
+    def first_task(self):
+        return self.tasks.order_by('start_date').first()
+
+    @property
+    def last_task(self):
+        return self.tasks.order_by('-end_date').first()
+
+    def profile(self, start_date=None, end_date=None, freq='MS'):
+        if not start_date:
+            start_date = self.first_task.start_date
+        if not end_date:
+            end_date = self.last_task.end_date
+        time_windows = slice_time_window(start_date, end_date, freq)
+        result = {}
+        for sdate, edate in time_windows:
+            key = sdate.strftime('%Y-%m')
+            contractor_cost = self.money_spent(
+                sdate, edate, contractor_only=True)
+            non_contractor_cost = self.money_spent(
+                sdate, edate, non_contractor_only=True)
+            result[key] = {
+                'contractor': contractor_cost,
+                'non-contractor': non_contractor_cost
+            }
+        return result
 
     def __str__(self):
         return self.name

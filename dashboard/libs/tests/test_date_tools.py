@@ -1,5 +1,8 @@
+from datetime import date
+
 from dashboard.libs.date_tools import (
-    get_workdays, get_bank_holidays, get_overlap, parse)
+    get_workdays, get_bank_holidays, get_overlap, parse,
+    slice_time_window)
 import pytest
 
 
@@ -56,3 +59,12 @@ def test_get_overlap(start_date0, end_date0, start_date1, end_date1, expected):
     if expected:
         expected = parse(expected[0]), parse(expected[1])
     assert expected == overlap
+
+
+# TODO more tests!
+def test_slice_time_window():
+    start_date = date(2015, 1, 2)
+    end_date = date(2015, 12, 31)
+    sliced = slice_time_window(start_date, end_date, 'MS')
+    assert sliced[0] == (date(2015, 1, 2), date(2015, 1, 31))
+    assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))

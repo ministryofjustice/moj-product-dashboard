@@ -168,6 +168,8 @@ if 'SENTRY_DSN' in os.environ:
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
+APPEND_SLASH = False
+
 # .local.py overrides all the common settings.
 try:
     from .local import *

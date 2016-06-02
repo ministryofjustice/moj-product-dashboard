@@ -7,11 +7,12 @@ Plotly.register([bar]);
 import $ from 'jquery';
 import select2 from 'select2';
 import URI from 'urijs';
+import _ from 'lodash';
+import moment from 'moment';
 
 require('select2/dist/css/select2.min.css');
 require('../styles/gov-uk-elements.css');
 require('../styles/main.css');
-
 
 class Figure {
 
@@ -190,32 +191,71 @@ var testRequest = {
   end_date: '2016-05-23'
 };
 
+// TODO this function needs some structure
+function plotProject(project) {
+      const pairs = _.toPairs(project).sort();
+      const months = _.map(pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
+      const contractorCosts = _.map(pairs, ([k, v]) => parseFloat(v['contractor']));
+      const civilServantCosts = _.map(pairs, ([k, v]) => parseFloat(v['non-contractor']));
+      const totalCosts = _.map(_.zip(contractorCosts, civilServantCosts), ([x, y]) => x + y);
+      const totalCostsCumulative = [];
+      totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
+      const trace1 = {
+        x: months,
+        y: civilServantCosts,
+        name: 'Civil Servant',
+        type: 'bar'
+      };
+      const trace2 = {
+        x: months,
+        y: contractorCosts,
+        name: 'Contractor',
+        type: 'bar'
+      };
+      const trace3 = {
+        x: months,
+        y: totalCostsCumulative,
+        name: 'Cumulative',
+        mode: 'lines',
+        yaxis: 'y2'
+      }
+      const layout = {
+        barmode: 'stack',
+        yaxis: {
+          title: 'monthly cost'
+        },
+        yaxis2: {
+          title: 'cumulative',
+          overlaying: 'y',
+          side: 'right'
+        },
+        legend: {
+          yanchor: 'bottom'
+        }
+      };
+      Plotly.newPlot(
+          document.getElementById('fig-a'),
+          [trace1, trace2, trace3], layout);
+};
 
-function plotProject(id) {
-
-  const figA = document.getElementById('fig-a');
-  const figB = document.getElementById('fig-b');
-  const figC = document.getElementById('fig-c');
-  const figD = document.getElementById('fig-d');
-
-  const fA = new ProjectCostFigure(figA);
-  const fC = new Figure(figC);
-  const fB = new Figure(figB);
-  const fD = new Figure(figD);
-
-  fA.postRequestFigure('/getfig/', {projectid: id, requested_figure: 'project_cost', start_date: '2015-01-01', end_date: '2016-08-01'});
-  fB.postRequestFigure('/getfig/', testRequest);
-  fC.postRequestFigure('/getfig/', testRequest);
-  fD.postRequestFigure('/getfig/', testRequest);
+function getProjectJSON(id) {
+  return fetch('/project.json/', {
+      credentials: 'same-origin',
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': Cookies.get('csrftoken'),
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({projectid: id})
+  }).then(response => response.json());
 };
 
 /**
  * get projectId based on the query string
  */
 function getProjectId() {
-  const projectId = URI(window.location.href).query(true).projectid;
-  console.log('projectId:', projectId);
-  return projectId;
+  return URI(window.location.href).query(true).projectid;
 };
 
 
@@ -228,7 +268,8 @@ function loadProject(id) {
 $(() => {
   const projectId = getProjectId();
   // plot project
-  plotProject(projectId);
+  getProjectJSON(projectId)
+    .then(plotProject);
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
     loadProject(e.params.data.id);
