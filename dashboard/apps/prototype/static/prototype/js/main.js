@@ -16,9 +16,9 @@ require('../styles/main.css');
 class Figure {
 
   constructor(element) {
-    if (new.target === Figure) {
-      throw new TypeError("Figure class is abstract and should not be instantiated");
-    }
+    // if (new.target === Figure) {
+    //   throw new TypeError("Figure class is abstract and should not be instantiated");
+    // }
     this.element = element;
     this.data = {};
   }
@@ -29,6 +29,7 @@ class Figure {
 
   handleResponse(json) {
     this.data = json;
+    console.log(this.data)
   }
 
   getRequestFigure (url) {
@@ -571,12 +572,10 @@ var testRequest = {
 var projectTestRequest = {
 
   request_type : 'single_project',
-  project_id : 1,
-  persons : [],
-  areas : [],
+  project_id : 52,
   start_date: '2015-01-01',
   end_date: '2016-06-01',
-  time_increment: 'month'
+  time_increment: 'day'
 
 };
 
@@ -587,16 +586,17 @@ function plot() {
   const figB = document.getElementById('fig-b');
   const figC = document.getElementById('fig-c');
 
-  const fA = new MonthCostFigure(figA);
-  const fB = new MonthCumulFigure(figB);
-  const fC = new StaffSplitFigure(figC);
+  const fA = new Figure(figA);
+  // const fB = new MonthCumulFigure(figB);
+  // const fC = new StaffSplitFigure(figC);
 
   // console.log(document.getElementById('projects').value);
 
-  fA.postRequestFigure('/getdata/', projectTestRequest);
-  fB.postRequestFigure('/getdata/', projectTestRequest);
-  fC.postRequestFigure('/getdata/', projectTestRequest);
+  // fA.postRequestFigure('/getdata/', projectTestRequest);
+  // fB.postRequestFigure('/getdata/', projectTestRequest);
+  // fC.postRequestFigure('/getdata/', projectTestRequest);
 
+  fA.postRequestFigure('/getdata/', projectTestRequest)
 
 }
 

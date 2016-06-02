@@ -17,16 +17,9 @@ class Figures(object):
     def single_project(request_data):
 
         project = Project.objects.get(id=request_data['project_id'])
-        tasks = project.tasks.all()
-        # Change to tasks.order_by('start_date').first() ?
-        start_date = tasks.order_by('start_date')[0].start_date
 
-        if project.end_date:
-            end_date = project.end_date
-        else:
-            end_date = date.today()
-
-        time_windows = get_time_windows(start_date, end_date)
+        time_windows = get_time_windows(request_data['start_date'], request_data['end_date'],
+                                        request_data['time_increment'])
 
         response = []
         for window in time_windows:
@@ -111,6 +104,9 @@ def get_persons_on_project(project):
 
 
 def get_data(request_data):
+
+    request_data['start_date'], request_data['end_date'] = get_dates(request_data['start_date'],
+                                                                     request_data['end_date'])
 
     data = getattr(Figures, request_data['request_type'])(request_data)
 
