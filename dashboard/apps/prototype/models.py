@@ -150,6 +150,31 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+    def money_spent(self, start_date, end_date, contractor_only=False,
+                    non_contractor_only=False):
+        """
+        get money spent in a time window
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param contractor_only: True to return only money spent on contractors
+        :param non_contractor_only: True to return only money spent on
+        non-contractors
+        :return: a decimal for total spending
+        """
+        if contractor_only and non_contractor_only:
+            raise ValueError('only one of contractor_only and'
+                             ' non_contractor_only can be true')
+        tasks = self.tasks
+        if contractor_only:
+            tasks = tasks.filter(person__is_contractor=True)
+        elif non_contractor_only:
+            tasks = tasks.filter(person__is_contractor=False)
+        else:
+            tasks = tasks.all()
+        spending_per_task = [task.money_spent(start_date, end_date)
+                             for task in tasks]
+        return sum(spending_per_task)
+
 
 class Task(models.Model):
     name = models.CharField(max_length=128, null=True)
