@@ -223,6 +223,8 @@ class Task(models.Model):
         :param end_date: end date of the time window, a date object
         :return: cost in pound, a decimal
         """
+        if not self.project.is_billable:
+            return 0
         start_date = start_date or self.start_date
         end_date = end_date or self.end_date
 
