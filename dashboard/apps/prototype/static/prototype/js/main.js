@@ -37,6 +37,7 @@ class Figure {
   }
 
   postRequestFigure (url, requestJson) {
+    // console.log(requestJson);
     fetch(url, {
       credentials: 'same-origin',
       method: 'POST',
@@ -53,7 +54,8 @@ class Figure {
 
 }
 
-class ProjectCostFigure extends Figure {
+
+class SingleProjectFigure extends Figure {
 
   constructor(element) {
     super(element);
@@ -124,21 +126,23 @@ class ProjectCostFigure extends Figure {
 
     for (let i = 0; i < monthlyBreakdowns.length; i++) {
 
-        for (let j = 0; j < this.data.days.length; j++) {
+        for (let j = 0; j < this.data.active_days.length; j++) {
 
-          let date = new Date(this.data.days[j]);
+          let date = new Date(this.data.active_days[j].date);
 
           if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
+            // console.log('>>>>' + date.getMonth() + date.yearNum());
 
-
-            monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
+            monthlyBreakdowns[i].monthCost += parseInt( this.data.active_days[j].cost );
+            // Is this where I'm going wrong on the cumulative cost?
             monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
-
+            monthlyBreakdowns[i].monthCsProp += parseInt( this.data.active_days[j].cs_perc );
+            monthlyBreakdowns[i].monthContProp += parseInt( this.data.active_days[j].contr_perc );
           }
 
         }
-      }
-
+    }
+    console.log(monthlyBreakdowns);
     return monthlyBreakdowns;
 
   }
@@ -159,12 +163,15 @@ class ProjectCostFigure extends Figure {
             yearNum: year,
             monthCost: 0,
             cumulCost: 0,
-            monthTimeSpent: 0
+            monthTimeSpent: 0,
+            monthCsProp: 0,
+            monthContProp: 0
           });
 
       }
       month = 1;
     }
+    console.log(monthlyBreakdowns);
     return monthlyBreakdowns;
   }
 
@@ -174,7 +181,7 @@ class ProjectCostFigure extends Figure {
 
     this.data = json;
     console.log(this.data);
-    // this.getMonthData();
+    this.getMonthData();
 
   }
 
@@ -193,7 +200,7 @@ var testRequest = {
 var projectTestRequest = {
 
   requested_data : 'single_project',
-  projects : ['claim for crown'],
+  project_id : 5,
   persons : [],
   areas : [],
   start_date: '2015-01-01',
@@ -204,20 +211,14 @@ var projectTestRequest = {
 
 function plot() {
 
-  const figA = document.getElementById('fig-a');
-  const figB = document.getElementById('fig-b');
   const figC = document.getElementById('fig-c');
-  const figD = document.getElementById('fig-d');
 
-  // const fA = new Figure(figA);
-  // const fB = new Figure(figB);
-  const fC = new ProjectCostFigure(figC);
-  // const fD = new Figure(figD);
+  const fC = new SingleProjectFigure(figC);
 
-  // fA.postRequestFigure('/getdata/', testRequest);
-  // fB.postRequestFigure('/getdata/', testRequest);
+  console.log(document.getElementById('projects').value);
+
   fC.postRequestFigure('/getdata/', projectTestRequest);
-  // fD.postRequestFigure('/getdata/', testRequest);
+
 }
 
 function selectProject(projectId) {

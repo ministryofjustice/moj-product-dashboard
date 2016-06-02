@@ -8172,6 +8172,7 @@
 	    value: function postRequestFigure(url, requestJson) {
 	      var _this2 = this;
 	
+	      // console.log(requestJson);
 	      fetch(url, {
 	        credentials: 'same-origin',
 	        method: 'POST',
@@ -8192,13 +8193,13 @@
 	  return Figure;
 	}();
 	
-	var ProjectCostFigure = function (_Figure) {
-	  _inherits(ProjectCostFigure, _Figure);
+	var SingleProjectFigure = function (_Figure) {
+	  _inherits(SingleProjectFigure, _Figure);
 	
-	  function ProjectCostFigure(element) {
-	    _classCallCheck(this, ProjectCostFigure);
+	  function SingleProjectFigure(element) {
+	    _classCallCheck(this, SingleProjectFigure);
 	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(ProjectCostFigure).call(this, element));
+	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SingleProjectFigure).call(this, element));
 	
 	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
 	    _this3.startDate = undefined;
@@ -8221,7 +8222,7 @@
 	    return _this3;
 	  }
 	
-	  _createClass(ProjectCostFigure, [{
+	  _createClass(SingleProjectFigure, [{
 	    key: 'makeMonthlyTrace',
 	    value: function makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
 	
@@ -8312,18 +8313,22 @@
 	
 	      for (var i = 0; i < monthlyBreakdowns.length; i++) {
 	
-	        for (var j = 0; j < this.data.days.length; j++) {
+	        for (var j = 0; j < this.data.active_days.length; j++) {
 	
-	          var date = new Date(this.data.days[j]);
+	          var date = new Date(this.data.active_days[j].date);
 	
 	          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
+	            // console.log('>>>>' + date.getMonth() + date.yearNum());
 	
-	            monthlyBreakdowns[i].monthCost += parseInt(this.data.costs[j]);
+	            monthlyBreakdowns[i].monthCost += parseInt(this.data.active_days[j].cost);
+	            // Is this where I'm going wrong on the cumulative cost?
 	            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
+	            monthlyBreakdowns[i].monthCsProp += parseInt(this.data.active_days[j].cs_perc);
+	            monthlyBreakdowns[i].monthContProp += parseInt(this.data.active_days[j].contr_perc);
 	          }
 	        }
 	      }
-	
+	      console.log(monthlyBreakdowns);
 	      return monthlyBreakdowns;
 	    }
 	  }, {
@@ -8344,11 +8349,14 @@
 	            yearNum: year,
 	            monthCost: 0,
 	            cumulCost: 0,
-	            monthTimeSpent: 0
+	            monthTimeSpent: 0,
+	            monthCsProp: 0,
+	            monthContProp: 0
 	          });
 	        }
 	        month = 1;
 	      }
+	      console.log(monthlyBreakdowns);
 	      return monthlyBreakdowns;
 	    }
 	  }, {
@@ -8359,11 +8367,11 @@
 	
 	      this.data = json;
 	      console.log(this.data);
-	      // this.getMonthData();
+	      this.getMonthData();
 	    }
 	  }]);
 	
-	  return ProjectCostFigure;
+	  return SingleProjectFigure;
 	}(Figure);
 	
 	var testRequest = {
@@ -8378,7 +8386,7 @@
 	var projectTestRequest = {
 	
 	  requested_data: 'single_project',
-	  projects: ['claim for crown'],
+	  project_id: 5,
 	  persons: [],
 	  areas: [],
 	  start_date: '2015-01-01',
@@ -8388,20 +8396,13 @@
 	
 	function plot() {
 	
-	  var figA = document.getElementById('fig-a');
-	  var figB = document.getElementById('fig-b');
 	  var figC = document.getElementById('fig-c');
-	  var figD = document.getElementById('fig-d');
 	
-	  // const fA = new Figure(figA);
-	  // const fB = new Figure(figB);
-	  var fC = new ProjectCostFigure(figC);
-	  // const fD = new Figure(figD);
+	  var fC = new SingleProjectFigure(figC);
 	
-	  // fA.postRequestFigure('/getdata/', testRequest);
-	  // fB.postRequestFigure('/getdata/', testRequest);
+	  console.log(document.getElementById('projects').value);
+	
 	  fC.postRequestFigure('/getdata/', projectTestRequest);
-	  // fD.postRequestFigure('/getdata/', testRequest);
 	}
 	
 	function selectProject(projectId) {
