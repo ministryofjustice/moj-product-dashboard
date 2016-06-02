@@ -16,7 +16,7 @@ class Figures(object):
     @staticmethod
     def single_project(request_data):
 
-        project = request_data['project']
+        project = Project.objects.get(id=request_data['project_id'])
         tasks = project.tasks.all()
         # Change to tasks.order_by('start_date').first() ?
         start_date = tasks.order_by('start_date')[0].start_date
@@ -113,51 +113,9 @@ def get_persons_on_project(project):
     return persons
 
 
-<<<<<<< HEAD
 def get_data(request_data):
 
     data = getattr(Figures, request_data['request_type'])(request_data)
 
     return data
-=======
-def get_trace(x_axis, y_axis, name='trace', trace_type='bar'):
-    trace = {
-        'name': name,
-        'x': x_axis,
-        'y': y_axis,
-        'type': trace_type
-    }
-    return trace
 
-
-def get_figure(requested_figure, request_data):
-    start_date, end_date = get_dates(request_data['start_date'],
-                                     request_data['end_date'])
-    # TODO we should split it into two views one for singular project
-    # the other for a list
-    if 'projectid' in request_data:
-        project = Project.objects.get(id=request_data['projectid'])
-    else:
-        project = None
-
-    if 'projectids' in request_data:
-        projects = Project.objects.filter(id__in=request_data['projectids'])
-    else:
-        projects = None
-
-    data = {
-        #  'persons': get_persons(request_data['persons']),
-        #  'areas': get_areas(request_data['areas']),
-        'project': project,
-        'projects': projects,
-        'start_date': start_date,
-        'end_date': end_date
-    }
-    try:
-        figure = (getattr(Figures, requested_figure)(data))
-    except AttributeError:
-        figure = {}
-        print('error: no such trace available')
-
-    return figure
->>>>>>> develop

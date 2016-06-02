@@ -622,7 +622,7 @@ function loadProject(id) {
 $(() => {
   const projectId = getProjectId();
   // plot project
-  plotProject(projectId);
+  plot();
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
     loadProject(e.params.data.id);
