@@ -8193,13 +8193,13 @@
 	  return Figure;
 	}();
 	
-	var SingleProjectFigure = function (_Figure) {
-	  _inherits(SingleProjectFigure, _Figure);
+	var MonthCostFigure = function (_Figure) {
+	  _inherits(MonthCostFigure, _Figure);
 	
-	  function SingleProjectFigure(element) {
-	    _classCallCheck(this, SingleProjectFigure);
+	  function MonthCostFigure(element) {
+	    _classCallCheck(this, MonthCostFigure);
 	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SingleProjectFigure).call(this, element));
+	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(MonthCostFigure).call(this, element));
 	
 	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
 	    _this3.startDate = undefined;
@@ -8211,23 +8211,20 @@
 	
 	      monthlyBreakdowns = _this3.calcMonthlyData(monthlyBreakdowns);
 	
-	      var monthCostTrace = _this3.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
-	      var cumulCostTrace = _this3.makeCumulTrace(monthlyBreakdowns);
+	      var monthCostTrace = [_this3.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar')];
 	
-	      var traces = [monthCostTrace, cumulCostTrace];
-	
-	      _core2.default.newPlot(_this3.element, traces, { showlegend: false }, { displaylogo: false });
+	      _core2.default.newPlot(_this3.element, monthCostTrace, { displaylogo: false });
 	    };
 	
 	    return _this3;
 	  }
 	
-	  _createClass(SingleProjectFigure, [{
-	    key: 'makeMonthlyTrace',
-	    value: function makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
-	
+	  _createClass(MonthCostFigure, [{
+	    key: 'makeSplitTraces',
+	    value: function makeSplitTraces(monthlyBreakdowns) {
 	      var x_axis = [];
-	      var y_axis = [];
+	      var cs_y_axis = [];
+	      var contr_y_axis = [];
 	
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
@@ -8238,8 +8235,27 @@
 	          var month = _step.value;
 	
 	
+	          var cs_perc = 0;
+	          var contr_perc = 0;
+	
 	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
-	          y_axis.push(month[y_series]);
+	
+	          if (month.monthCsProp != 0) {
+	            cs_perc = month.monthCsProp / (month.monthCsProp + month.monthContProp);
+	          }
+	          if (month.monthCsProp != 0) {
+	            contr_perc = month.monthContProp / (month.monthContProp + month.monthCsProp);
+	          }
+	
+	          cs_y_axis.push(cs_perc);
+	          contr_y_axis.push(contr_perc);
+	
+	          var cs_trace = { x: x_axis, y: cs_y_axis, type: 'bar' };
+	          var contr_trace = { x: x_axis, y: contr_y_axis, type: 'bar' };
+	
+	          var traces = [cs_trace, contr_trace];
+	
+	          return traces;
 	        }
 	      } catch (err) {
 	        _didIteratorError = true;
@@ -8252,6 +8268,40 @@
 	        } finally {
 	          if (_didIteratorError) {
 	            throw _iteratorError;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'makeMonthlyTrace',
+	    value: function makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
+	
+	      var x_axis = [];
+	      var y_axis = [];
+	
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+	
+	      try {
+	        for (var _iterator2 = monthlyBreakdowns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          var month = _step2.value;
+	
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	          y_axis.push(month[y_series]);
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
 	          }
 	        }
 	      }
@@ -8271,13 +8321,13 @@
 	      var x_axis = [];
 	      var y_axis = [];
 	      var cumulCost = 0;
-	      var _iteratorNormalCompletion2 = true;
-	      var _didIteratorError2 = false;
-	      var _iteratorError2 = undefined;
+	      var _iteratorNormalCompletion3 = true;
+	      var _didIteratorError3 = false;
+	      var _iteratorError3 = undefined;
 	
 	      try {
-	        for (var _iterator2 = monthlyBreakdowns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          var month = _step2.value;
+	        for (var _iterator3 = monthlyBreakdowns[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	          var month = _step3.value;
 	
 	          cumulCost += month.monthCost;
 	
@@ -8285,16 +8335,16 @@
 	          y_axis.push(cumulCost);
 	        }
 	      } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
+	        _didIteratorError3 = true;
+	        _iteratorError3 = err;
 	      } finally {
 	        try {
-	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	            _iterator2.return();
+	          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	            _iterator3.return();
 	          }
 	        } finally {
-	          if (_didIteratorError2) {
-	            throw _iteratorError2;
+	          if (_didIteratorError3) {
+	            throw _iteratorError3;
 	          }
 	        }
 	      }
@@ -8344,6 +8394,10 @@
 	
 	        for (month; month <= 12; month++) {
 	
+	          if (year == 2016 && month == 4) {
+	            break;
+	          }
+	
 	          monthlyBreakdowns.push({
 	            monthNum: month,
 	            yearNum: year,
@@ -8356,7 +8410,7 @@
 	        }
 	        month = 1;
 	      }
-	      console.log(monthlyBreakdowns);
+	      // console.log(monthlyBreakdowns);
 	      return monthlyBreakdowns;
 	    }
 	  }, {
@@ -8366,12 +8420,489 @@
 	      this.startDate = new Date(json.start_date);
 	
 	      this.data = json;
-	      console.log(this.data);
+	      // console.log(this.data);
 	      this.getMonthData();
 	    }
 	  }]);
 	
-	  return SingleProjectFigure;
+	  return MonthCostFigure;
+	}(Figure);
+	
+	var MonthCumulFigure = function (_Figure2) {
+	  _inherits(MonthCumulFigure, _Figure2);
+	
+	  function MonthCumulFigure(element) {
+	    _classCallCheck(this, MonthCumulFigure);
+	
+	    var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(MonthCumulFigure).call(this, element));
+	
+	    _this4.incrementLengths = ['day', 'week', 'month', 'year'];
+	    _this4.startDate = undefined;
+	    _this4.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	
+	    _this4.getMonthData = function () {
+	
+	      var monthlyBreakdowns = _this4.getMonthsInProject();
+	
+	      monthlyBreakdowns = _this4.calcMonthlyData(monthlyBreakdowns);
+	
+	      var cumulCostTrace = [_this4.makeCumulTrace(monthlyBreakdowns)];
+	
+	      _core2.default.newPlot(_this4.element, cumulCostTrace, { displaylogo: false });
+	    };
+	
+	    return _this4;
+	  }
+	
+	  _createClass(MonthCumulFigure, [{
+	    key: 'makeSplitTraces',
+	    value: function makeSplitTraces(monthlyBreakdowns) {
+	      var x_axis = [];
+	      var cs_y_axis = [];
+	      var contr_y_axis = [];
+	
+	      var _iteratorNormalCompletion4 = true;
+	      var _didIteratorError4 = false;
+	      var _iteratorError4 = undefined;
+	
+	      try {
+	        for (var _iterator4 = monthlyBreakdowns[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	          var month = _step4.value;
+	
+	
+	          var cs_perc = 0;
+	          var contr_perc = 0;
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	
+	          if (month.monthCsProp != 0) {
+	            cs_perc = month.monthCsProp / (month.monthCsProp + month.monthContProp);
+	          }
+	          if (month.monthCsProp != 0) {
+	            contr_perc = month.monthContProp / (month.monthContProp + month.monthCsProp);
+	          }
+	
+	          cs_y_axis.push(cs_perc);
+	          contr_y_axis.push(contr_perc);
+	
+	          var cs_trace = { x: x_axis, y: cs_y_axis, type: 'bar' };
+	          var contr_trace = { x: x_axis, y: contr_y_axis, type: 'bar' };
+	
+	          var traces = [cs_trace, contr_trace];
+	
+	          return traces;
+	        }
+	      } catch (err) {
+	        _didIteratorError4 = true;
+	        _iteratorError4 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+	            _iterator4.return();
+	          }
+	        } finally {
+	          if (_didIteratorError4) {
+	            throw _iteratorError4;
+	          }
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'makeMonthlyTrace',
+	    value: function makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
+	
+	      var x_axis = [];
+	      var y_axis = [];
+	
+	      var _iteratorNormalCompletion5 = true;
+	      var _didIteratorError5 = false;
+	      var _iteratorError5 = undefined;
+	
+	      try {
+	        for (var _iterator5 = monthlyBreakdowns[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	          var month = _step5.value;
+	
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	          y_axis.push(month[y_series]);
+	        }
+	      } catch (err) {
+	        _didIteratorError5 = true;
+	        _iteratorError5 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+	            _iterator5.return();
+	          }
+	        } finally {
+	          if (_didIteratorError5) {
+	            throw _iteratorError5;
+	          }
+	        }
+	      }
+	
+	      var trace = {
+	        x: x_axis,
+	        y: y_axis,
+	        name: name,
+	        type: type
+	      };
+	      return trace;
+	    }
+	  }, {
+	    key: 'makeCumulTrace',
+	    value: function makeCumulTrace(monthlyBreakdowns) {
+	
+	      var x_axis = [];
+	      var y_axis = [];
+	      var cumulCost = 0;
+	      var _iteratorNormalCompletion6 = true;
+	      var _didIteratorError6 = false;
+	      var _iteratorError6 = undefined;
+	
+	      try {
+	        for (var _iterator6 = monthlyBreakdowns[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+	          var month = _step6.value;
+	
+	          cumulCost += month.monthCost;
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	          y_axis.push(cumulCost);
+	        }
+	      } catch (err) {
+	        _didIteratorError6 = true;
+	        _iteratorError6 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion6 && _iterator6.return) {
+	            _iterator6.return();
+	          }
+	        } finally {
+	          if (_didIteratorError6) {
+	            throw _iteratorError6;
+	          }
+	        }
+	      }
+	
+	      var trace = {
+	        x: x_axis,
+	        y: y_axis,
+	        name: name,
+	        mode: 'lines'
+	      };
+	      return trace;
+	    }
+	  }, {
+	    key: 'calcMonthlyData',
+	    value: function calcMonthlyData(monthlyBreakdowns) {
+	
+	      for (var i = 0; i < monthlyBreakdowns.length; i++) {
+	
+	        for (var j = 0; j < this.data.active_days.length; j++) {
+	
+	          var date = new Date(this.data.active_days[j].date);
+	
+	          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
+	            // console.log('>>>>' + date.getMonth() + date.yearNum());
+	
+	            monthlyBreakdowns[i].monthCost += parseInt(this.data.active_days[j].cost);
+	            // Is this where I'm going wrong on the cumulative cost?
+	            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
+	            monthlyBreakdowns[i].monthCsProp += parseInt(this.data.active_days[j].cs_perc);
+	            monthlyBreakdowns[i].monthContProp += parseInt(this.data.active_days[j].contr_perc);
+	          }
+	        }
+	      }
+	      console.log(monthlyBreakdowns);
+	      return monthlyBreakdowns;
+	    }
+	  }, {
+	    key: 'getMonthsInProject',
+	    value: function getMonthsInProject() {
+	
+	      var month = this.startDate.getMonth();
+	      var year = this.startDate.getFullYear();
+	      var thisYear = new Date().getFullYear();
+	      var monthlyBreakdowns = [];
+	
+	      for (year; year <= thisYear; year++) {
+	
+	        for (month; month <= 12; month++) {
+	
+	          if (year == 2016 && month == 4) {
+	            break;
+	          }
+	
+	          monthlyBreakdowns.push({
+	            monthNum: month,
+	            yearNum: year,
+	            monthCost: 0,
+	            cumulCost: 0,
+	            monthTimeSpent: 0,
+	            monthCsProp: 0,
+	            monthContProp: 0
+	          });
+	        }
+	        month = 1;
+	      }
+	      // console.log(monthlyBreakdowns);
+	      return monthlyBreakdowns;
+	    }
+	  }, {
+	    key: 'handleResponse',
+	    value: function handleResponse(json) {
+	
+	      this.startDate = new Date(json.start_date);
+	
+	      this.data = json;
+	      // console.log(this.data);
+	      this.getMonthData();
+	    }
+	  }]);
+	
+	  return MonthCumulFigure;
+	}(Figure);
+	
+	var StaffSplitFigure = function (_Figure3) {
+	  _inherits(StaffSplitFigure, _Figure3);
+	
+	  function StaffSplitFigure(element) {
+	    _classCallCheck(this, StaffSplitFigure);
+	
+	    var _this5 = _possibleConstructorReturn(this, Object.getPrototypeOf(StaffSplitFigure).call(this, element));
+	
+	    _this5.incrementLengths = ['day', 'week', 'month', 'year'];
+	    _this5.startDate = undefined;
+	    _this5.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	
+	    _this5.getMonthData = function () {
+	
+	      var monthlyBreakdowns = _this5.getMonthsInProject();
+	
+	      monthlyBreakdowns = _this5.calcMonthlyData(monthlyBreakdowns);
+	
+	      var staffSplitTrace = _this5.makeSplitTraces(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
+	
+	      _core2.default.newPlot(_this5.element, staffSplitTrace, { displaylogo: false, barmode: 'stack' });
+	    };
+	
+	    return _this5;
+	  }
+	
+	  _createClass(StaffSplitFigure, [{
+	    key: 'makeSplitTraces',
+	    value: function makeSplitTraces(monthlyBreakdowns) {
+	      var x_axis = [];
+	      var cs_y_axis = [];
+	      var contr_y_axis = [];
+	      // let traces = [];
+	
+	      var _iteratorNormalCompletion7 = true;
+	      var _didIteratorError7 = false;
+	      var _iteratorError7 = undefined;
+	
+	      try {
+	        for (var _iterator7 = monthlyBreakdowns[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+	          var month = _step7.value;
+	
+	
+	          var cs_perc = 0;
+	          var contr_perc = 0;
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	
+	          if (month.monthCsProp != 0) {
+	            cs_perc = month.monthCsProp / (month.monthCsProp + month.monthContProp);
+	          }
+	          if (month.monthContProp != 0) {
+	            contr_perc = month.monthContProp / (month.monthContProp + month.monthCsProp);
+	          }
+	
+	          cs_y_axis.push(cs_perc);
+	          contr_y_axis.push(contr_perc);
+	
+	          console.log(cs_perc);
+	          console.log(contr_perc);
+	        }
+	      } catch (err) {
+	        _didIteratorError7 = true;
+	        _iteratorError7 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion7 && _iterator7.return) {
+	            _iterator7.return();
+	          }
+	        } finally {
+	          if (_didIteratorError7) {
+	            throw _iteratorError7;
+	          }
+	        }
+	      }
+	
+	      var cs_trace = { x: x_axis, y: cs_y_axis, type: 'bar' };
+	      var contr_trace = { x: x_axis, y: contr_y_axis, type: 'bar' };
+	
+	      console.log(cs_trace);
+	      console.log(contr_trace);
+	
+	      var traces = [cs_trace, contr_trace];
+	
+	      return traces;
+	    }
+	  }, {
+	    key: 'makeMonthlyTrace',
+	    value: function makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
+	
+	      var x_axis = [];
+	      var y_axis = [];
+	
+	      var _iteratorNormalCompletion8 = true;
+	      var _didIteratorError8 = false;
+	      var _iteratorError8 = undefined;
+	
+	      try {
+	        for (var _iterator8 = monthlyBreakdowns[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+	          var month = _step8.value;
+	
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	          y_axis.push(month[y_series]);
+	        }
+	      } catch (err) {
+	        _didIteratorError8 = true;
+	        _iteratorError8 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion8 && _iterator8.return) {
+	            _iterator8.return();
+	          }
+	        } finally {
+	          if (_didIteratorError8) {
+	            throw _iteratorError8;
+	          }
+	        }
+	      }
+	
+	      var trace = {
+	        x: x_axis,
+	        y: y_axis,
+	        name: name,
+	        type: type
+	      };
+	      return trace;
+	    }
+	  }, {
+	    key: 'makeCumulTrace',
+	    value: function makeCumulTrace(monthlyBreakdowns) {
+	
+	      var x_axis = [];
+	      var y_axis = [];
+	      var cumulCost = 0;
+	      var _iteratorNormalCompletion9 = true;
+	      var _didIteratorError9 = false;
+	      var _iteratorError9 = undefined;
+	
+	      try {
+	        for (var _iterator9 = monthlyBreakdowns[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+	          var month = _step9.value;
+	
+	          cumulCost += month.monthCost;
+	
+	          x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
+	          y_axis.push(cumulCost);
+	        }
+	      } catch (err) {
+	        _didIteratorError9 = true;
+	        _iteratorError9 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion9 && _iterator9.return) {
+	            _iterator9.return();
+	          }
+	        } finally {
+	          if (_didIteratorError9) {
+	            throw _iteratorError9;
+	          }
+	        }
+	      }
+	
+	      var trace = {
+	        x: x_axis,
+	        y: y_axis,
+	        name: name,
+	        mode: 'lines'
+	      };
+	      return trace;
+	    }
+	  }, {
+	    key: 'calcMonthlyData',
+	    value: function calcMonthlyData(monthlyBreakdowns) {
+	
+	      for (var i = 0; i < monthlyBreakdowns.length; i++) {
+	
+	        for (var j = 0; j < this.data.active_days.length; j++) {
+	
+	          var date = new Date(this.data.active_days[j].date);
+	
+	          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
+	            // console.log('>>>>' + date.getMonth() + date.yearNum());
+	
+	            monthlyBreakdowns[i].monthCost += parseInt(this.data.active_days[j].cost);
+	            // Is this where I'm going wrong on the cumulative cost?
+	            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
+	            monthlyBreakdowns[i].monthCsProp += parseInt(this.data.active_days[j].cs_perc);
+	            monthlyBreakdowns[i].monthContProp += parseInt(this.data.active_days[j].contr_perc);
+	          }
+	        }
+	      }
+	      console.log(monthlyBreakdowns);
+	      return monthlyBreakdowns;
+	    }
+	  }, {
+	    key: 'getMonthsInProject',
+	    value: function getMonthsInProject() {
+	
+	      var month = this.startDate.getMonth();
+	      var year = this.startDate.getFullYear();
+	      var thisYear = new Date().getFullYear();
+	      var monthlyBreakdowns = [];
+	
+	      for (year; year <= thisYear; year++) {
+	
+	        for (month; month <= 12; month++) {
+	
+	          if (year == 2016 && month == 4) {
+	            break;
+	          }
+	
+	          monthlyBreakdowns.push({
+	            monthNum: month,
+	            yearNum: year,
+	            monthCost: 0,
+	            cumulCost: 0,
+	            monthTimeSpent: 0,
+	            monthCsProp: 0,
+	            monthContProp: 0
+	          });
+	        }
+	        month = 1;
+	      }
+	      // console.log(monthlyBreakdowns);
+	      return monthlyBreakdowns;
+	    }
+	  }, {
+	    key: 'handleResponse',
+	    value: function handleResponse(json) {
+	
+	      this.startDate = new Date(json.start_date);
+	
+	      this.data = json;
+	      // console.log(this.data);
+	      this.getMonthData();
+	    }
+	  }]);
+	
+	  return StaffSplitFigure;
 	}(Figure);
 	
 	var testRequest = {
@@ -8386,7 +8917,7 @@
 	var projectTestRequest = {
 	
 	  requested_data: 'single_project',
-	  project_id: 5,
+	  project_id: 52,
 	  persons: [],
 	  areas: [],
 	  start_date: '2015-01-01',
@@ -8396,12 +8927,18 @@
 	
 	function plot() {
 	
+	  var figA = document.getElementById('fig-a');
+	  var figB = document.getElementById('fig-b');
 	  var figC = document.getElementById('fig-c');
 	
-	  var fC = new SingleProjectFigure(figC);
+	  var fA = new MonthCostFigure(figA);
+	  var fB = new MonthCumulFigure(figB);
+	  var fC = new StaffSplitFigure(figC);
 	
-	  console.log(document.getElementById('projects').value);
+	  // console.log(document.getElementById('projects').value);
 	
+	  fA.postRequestFigure('/getdata/', projectTestRequest);
+	  fB.postRequestFigure('/getdata/', projectTestRequest);
 	  fC.postRequestFigure('/getdata/', projectTestRequest);
 	}
 	

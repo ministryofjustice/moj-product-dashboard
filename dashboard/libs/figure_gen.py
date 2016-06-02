@@ -3,7 +3,6 @@ from datetime import date
 from dashboard.libs.queries import (get_areas, get_persons, get_all_projects,
                                     get_dates)
 from dashboard.libs.date_tools import get_workdays_list
-from dashboard.libs.rate_generator import get_reference_rate
 from dashboard.apps.prototype import models
 
 
@@ -17,26 +16,16 @@ class Figures(object):
     @staticmethod
     def single_project(data):
 
-        # Get a single project
-        # if not data['projects']:
-        #     return {}
-
         project = data['project']
-        print('>>>>>>>>>>> ' + str(project))
-
         tasks = project.tasks.all()
-
-        # Get the first day on the earliest task
         # Change to tasks.order_by('start_date').first() ?
         start_date = tasks.order_by('start_date')[0].start_date
 
-        # Set the end date, if possible using data in the database
         if project.end_date:
             end_date = project.end_date
         else:
             end_date = date.today()
 
-        # Get a list of the working days which occurred during the project's life-span
         project_working_days = get_workdays_list(start_date, end_date)
 
         day_data = get_day_data(project_working_days, tasks)
@@ -61,15 +50,6 @@ def get_persons_data(project):
                              'job_title': person.job_title})
 
     return persons_data
-
-
-def demo_get_rates(persons):
-    rates = {}
-
-    for person in persons:
-        rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
-
-    return rates
 
 
 def get_day_data(days, tasks):
@@ -138,7 +118,6 @@ def get_data(requested_data, request_data):
     data = {
         'persons': get_persons(request_data['persons']),
         'areas': get_areas(request_data['areas']),
-        # 'projects': get_all_projects(request_data['projects']),  # Consider whether to limit by area here?
         'start_date': start_date,
         'end_date': end_date
     }
@@ -150,13 +129,6 @@ def get_data(requested_data, request_data):
     else:
         print('No project requested')
         return {}
-
-    # try:
-    #     print(requested_data)
-    #     figure = getattr(Figures, requested_data)(data)
-    # except AttributeError as err:
-    #     figure = {}
-    #     print('error: no such trace available')
 
     figure = getattr(Figures, requested_data)(data)
 
