@@ -1,9 +1,6 @@
-from datetime import date
-
-from dashboard.apps.prototype.models import Project
 from dashboard.libs.queries import get_dates
-from dashboard.libs.date_tools import get_workdays_list, get_time_windows
-from dashboard.apps.prototype.models import Project, Person, Task
+from dashboard.libs.date_tools import get_time_windows
+from dashboard.apps.prototype.models import Project
 
 
 class Figures(object):
@@ -18,8 +15,17 @@ class Figures(object):
 
         project = Project.objects.get(id=request_data['project_id'])
 
-        time_windows = get_time_windows(request_data['start_date'], request_data['end_date'],
-                                        request_data['time_increment'])
+        start_date, end_date = get_dates(request_data['start_date'], request_data['end_date'])
+
+        project_start = project.tasks.order_by('start_date').first().start_date
+        project_end = project.tasks.order_by('end_date').last().start_date
+
+        if start_date < project_start:
+            start_date = project_start
+        if end_date > project_end:
+            end_date = project_end
+
+        time_windows = get_time_windows(start_date, end_date, request_data['time_increment'])
 
         response = []
         for window in time_windows:
@@ -27,7 +33,8 @@ class Figures(object):
             cost = project.money_spent(window[0], window[1])
             label = window[2]
 
-            response.append({'time': time, 'cost': cost, 'label': label})
+            if not request_data['filter_empty'] or time != 0:
+                response.append({'time': time, 'cost': cost, 'label': label})
 
         return response
 
@@ -105,8 +112,7 @@ def get_persons_on_project(project):
 
 def get_data(request_data):
 
-    request_data['start_date'], request_data['end_date'] = get_dates(request_data['start_date'],
-                                                                     request_data['end_date'])
+    # import ipdb; ipdb.set_trace()
 
     data = getattr(Figures, request_data['request_type'])(request_data)
 
