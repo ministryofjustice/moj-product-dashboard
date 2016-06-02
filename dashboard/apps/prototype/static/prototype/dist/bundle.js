@@ -8139,22 +8139,22 @@
 	  function Figure(element) {
 	    _classCallCheck(this, Figure);
 	
+	    if (new.target === Figure) {
+	      throw new TypeError("Figure class is abstract and should not be instantiated");
+	    }
 	    this.element = element;
 	    this.data = {};
-	    this.layout = {};
 	  }
 	
 	  _createClass(Figure, [{
 	    key: 'plot',
 	    value: function plot() {
-	      _core2.default.newPlot(this.element, this.data, this.layout, { displaylogo: false });
+	      // Override this
 	    }
 	  }, {
 	    key: 'handleResponse',
 	    value: function handleResponse(json) {
-	      this.data = json.data;
-	      this.layout = json.layout;
-	      this.plot();
+	      this.data = json;
 	    }
 	  }, {
 	    key: 'getRequestFigure',
@@ -8193,30 +8193,42 @@
 	  return Figure;
 	}();
 	
-	var MonthCostFigure = function (_Figure) {
-	  _inherits(MonthCostFigure, _Figure);
+	var SingleProjectFigure = function (_Figure) {
+	  _inherits(SingleProjectFigure, _Figure);
+	
+	  function SingleProjectFigure() {
+	    _classCallCheck(this, SingleProjectFigure);
+	
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(SingleProjectFigure).apply(this, arguments));
+	  }
+	
+	  return SingleProjectFigure;
+	}(Figure);
+	
+	var MonthCostFigure = function (_Figure2) {
+	  _inherits(MonthCostFigure, _Figure2);
 	
 	  function MonthCostFigure(element) {
 	    _classCallCheck(this, MonthCostFigure);
 	
-	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(MonthCostFigure).call(this, element));
+	    var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(MonthCostFigure).call(this, element));
 	
-	    _this3.incrementLengths = ['day', 'week', 'month', 'year'];
-	    _this3.startDate = undefined;
-	    _this3.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	    _this4.incrementLengths = ['day', 'week', 'month', 'year'];
+	    _this4.startDate = undefined;
+	    _this4.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	
-	    _this3.getMonthData = function () {
+	    _this4.getMonthData = function () {
 	
-	      var monthlyBreakdowns = _this3.getMonthsInProject();
+	      var monthlyBreakdowns = _this4.getMonthsInProject();
 	
-	      monthlyBreakdowns = _this3.calcMonthlyData(monthlyBreakdowns);
+	      monthlyBreakdowns = _this4.calcMonthlyData(monthlyBreakdowns);
 	
-	      var monthCostTrace = [_this3.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar')];
+	      var monthCostTrace = [_this4.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar')];
 	
-	      _core2.default.newPlot(_this3.element, monthCostTrace, { displaylogo: false });
+	      _core2.default.newPlot(_this4.element, monthCostTrace, { displaylogo: false });
 	    };
 	
-	    return _this3;
+	    return _this4;
 	  }
 	
 	  _createClass(MonthCostFigure, [{
@@ -8428,30 +8440,30 @@
 	  return MonthCostFigure;
 	}(Figure);
 	
-	var MonthCumulFigure = function (_Figure2) {
-	  _inherits(MonthCumulFigure, _Figure2);
+	var MonthCumulFigure = function (_Figure3) {
+	  _inherits(MonthCumulFigure, _Figure3);
 	
 	  function MonthCumulFigure(element) {
 	    _classCallCheck(this, MonthCumulFigure);
 	
-	    var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(MonthCumulFigure).call(this, element));
+	    var _this5 = _possibleConstructorReturn(this, Object.getPrototypeOf(MonthCumulFigure).call(this, element));
 	
-	    _this4.incrementLengths = ['day', 'week', 'month', 'year'];
-	    _this4.startDate = undefined;
-	    _this4.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	    _this5.incrementLengths = ['day', 'week', 'month', 'year'];
+	    _this5.startDate = undefined;
+	    _this5.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	
-	    _this4.getMonthData = function () {
+	    _this5.getMonthData = function () {
 	
-	      var monthlyBreakdowns = _this4.getMonthsInProject();
+	      var monthlyBreakdowns = _this5.getMonthsInProject();
 	
-	      monthlyBreakdowns = _this4.calcMonthlyData(monthlyBreakdowns);
+	      monthlyBreakdowns = _this5.calcMonthlyData(monthlyBreakdowns);
 	
-	      var cumulCostTrace = [_this4.makeCumulTrace(monthlyBreakdowns)];
+	      var cumulCostTrace = [_this5.makeCumulTrace(monthlyBreakdowns)];
 	
-	      _core2.default.newPlot(_this4.element, cumulCostTrace, { displaylogo: false });
+	      _core2.default.newPlot(_this5.element, cumulCostTrace, { displaylogo: false });
 	    };
 	
-	    return _this4;
+	    return _this5;
 	  }
 	
 	  _createClass(MonthCumulFigure, [{
@@ -8663,30 +8675,30 @@
 	  return MonthCumulFigure;
 	}(Figure);
 	
-	var StaffSplitFigure = function (_Figure3) {
-	  _inherits(StaffSplitFigure, _Figure3);
+	var StaffSplitFigure = function (_Figure4) {
+	  _inherits(StaffSplitFigure, _Figure4);
 	
 	  function StaffSplitFigure(element) {
 	    _classCallCheck(this, StaffSplitFigure);
 	
-	    var _this5 = _possibleConstructorReturn(this, Object.getPrototypeOf(StaffSplitFigure).call(this, element));
+	    var _this6 = _possibleConstructorReturn(this, Object.getPrototypeOf(StaffSplitFigure).call(this, element));
 	
-	    _this5.incrementLengths = ['day', 'week', 'month', 'year'];
-	    _this5.startDate = undefined;
-	    _this5.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	    _this6.incrementLengths = ['day', 'week', 'month', 'year'];
+	    _this6.startDate = undefined;
+	    _this6.monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	
-	    _this5.getMonthData = function () {
+	    _this6.getMonthData = function () {
 	
-	      var monthlyBreakdowns = _this5.getMonthsInProject();
+	      var monthlyBreakdowns = _this6.getMonthsInProject();
 	
-	      monthlyBreakdowns = _this5.calcMonthlyData(monthlyBreakdowns);
+	      monthlyBreakdowns = _this6.calcMonthlyData(monthlyBreakdowns);
 	
-	      var staffSplitTrace = _this5.makeSplitTraces(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
+	      var staffSplitTrace = _this6.makeSplitTraces(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
 	
-	      _core2.default.newPlot(_this5.element, staffSplitTrace, { displaylogo: false, barmode: 'stack' });
+	      _core2.default.newPlot(_this6.element, staffSplitTrace, { displaylogo: false, barmode: 'stack' });
 	    };
 	
-	    return _this5;
+	    return _this6;
 	  }
 	
 	  _createClass(StaffSplitFigure, [{
@@ -8916,12 +8928,13 @@
 	
 	var projectTestRequest = {
 	
-	  requested_data: 'single_project',
-	  project_id: 52,
+	  request_type: 'single_project',
+	  project_id: 1,
 	  persons: [],
 	  areas: [],
 	  start_date: '2015-01-01',
-	  end_date: '2016-05-23'
+	  end_date: '2016-06-01',
+	  time_increment: 'month'
 	
 	};
 	

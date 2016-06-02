@@ -41,6 +41,6 @@ def send_data(request):
     else:
         return HttpResponseBadRequest()
 
-    data = get_data(request_data['requested_data'], request_data)
+    data = get_data(request_data)
 
     return JsonResponse(data, safe=False)

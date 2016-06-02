@@ -3,7 +3,7 @@ from datetime import date
 from dashboard.libs.queries import (get_areas, get_persons, get_all_projects,
                                     get_dates)
 from dashboard.libs.date_tools import get_workdays_list
-from dashboard.apps.prototype import models
+from dashboard.apps.prototype.models import Project, Person, Task
 
 
 class Figures(object):
@@ -14,9 +14,9 @@ class Figures(object):
     """
 
     @staticmethod
-    def single_project(data):
+    def single_project(request_data):
 
-        project = data['project']
+        project = request_data['project']
         tasks = project.tasks.all()
         # Change to tasks.order_by('start_date').first() ?
         start_date = tasks.order_by('start_date')[0].start_date
@@ -113,23 +113,8 @@ def get_persons_on_project(project):
     return persons
 
 
-def get_data(requested_data, request_data):
-    start_date, end_date = get_dates(request_data['start_date'], request_data['end_date'])
-    data = {
-        'persons': get_persons(request_data['persons']),
-        'areas': get_areas(request_data['areas']),
-        'start_date': start_date,
-        'end_date': end_date
-    }
+def get_data(request_data):
 
-    if request_data['project_id']:
-        data['project'] = models.Project.objects.get(id=request_data['project_id'])
-    elif request_data['projects']:
-        data['projects'] = get_all_projects(request_data['projects'])
-    else:
-        print('No project requested')
-        return {}
+    data = getattr(Figures, request_data['request_type'])(request_data)
 
-    figure = getattr(Figures, requested_data)(data)
-
-    return figure
+    return data

@@ -15,19 +15,19 @@ require('../styles/main.css');
 class Figure {
 
   constructor(element) {
+    if (new.target === Figure) {
+      throw new TypeError("Figure class is abstract and should not be instantiated");
+    }
     this.element = element;
     this.data = {};
-    this.layout = {};
   }
 
   plot() {
-    Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
+    // Override this
   }
 
   handleResponse(json) {
-    this.data = json.data;
-    this.layout = json.layout;
-    this.plot();
+    this.data = json;
   }
 
   getRequestFigure (url) {
@@ -51,6 +51,13 @@ class Figure {
     .then((response) => response.json())
       .then((json) => this.handleResponse(json));
   }
+
+}
+
+
+class SingleProjectFigure extends Figure {
+
+
 
 }
 
@@ -562,12 +569,13 @@ var testRequest = {
 
 var projectTestRequest = {
 
-  requested_data : 'single_project',
-  project_id : 52,
+  request_type : 'single_project',
+  project_id : 1,
   persons : [],
   areas : [],
   start_date: '2015-01-01',
-  end_date: '2016-05-23'
+  end_date: '2016-06-01',
+  time_increment: 'month'
 
 };
 
