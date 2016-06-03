@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from calendar import monthrange
-from datetime import datetime, date
+from datetime import date
 from decimal import Decimal
 
 from dateutil.rrule import rrule, MONTHLY
@@ -15,6 +15,10 @@ RATE_TYPES = Choices(
     ('MONTH',   2, 'Monthly salary'),
     ('YEAR', 3, 'Yearly salary'),
 )
+
+
+def today():
+    return date.today()  # pragma: no cover
 
 
 def dec_workdays(start_date, end_date):
@@ -133,7 +137,8 @@ class RateConverter():
             return self.rate
 
         if not on:
-            on = datetime.now()
+            on = today()
+
         start_date, end_date = self.get_date_range(on)
         # No point continuing although would be same result
         return round(self.rate / dec_workdays(start_date, end_date), 2)
