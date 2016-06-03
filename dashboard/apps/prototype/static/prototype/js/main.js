@@ -127,20 +127,20 @@ class ProjectCostFigure extends Figure {
 
     for (let i = 0; i < monthlyBreakdowns.length; i++) {
 
-        for (let j = 0; j < this.data.days.length; j++) {
+      for (let j = 0; j < this.data.days.length; j++) {
 
-          let date = new Date(this.data.days[j]);
+        let date = new Date(this.data.days[j]);
 
-          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
+        if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
 
 
-            monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
-            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
-
-          }
+          monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
+          monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
 
         }
+
       }
+    }
 
     return monthlyBreakdowns;
 
@@ -158,12 +158,12 @@ class ProjectCostFigure extends Figure {
       for (month; month <= 12; month++) {
 
         monthlyBreakdowns.push({
-            monthNum: month,
-            yearNum: year,
-            monthCost: 0,
-            cumulCost: 0,
-            monthTimeSpent: 0
-          });
+          monthNum: month,
+          yearNum: year,
+          monthCost: 0,
+          cumulCost: 0,
+          monthTimeSpent: 0
+        });
 
       }
       month = 1;
@@ -246,14 +246,14 @@ function plotProject(project) {
 
 function getProjectJSON(id) {
   return fetch('/project.json', {
-      credentials: 'same-origin',
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': Cookies.get('csrftoken'),
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({projectid: id})
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': Cookies.get('csrftoken'),
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({projectid: id})
   }).then(response => response.json());
 };
 
