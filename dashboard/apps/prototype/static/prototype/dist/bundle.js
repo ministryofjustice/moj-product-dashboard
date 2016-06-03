@@ -8228,11 +8228,16 @@
 	    value: function makeTraces() {
 	
 	      if (this.traceTypes.indexOf('cost') > -1) {
-	        this.makeCostTrace();
+	        this.makeTrace('cost', 'Monthly Cost £');
 	      }
-	      if (this.traceTypes.indexOf('cumulative') > -1) {}
+	      if (this.traceTypes.indexOf('time') > -1) {
+	        this.makeTrace('time', 'Person Days');
+	      }
+	      if (this.traceTypes.indexOf('cumulative') > -1) {
+	        this.makeTrace('cumul_cost', 'Cumulative Cost £', 'line');
+	      }
 	
-	      console.log('>>>>>' + this.traces);
+	      console.log(this.traces);
 	      this.plot();
 	    }
 	  }, {
@@ -8256,11 +8261,31 @@
 	        this.plot();
 	      }
 	    }
-	  }, {
-	    key: 'makeCostTrace',
-	    value: function makeCostTrace() {
 	
-	      var costTrace = this.newTrace();
+	    // makeCostTrace() {
+	    //
+	    //   let costTrace = this.newTrace();
+	    //
+	    //   for (let timeWindow of SingleProjectFigure.data) {
+	    //
+	    //     costTrace.x.push(timeWindow.label);
+	    //     costTrace.y.push(timeWindow.cost);
+	    //
+	    //   }
+	    //
+	    //   this.traces.push(costTrace);
+	    //
+	    // }
+	
+	  }, {
+	    key: 'makeTrace',
+	    value: function makeTrace(key, name) {
+	      var type = arguments.length <= 2 || arguments[2] === undefined ? 'bar' : arguments[2];
+	
+	
+	      var trace = this.newTrace();
+	      trace.name = name;
+	      trace.type = type;
 	
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
@@ -8271,8 +8296,8 @@
 	          var timeWindow = _step.value;
 	
 	
-	          costTrace.x.push(timeWindow.label);
-	          costTrace.y.push(timeWindow.cost);
+	          trace.x.push(timeWindow.label);
+	          trace.y.push(timeWindow[key]);
 	        }
 	      } catch (err) {
 	        _didIteratorError = true;
@@ -8289,7 +8314,7 @@
 	        }
 	      }
 	
-	      this.traces.push(costTrace);
+	      this.traces.push(trace);
 	    }
 	  }]);
 	
@@ -8312,10 +8337,15 @@
 	function plot() {
 	
 	  var figA = document.getElementById('fig-a');
-	  var fA = new SingleProjectFigure(figA);
+	  var figB = document.getElementById('fig-b');
+	  var figC = document.getElementById('fig-c');
 	
-	  // fA.getData('/getdata/');
-	  fA.display('/getdata/', ['cost']);
+	  var fA = new SingleProjectFigure(figA);
+	  var fB = new SingleProjectFigure(figB);
+	  var fC = new SingleProjectFigure(figC);
+	
+	  fA.display('/getdata/', ['cost', 'cumulative', 'time']);
+	  fB.display('/getdata/', ['time']);
 	}
 	
 	/**

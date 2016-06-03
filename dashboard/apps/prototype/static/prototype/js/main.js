@@ -75,10 +75,11 @@ class SingleProjectFigure extends Figure {
 
   makeTraces() {
 
-    if (this.traceTypes.indexOf('cost') > -1) { this.makeCostTrace(); }
-    if (this.traceTypes.indexOf('cumulative') > -1) {}
+    if (this.traceTypes.indexOf('cost') > -1) { this.makeTrace('cost', 'Monthly Cost £'); }
+    if (this.traceTypes.indexOf('time') > -1) { this.makeTrace('time', 'Person Days'); }
+    if (this.traceTypes.indexOf('cumulative') > -1) { this.makeTrace('cumul_cost', 'Cumulative Cost £', 'line'); }
 
-    console.log('>>>>>' + this.traces);
+    console.log(this.traces);
     this.plot();
 
   }
@@ -102,19 +103,34 @@ class SingleProjectFigure extends Figure {
     }
   }
 
-  makeCostTrace() {
+  // makeCostTrace() {
+  //
+  //   let costTrace = this.newTrace();
+  //
+  //   for (let timeWindow of SingleProjectFigure.data) {
+  //
+  //     costTrace.x.push(timeWindow.label);
+  //     costTrace.y.push(timeWindow.cost);
+  //
+  //   }
+  //
+  //   this.traces.push(costTrace);
+  //
+  // }
 
-    let costTrace = this.newTrace();
+  makeTrace(key, name, type='bar') {
+
+    let trace = this.newTrace();
+    trace.name = name;
+    trace.type = type;
 
     for (let timeWindow of SingleProjectFigure.data) {
 
-      costTrace.x.push(timeWindow.label);
-      costTrace.y.push(timeWindow.cost);
+      trace.x.push(timeWindow.label);
+      trace.y.push(timeWindow[key]);
 
     }
-
-    this.traces.push(costTrace);
-
+    this.traces.push(trace);
   }
 
 }
@@ -136,10 +152,15 @@ SingleProjectFigure.requestData = {
 function plot() {
 
   const figA = document.getElementById('fig-a');
-  const fA = new SingleProjectFigure(figA);
+  const figB = document.getElementById('fig-b');
+  const figC = document.getElementById('fig-c');
 
-  // fA.getData('/getdata/');
-  fA.display('/getdata/', ['cost']);
+  const fA = new SingleProjectFigure(figA);
+  const fB = new SingleProjectFigure(figB);
+  const fC = new SingleProjectFigure(figC);
+
+  fA.display('/getdata/', ['cost', 'cumulative', 'time']);
+  fB.display('/getdata/', ['time']);
 
 }
 
