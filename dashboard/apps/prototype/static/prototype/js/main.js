@@ -16,19 +16,24 @@ require('../styles/main.css');
 class Figure {
 
   constructor(element) {
+    if (new.target === Figure) {
+      throw new TypeError("Figure class is abstract and should not be instantiated");
+    }
     this.element = element;
-    this.data = {};
-    this.layout = {};
+    this.layout = {showlegend: true};
+    this.traces = [];
   }
 
   plot() {
-    Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
+    Plotly.newPlot(this.element, this.traces, this.layout, {displaylogo: false});
+  }
+
+  newTrace() {
+    return { x: [], y: [], name: 'No Name', type: 'bar'}
   }
 
   handleResponse(json) {
-    this.data = json.data;
-    this.layout = json.layout;
-    this.plot();
+    console.log(json)
   }
 
   getRequestFigure (url) {
@@ -38,6 +43,7 @@ class Figure {
   }
 
   postRequestFigure (url, requestJson) {
+    // console.log(requestJson);
     fetch(url, {
       credentials: 'same-origin',
       method: 'POST',
@@ -54,160 +60,102 @@ class Figure {
 
 }
 
-class ProjectCostFigure extends Figure {
+
+class SingleProjectFigure extends Figure {
 
   constructor(element) {
     super(element);
-    this.data = {};
-    this.incrementLengths = ['day', 'week', 'month', 'year'];
-    this.startDate = undefined;
-    this.monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-    this.getMonthData = () => {
-
-      let monthlyBreakdowns = this.getMonthsInProject();
-
-      monthlyBreakdowns = this.calcMonthlyData(monthlyBreakdowns);
-
-      let monthCostTrace = this.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
-      let cumulCostTrace = this.makeCumulTrace(monthlyBreakdowns);
-
-      let traces = [monthCostTrace, cumulCostTrace];
-
-      Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
-    };
-
-  }
-
-  makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
-
-    let x_axis = [];
-    let y_axis = [];
-
-    for (let month of monthlyBreakdowns) {
-
-      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
-      y_axis.push(month[y_series]);
-
-    }
-
-    let trace = {
-      x: x_axis,
-      y: y_axis,
-      name: name,
-      type: type
-    };
-    return trace
-  }
-
-  makeCumulTrace(monthlyBreakdowns) {
-
-    let x_axis = [];
-    let y_axis = [];
-    let cumulCost = 0;
-    for (let month of monthlyBreakdowns) {
-      cumulCost += month.monthCost;
-
-      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
-      y_axis.push(cumulCost);
-
-    }
-
-    let trace = {
-      x: x_axis,
-      y: y_axis,
-      name: name,
-      mode: 'lines'
-    };
-    return trace
-  }
-
-  calcMonthlyData(monthlyBreakdowns) {
-
-    for (let i = 0; i < monthlyBreakdowns.length; i++) {
-
-        for (let j = 0; j < this.data.days.length; j++) {
-
-          let date = new Date(this.data.days[j]);
-
-          if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
-
-
-            monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
-            monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
-
-          }
-
-        }
-      }
-
-    return monthlyBreakdowns;
-
-  }
-
-  getMonthsInProject() {
-
-    let month = this.startDate.getMonth();
-    let year = this.startDate.getFullYear();
-    let thisYear = new Date().getFullYear();
-    let monthlyBreakdowns = [];
-
-    for (year; year <= thisYear; year++) {
-
-      for (month; month <= 12; month++) {
-
-        monthlyBreakdowns.push({
-            monthNum: month,
-            yearNum: year,
-            monthCost: 0,
-            cumulCost: 0,
-            monthTimeSpent: 0
-          });
-
-      }
-      month = 1;
-    }
-    return monthlyBreakdowns;
+    this.traceTypes = [];
   }
 
   handleResponse(json) {
+    super.handleResponse(json);
+    SingleProjectFigure.data = json;
+    this.makeTraces();
+    this.plot();
+  }
 
-    this.startDate = new Date(json.start_date);
+  makeTraces() {
 
-    this.data = json.data;
-    this.getMonthData();
+    if (this.traceTypes.indexOf('staff_split') > -1) {
+      this.makeTrace('cs_perc', '% Civil Servants');
+      this.makeTrace('contr_perc', '% Contractors');
+      this.layout.barmode = 'stack';
+      return;
+    }
 
+    if (this.traceTypes.indexOf('cost') > -1) { this.makeTrace('cost', 'Monthly Cost £'); }
+    if (this.traceTypes.indexOf('time') > -1) { this.makeTrace('time', 'Person Days'); }
+    if (this.traceTypes.indexOf('cumulative') > -1) { this.makeTrace('cumul_cost', 'Cumulative Cost £', 'line'); }
+
+    console.log(this.traces);
+
+
+  }
+
+  updateData(url) {
+    console.log('>>>Requesting data');
+    this.postRequestFigure(url, SingleProjectFigure.requestData);
+  }
+
+  init(url, traceTypes) {
+    this.traceTypes = traceTypes;
+    if (SingleProjectFigure.data != {}) {
+      this.updateData(url);
+    }
+    else {
+      console.log('>>>Using stored data');
+      this.plot();
+    }
+  }
+
+  makeTrace(key, name, type='bar') {
+
+    let trace = this.newTrace();
+    trace.name = name;
+    trace.type = type;
+
+    for (let timeWindow of SingleProjectFigure.data) {
+
+      trace.x.push(timeWindow.label);
+      trace.y.push(timeWindow[key]);
+
+    }
+    this.traces.push(trace);
   }
 
 }
 
-var testRequest = {
-  requested_figure : 'staff_split',
-  projectids : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  persons : [],
-  areas : [],
+SingleProjectFigure.data = {};
+
+SingleProjectFigure.requestData = {
+
+  request_type : 'single_project',
+  project_id : 52, // Now set from select box
   start_date: '2015-01-01',
-  end_date: '2016-05-23'
+  end_date: '2016-06-01',
+  time_increment: 'month', // month, week or day
+  filter_empty: false
+
 };
 
 
-function plotProject(id) {
+function plot() {
 
   const figA = document.getElementById('fig-a');
   const figB = document.getElementById('fig-b');
   const figC = document.getElementById('fig-c');
-  const figD = document.getElementById('fig-d');
 
-  const fA = new ProjectCostFigure(figA);
-  const fC = new Figure(figC);
-  const fB = new Figure(figB);
-  const fD = new Figure(figD);
+  const fA = new SingleProjectFigure(figA);
+  const fB = new SingleProjectFigure(figB);
+  const fC = new SingleProjectFigure(figC);
+  
+  fA.init('/getdata/', ['cost', 'cumulative']);
+  fB.init('/getdata/', ['time']);
+  fC.init('/getdata/', ['staff_split']);
 
-  fA.postRequestFigure('/getfig/', {projectid: id, requested_figure: 'project_cost', start_date: '2015-01-01', end_date: '2016-08-01'});
-  fB.postRequestFigure('/getfig/', testRequest);
-  fC.postRequestFigure('/getfig/', testRequest);
-  fD.postRequestFigure('/getfig/', testRequest);
-};
+}
+
 
 /**
  * get projectId based on the query string
@@ -221,14 +169,18 @@ function getProjectId() {
 
 function loadProject(id) {
   const url = [location.protocol, '//', location.host, location.pathname].join('');
+
   window.location.href = url + '?projectid=' + id;
+
 };
+
 
 
 $(() => {
   const projectId = getProjectId();
   // plot project
-  plotProject(projectId);
+  SingleProjectFigure.requestData.project_id = projectId;
+  plot();
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
     loadProject(e.params.data.id);

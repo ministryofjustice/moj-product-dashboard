@@ -150,6 +150,57 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+    def money_spent(self, start_date, end_date):
+        """
+        get the money spent on the project during a time window
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: cost in pound, a decimal
+        """
+        cost = Decimal()
+        for task in self.tasks.filter(end_date__gte=start_date, start_date__lte=end_date):
+            cost += task.money_spent(start_date, end_date)
+
+        return cost
+
+    def time_spent(self, start_date, end_date):
+        """
+        get the person-days spent on the project during a time window
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: number of person-days, a decimal
+        """
+        time = Decimal()
+        for task in self.tasks.filter(end_date__gte=start_date, start_date__lte=end_date):
+            time += task.time_spent(start_date, end_date)
+
+        return time
+
+    def staff_split(self, start_date, end_date):
+        """
+        get the simple contractor/civil-servant split on the project during a time window
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: list with contractor % and CS %
+        """
+        contractors = set()
+        civil_servants = set()
+        for task in self.tasks.filter(end_date__gte=start_date, start_date__lte=end_date):
+            if task.person.is_contractor:
+                contractors.add(task.person)
+            else:
+                civil_servants.add(task.person)
+
+        contr_perc = 0
+        cs_perc = 0
+
+        if len(contractors) != 0:
+            contr_perc = len(contractors) / (len(contractors) + len(civil_servants))
+        if len(civil_servants) != 0:
+            cs_perc = len(civil_servants) / (len(contractors) + len(civil_servants))
+
+        return contr_perc, cs_perc
+
 
 class Task(models.Model):
     name = models.CharField(max_length=128, null=True)
@@ -174,6 +225,7 @@ class Task(models.Model):
                 self.start_date.strftime('%Y-%m-%d'),
                 self.end_date.strftime('%Y-%m-%d'),
                 self.days)
+
 
     @property
     def workdays(self):

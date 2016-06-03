@@ -1,9 +1,7 @@
-from datetime import date
-
-from dashboard.apps.prototype.models import Project
+from decimal import Decimal
 from dashboard.libs.queries import get_dates
-from dashboard.libs.date_tools import get_workdays_list
-from dashboard.libs.rate_generator import get_reference_rate
+from dashboard.libs.date_tools import get_time_windows
+from dashboard.apps.prototype.models import Project
 
 
 class Figures(object):
@@ -14,111 +12,43 @@ class Figures(object):
     """
 
     @staticmethod
-    def project_cost(data):
+    def single_project(request_data):
 
-        if not data['project']:
-            return gen_empty_figure()
+        project = Project.objects.get(id=request_data['project_id'])
 
-        project = data['project']
-        print('>>>>>>>>>>> ' + str(project))
-        persons = get_persons_on_project(project)
-        rates = {}
+        if not project.tasks.exists():
+            return []
 
-        for person in persons:
-            rates[person.float_id] = get_reference_rate(person.job_title, person.is_contractor)
+        start_date, end_date = get_dates(request_data['start_date'], request_data['end_date'])
 
-        tasks = project.tasks.all()
-        start_date = tasks.order_by('start_date')[0].start_date
+        project_start = project.tasks.order_by('start_date').first().start_date
+        project_end = project.tasks.order_by('end_date').last().start_date
 
-        if project.end_date:
-            end_date = project
-        else:
-            end_date = date.today()
+        if start_date < project_start:
+            start_date = project_start
+        if end_date > project_end:
+            end_date = project_end
 
-        all_days = get_workdays_list(start_date, end_date)
-        costs = []
-        times = []
+        time_windows = get_time_windows(start_date, end_date, request_data['time_increment'])
 
-        for day in all_days:
-            day_time = 0
-            day_cost = 0
-            for task in tasks:
+        response = []
+        cumul_cost = Decimal()
 
-                time = task.time_spent(day, day)
-                cost = rates[task.person.float_id] * time
+        if start_date > project_start:
+            cumul_cost += project.money_spent(project_start, start_date)
 
-                day_time += time
-                day_cost += cost
+        for window in time_windows:
+            time = project.time_spent(window[0], window[1])
+            cost = project.money_spent(window[0], window[1])
+            cumul_cost += cost
+            contr_perc, cs_perc = project.staff_split(window[0], window[1])
+            label = window[2]
 
-            costs.append(day_cost)
-            times.append(day_time)
+            if not request_data['filter_empty'] or time != 0:
+                response.append({'time': time, 'cost': cost, 'cumul_cost': cumul_cost,
+                                 'cs_perc': cs_perc, 'contr_perc': contr_perc, 'label': label})
 
-        data = {
-            'start_date': start_date,
-            'end_date': end_date,
-            'data': {'days': all_days, 'costs': costs, 'times': times}
-        }
-        # import ipdb; ipdb.set_trace()
-        return data
-
-    @staticmethod
-    def staff_split(data):
-        contractor_percs = []
-        cs_percs = []
-        for project in data['projects']:
-            persons = get_persons_on_project(project)
-
-            num_contractors, num_civil_servants = count_staff_by_type(persons)
-
-            if num_contractors == 0:
-                contractor_percs.append(0)
-            else:
-                contractor_percs.append((num_contractors / (num_contractors + num_civil_servants)) * 100)
-            if num_civil_servants == 0:
-                cs_percs.append(0)
-            else:
-                cs_percs.append((num_civil_servants / (num_contractors + num_civil_servants)) * 100)
-
-        project_names = [project.name for project in data['projects']]
-        cs_trace = get_trace(project_names, cs_percs, 'Civil Servants')
-        contr_trace = get_trace(project_names, contractor_percs, 'Contractors')
-
-        layout = get_layout(barmode='stack')
-
-        figure = {
-            'data': [cs_trace, contr_trace],
-            'layout': layout,
-        }
-
-        return figure
-
-
-def gen_empty_figure():
-
-    figure = {
-        'data': [{}],
-        'layout': {},
-    }
-
-    return figure
-
-
-def get_layout(**kwargs):
-    layout = {'showlegend': False}
-    for key, value in kwargs.items():
-        layout[key] = value
-    return layout
-
-
-def count_staff_by_type(persons):
-    contractors = 0
-    civil_servants = 0
-    for person in persons:
-        if person.is_contractor:
-            contractors += 1
-        else:
-            civil_servants += 1
-    return contractors, civil_servants
+        return response
 
 
 def get_persons_on_project(project):
@@ -132,43 +62,9 @@ def get_persons_on_project(project):
     return persons
 
 
-def get_trace(x_axis, y_axis, name='trace', trace_type='bar'):
-    trace = {
-        'name': name,
-        'x': x_axis,
-        'y': y_axis,
-        'type': trace_type
-    }
-    return trace
+def get_data(request_data):
 
+    data = getattr(Figures, request_data['request_type'])(request_data)
 
-def get_figure(requested_figure, request_data):
-    start_date, end_date = get_dates(request_data['start_date'],
-                                     request_data['end_date'])
-    # TODO we should split it into two views one for singular project
-    # the other for a list
-    if 'projectid' in request_data:
-        project = Project.objects.get(id=request_data['projectid'])
-    else:
-        project = None
+    return data
 
-    if 'projectids' in request_data:
-        projects = Project.objects.filter(id__in=request_data['projectids'])
-    else:
-        projects = None
-
-    data = {
-        #  'persons': get_persons(request_data['persons']),
-        #  'areas': get_areas(request_data['areas']),
-        'project': project,
-        'projects': projects,
-        'start_date': start_date,
-        'end_date': end_date
-    }
-    try:
-        figure = (getattr(Figures, requested_figure)(data))
-    except AttributeError:
-        figure = {}
-        print('error: no such trace available')
-
-    return figure

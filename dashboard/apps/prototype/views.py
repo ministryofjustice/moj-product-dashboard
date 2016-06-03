@@ -6,26 +6,9 @@ from django.http import (JsonResponse, HttpResponseBadRequest,
                          HttpResponseNotFound)
 from django.contrib.auth.decorators import login_required
 
-from .models import Project, Client
-from dashboard.libs.figure_gen import get_figure
+from .models import Person, Project, Client, Task, Rate
+from dashboard.libs.figure_gen import get_data
 
-
-def get_total_times(projects):
-
-    project_days = []
-    project_names = []
-
-    for project in projects:
-        tasks = project.tasks.all()
-
-        total_days = 0
-        for task in tasks:
-            total_days += task.days
-
-        project_days.append(total_days)
-        project_names.append(project.name)
-
-    return project_names, project_days
 
 
 @login_required
@@ -51,7 +34,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-def send_figure(request):
+def send_data(request):
 
     if request.method == 'GET':
         request_data = request.GET
@@ -60,8 +43,6 @@ def send_figure(request):
     else:
         return HttpResponseBadRequest()
 
-    print(request_data)
+    data = get_data(request_data)
 
-    figure = get_figure(request_data['requested_figure'], request_data)
-
-    return JsonResponse(figure, safe=False)
+    return JsonResponse(data, safe=False)
