@@ -194,10 +194,15 @@ var testRequest = {
 // TODO this function needs some structure
 function plotProject(project) {
       const pairs = _.toPairs(project).sort();
-      const months = _.map(pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
-      const contractorCosts = _.map(pairs, ([k, v]) => parseFloat(v['contractor']));
-      const civilServantCosts = _.map(pairs, ([k, v]) => parseFloat(v['non-contractor']));
-      const totalCosts = _.map(_.zip(contractorCosts, civilServantCosts), ([x, y]) => x + y);
+      const months = _.map(
+          pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
+      const contractorCosts = _.map(
+          pairs, ([k, v]) => parseFloat(v['contractor']));
+      const civilServantCosts = _.map(
+          pairs, ([k, v]) => parseFloat(v['non-contractor']));
+      const totalCosts = _.map(
+          _.zip(contractorCosts, civilServantCosts),
+          ([x, y]) => x + y);
       const totalCostsCumulative = [];
       totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
       const trace1 = {
@@ -235,7 +240,8 @@ function plotProject(project) {
       };
       Plotly.newPlot(
           document.getElementById('fig-a'),
-          [trace1, trace2, trace3], layout);
+          [trace1, trace2, trace3],
+          layout);
 };
 
 function getProjectJSON(id) {
