@@ -6,8 +6,9 @@ from django.test import TestCase, mock
 
 from model_mommy import mommy
 
-from ..admin import RateAdmin, Person, RateInline
-from ..models import Rate
+from ..admin import (RateAdmin, Person, RateInline, ClientAdmin, ProjectAdmin,
+                     TaskAdmin)
+from ..models import Rate, Client, Project, Task
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -42,6 +43,14 @@ class TaskTimeSpentTestCase(TestCase):
         self.assertHasPermission(user, admin_class, model_class,
                                  add=False, change=False, delete=False)
 
+    def assertFieldsReadOnly(self, user, admin_class, model_class):
+        mock_request = mock.Mock(user=user)
+        model_admin = admin_class(model_class, admin.site)
+        self.assertListEqual(
+            model_admin.get_readonly_fields(mock_request, model_class()),
+            [field.name for field in model_class._meta.fields]
+        )
+
     def test_finance_can_access_rates(self):
         self.assertHasPermission(self.finance_admin, RateAdmin, Rate,
                                  delete=False)
@@ -64,3 +73,16 @@ class TaskTimeSpentTestCase(TestCase):
         self.assertHasNoPermission(self.finance_admin, ModelAdmin, User)
         self.assertHasNoPermission(self.other_admin, ModelAdmin, User)
         self.assertHasNoPermission(self.regular_user, ModelAdmin, User)
+
+    def test_read_only(self):
+        self.assertHasPermission(self.finance_admin, ClientAdmin, Client,
+                                 add=False, delete=False)
+        self.assertHasPermission(self.finance_admin, ProjectAdmin, Project,
+                                 add=False, delete=False)
+        self.assertHasPermission(self.finance_admin, TaskAdmin, Task,
+                                 add=False, delete=False)
+
+    def test_read_only_fields(self):
+        self.assertFieldsReadOnly(self.finance_admin, ClientAdmin, Client)
+        self.assertFieldsReadOnly(self.finance_admin, ProjectAdmin, Project)
+        self.assertFieldsReadOnly(self.finance_admin, TaskAdmin, Task)
