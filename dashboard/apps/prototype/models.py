@@ -6,7 +6,8 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy
 
-from dashboard.libs.date_tools import get_workdays, get_overlap
+from dashboard.libs.date_tools import (
+    get_workdays, get_overlap, slice_time_window)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 
@@ -147,8 +148,60 @@ class Project(models.Model):
     end_date = models.DateField(null=True)
     raw_data = JSONField(null=True)
 
+    @property
+    def first_task(self):
+        return self.tasks.order_by('start_date').first()
+
+    @property
+    def last_task(self):
+        return self.tasks.order_by('-end_date').first()
+
+    def profile(self, start_date=None, end_date=None, freq='MS'):
+        if not start_date:
+            start_date = self.first_task.start_date
+        if not end_date:
+            end_date = self.last_task.end_date
+        time_windows = slice_time_window(start_date, end_date, freq)
+        result = {}
+        for sdate, edate in time_windows:
+            key = sdate.strftime('%Y-%m')
+            contractor_cost = self.money_spent(
+                sdate, edate, contractor_only=True)
+            non_contractor_cost = self.money_spent(
+                sdate, edate, non_contractor_only=True)
+            result[key] = {
+                'contractor': contractor_cost,
+                'non-contractor': non_contractor_cost
+            }
+        return result
+
     def __str__(self):
         return self.name
+
+    def money_spent(self, start_date, end_date, contractor_only=False,
+                    non_contractor_only=False):
+        """
+        get money spent in a time window
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param contractor_only: True to return only money spent on contractors
+        :param non_contractor_only: True to return only money spent on
+        non-contractors
+        :return: a decimal for total spending
+        """
+        if contractor_only and non_contractor_only:
+            raise ValueError('only one of contractor_only and'
+                             ' non_contractor_only can be true')
+        tasks = self.tasks
+        if contractor_only:
+            tasks = tasks.filter(person__is_contractor=True)
+        elif non_contractor_only:
+            tasks = tasks.filter(person__is_contractor=False)
+        else:
+            tasks = tasks.all()
+        spending_per_task = [task.money_spent(start_date, end_date)
+                             for task in tasks]
+        return sum(spending_per_task)
 
 
 class Task(models.Model):

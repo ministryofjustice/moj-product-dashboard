@@ -65,3 +65,14 @@ def send_figure(request):
     figure = get_figure(request_data['requested_figure'], request_data)
 
     return JsonResponse(figure, safe=False)
+
+
+@login_required
+def project_json(request):
+    """
+    send json for a project profilet
+    """
+    # TODO handle errors
+    request_data = json.loads(request.body.decode())
+    project = Project.objects.get(id=request_data['projectid'])
+    return JsonResponse(project.profile())

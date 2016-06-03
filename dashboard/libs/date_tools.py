@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 
 from numpy import busday_count
+from pandas import date_range
 import requests
 
 BANK_HOLIDAY_URL = 'https://www.gov.uk/bank-holidays/england-and-wales.json'
@@ -86,3 +87,20 @@ def get_overlap(time_window0, time_window1):
     else:
         overlap = None
     return overlap
+
+
+def slice_time_window(start_date, end_date, freq):
+    """
+    slice a time window by frequency
+    """
+    dates = [ts.date() for ts in
+             date_range(start_date, end_date, freq=freq)]
+    if start_date not in dates:
+        dates.insert(0, start_date)
+    if end_date not in dates:
+        dates.append(end_date + timedelta(days=1))
+    time_windows = []
+    for current_sd, next_sd in zip(dates, dates[1:]):
+        current_ed = next_sd - timedelta(days=1)
+        time_windows.append((current_sd, current_ed))
+    return time_windows
