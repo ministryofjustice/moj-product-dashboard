@@ -24,7 +24,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^$', index),
-    url(r'^project.json/', project_json),
+    url(r'^project.json', project_json),
     url(r'^getfig/', send_figure),
     url(r'^admin/', admin.site.urls),
     url(r'^login/', auth_views.login),

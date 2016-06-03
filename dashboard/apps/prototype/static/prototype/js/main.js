@@ -193,7 +193,6 @@ var testRequest = {
 
 // TODO this function needs some structure
 function plotProject(project) {
-  console.log(project);
   const pairs = _.toPairs(project).sort();
   const months = _.map(
       pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
@@ -246,7 +245,7 @@ function plotProject(project) {
 };
 
 function getProjectJSON(id) {
-  return fetch('/project.json/', {
+  return fetch('/project.json', {
       credentials: 'same-origin',
       method: 'POST',
       headers: {
