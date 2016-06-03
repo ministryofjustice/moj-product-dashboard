@@ -209,20 +209,29 @@ function plotProject(project) {
     x: months,
     y: civilServantCosts,
     name: 'Civil Servant',
-    type: 'bar'
+    type: 'bar',
+    marker: {
+      color: '#c0c2dc'
+    }
   };
   const trace2 = {
     x: months,
     y: contractorCosts,
     name: 'Contractor',
-    type: 'bar'
+    type: 'bar',
+    marker: {
+      color: '#b5d8df'
+    }
   };
   const trace3 = {
     x: months,
     y: totalCostsCumulative,
     name: 'Cumulative',
     mode: 'lines',
-    yaxis: 'y2'
+    yaxis: 'y2',
+    marker: {
+      color: '#112684'
+    }
   }
   const layout = {
     barmode: 'stack',
