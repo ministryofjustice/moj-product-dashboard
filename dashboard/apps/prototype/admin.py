@@ -19,6 +19,7 @@ class PersonAdmin(ReadOnlyAdmin):
     list_display = ('avatar_tag', 'name', 'job_title', 'is_contractor',
                     'is_current')
     search_fields = ('name', 'job_title')
+    exclude = ['raw_data']
 
     def avatar_tag(self, obj):
         return '<img src="{}" style="height:40px;"/>'.format(obj.avatar)
@@ -32,14 +33,17 @@ class RateAdmin(FinancePermissions, admin.ModelAdmin):
 
 class ClientAdmin(ReadOnlyAdmin):
     search_fields = ('name', 'float_id')
+    exclude = ['raw_data']
 
 
 class ProjectAdmin(ReadOnlyAdmin):
     search_fields = ('name', 'float_id')
+    exclude = ['raw_data']
 
 
 class TaskAdmin(ReadOnlyAdmin):
     search_fields = ('name', 'person__name', 'project__name', 'float_id')
+    exclude = ['raw_data']
 
 
 admin.site.register(Person, PersonAdmin)

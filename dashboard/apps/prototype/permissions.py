@@ -2,8 +2,11 @@
 
 
 class ReadOnlyPermissions():
+    exclude = []
+
     def get_readonly_fields(self, request, obj=None):
-        return [field.name for field in obj._meta.fields]
+        return [field.name for field in obj._meta.fields
+                if field.name not in self.exclude]
 
     def has_add_permission(self, request, obj=None):
         return False

@@ -46,9 +46,11 @@ class TaskTimeSpentTestCase(TestCase):
     def assertFieldsReadOnly(self, user, admin_class, model_class):
         mock_request = mock.Mock(user=user)
         model_admin = admin_class(model_class, admin.site)
+        fields = [field.name for field in model_class._meta.fields]
+        fields.remove('raw_data')
         self.assertListEqual(
             model_admin.get_readonly_fields(mock_request, model_class()),
-            [field.name for field in model_class._meta.fields]
+            fields
         )
 
     def test_finance_can_access_rates(self):
