@@ -193,55 +193,56 @@ var testRequest = {
 
 // TODO this function needs some structure
 function plotProject(project) {
-      const pairs = _.toPairs(project).sort();
-      const months = _.map(
-          pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
-      const contractorCosts = _.map(
-          pairs, ([k, v]) => parseFloat(v['contractor']));
-      const civilServantCosts = _.map(
-          pairs, ([k, v]) => parseFloat(v['non-contractor']));
-      const totalCosts = _.map(
-          _.zip(contractorCosts, civilServantCosts),
-          ([x, y]) => x + y);
-      const totalCostsCumulative = [];
-      totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
-      const trace1 = {
-        x: months,
-        y: civilServantCosts,
-        name: 'Civil Servant',
-        type: 'bar'
-      };
-      const trace2 = {
-        x: months,
-        y: contractorCosts,
-        name: 'Contractor',
-        type: 'bar'
-      };
-      const trace3 = {
-        x: months,
-        y: totalCostsCumulative,
-        name: 'Cumulative',
-        mode: 'lines',
-        yaxis: 'y2'
-      }
-      const layout = {
-        barmode: 'stack',
-        yaxis: {
-          title: 'monthly cost'
-        },
-        yaxis2: {
-          title: 'cumulative',
-          overlaying: 'y',
-          side: 'right'
-        },
-        legend: {
-          yanchor: 'bottom'
-        }
-      };
-      Plotly.newPlot(
-          document.getElementById('fig-a'),
-          [trace1, trace2, trace3],
-          layout);
+  console.log(project);
+  const pairs = _.toPairs(project).sort();
+  const months = _.map(
+      pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
+  const contractorCosts = _.map(
+      pairs, ([k, v]) => parseFloat(v['contractor']));
+  const civilServantCosts = _.map(
+      pairs, ([k, v]) => parseFloat(v['non-contractor']));
+  const totalCosts = _.map(
+      _.zip(contractorCosts, civilServantCosts),
+      ([x, y]) => x + y);
+  const totalCostsCumulative = [];
+  totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
+  const trace1 = {
+    x: months,
+    y: civilServantCosts,
+    name: 'Civil Servant',
+    type: 'bar'
+  };
+  const trace2 = {
+    x: months,
+    y: contractorCosts,
+    name: 'Contractor',
+    type: 'bar'
+  };
+  const trace3 = {
+    x: months,
+    y: totalCostsCumulative,
+    name: 'Cumulative',
+    mode: 'lines',
+    yaxis: 'y2'
+  }
+  const layout = {
+    barmode: 'stack',
+    yaxis: {
+      title: 'monthly cost'
+    },
+    yaxis2: {
+      title: 'cumulative',
+      overlaying: 'y',
+      side: 'right'
+    },
+    legend: {
+      yanchor: 'bottom'
+    }
+  };
+  Plotly.newPlot(
+      document.getElementById('fig-a'),
+      [trace1, trace2, trace3],
+      layout);
 };
 
 function getProjectJSON(id) {
