@@ -68,3 +68,13 @@ Development
 
 In addition to running the Django development server (python manage.py runserver) run npm run --watch from the same
 directory to ensure that changes to the front-end code are reflected immediately.
+
+
+Testing
+=======
+
+::
+
+    py.test --cov=dashboard --cov-report term-missing
+
+
