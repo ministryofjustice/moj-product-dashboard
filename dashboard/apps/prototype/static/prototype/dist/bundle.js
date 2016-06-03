@@ -8212,7 +8212,7 @@
 	
 	    var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(SingleProjectFigure).call(this, element));
 	
-	    _this3.traceType = undefined;
+	    _this3.traceTypes = [];
 	    return _this3;
 	  }
 	
@@ -8227,19 +8227,19 @@
 	    key: 'makeTraces',
 	    value: function makeTraces() {
 	
-	      if (this.traceType == 'cost') {
+	      if (this.traceTypes.indexOf('cost') > -1) {
 	        this.makeCostTrace();
 	      }
-	      if (this.traceType == 'cumulative') {}
+	      if (this.traceTypes.indexOf('cumulative') > -1) {}
 	
 	      console.log('>>>>>' + this.traces);
 	      this.plot();
 	    }
 	  }, {
 	    key: 'display',
-	    value: function display(url, traceType) {
+	    value: function display(url, traceTypes) {
 	      this.getData(url);
-	      this.traceType = traceType;
+	      this.traceTypes = traceTypes;
 	    }
 	  }, {
 	    key: 'updateData',
@@ -8315,7 +8315,7 @@
 	  var fA = new SingleProjectFigure(figA);
 	
 	  // fA.getData('/getdata/');
-	  fA.display('/getdata/', 'cost');
+	  fA.display('/getdata/', ['cost']);
 	}
 	
 	/**
@@ -9103,7 +9103,7 @@
 /* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -61370,7 +61370,7 @@
 /* 478 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var require;var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;var require;/*!
 	 * Select2 4.0.3
 	 * https://select2.github.io
 	 *

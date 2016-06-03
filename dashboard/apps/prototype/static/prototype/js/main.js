@@ -64,7 +64,7 @@ class SingleProjectFigure extends Figure {
 
   constructor(element) {
     super(element);
-    this.traceType = undefined;
+    this.traceTypes = [];
   }
 
   handleResponse(json) {
@@ -75,17 +75,17 @@ class SingleProjectFigure extends Figure {
 
   makeTraces() {
 
-    if (this.traceType == 'cost') { this.makeCostTrace(); }
-    if (this.traceType == 'cumulative') {}
+    if (this.traceTypes.indexOf('cost') > -1) { this.makeCostTrace(); }
+    if (this.traceTypes.indexOf('cumulative') > -1) {}
 
     console.log('>>>>>' + this.traces);
     this.plot();
 
   }
 
-  display(url, traceType) {
+  display(url, traceTypes) {
     this.getData(url);
-    this.traceType = traceType;
+    this.traceTypes = traceTypes;
   }
 
   updateData(url) {
@@ -139,7 +139,7 @@ function plot() {
   const fA = new SingleProjectFigure(figA);
 
   // fA.getData('/getdata/');
-  fA.display('/getdata/', 'cost');
+  fA.display('/getdata/', ['cost']);
 
 }
 
