@@ -41,12 +41,12 @@ class Figures(object):
             time = project.time_spent(window[0], window[1])
             cost = project.money_spent(window[0], window[1])
             cumul_cost += cost
-            staff_split = project.staff_split(window[0], window[1])
+            contr_perc, cs_perc = project.staff_split(window[0], window[1])
             label = window[2]
 
             if not request_data['filter_empty'] or time != 0:
                 response.append({'time': time, 'cost': cost, 'cumul_cost': cumul_cost,
-                                 'staff_split': staff_split, 'label': label})
+                                 'cs_perc': cs_perc, 'contr_perc': contr_perc, 'label': label})
 
         return response
 

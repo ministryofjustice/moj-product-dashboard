@@ -195,11 +195,11 @@ class Project(models.Model):
         cs_perc = 0
 
         if len(contractors) != 0:
-            contr_perc = len(contractors) / len(contractors) + len(civil_servants)
+            contr_perc = len(contractors) / (len(contractors) + len(civil_servants))
         if len(civil_servants) != 0:
-            cs_perc = len(civil_servants) / len(contractors) + len(civil_servants)
+            cs_perc = len(civil_servants) / (len(contractors) + len(civil_servants))
 
-        return [contr_perc, cs_perc]
+        return contr_perc, cs_perc
 
 
 class Task(models.Model):

@@ -8149,13 +8149,14 @@
 	    //   throw new TypeError("Figure class is abstract and should not be instantiated");
 	    // }
 	    this.element = element;
+	    this.layout = { showlegend: true };
 	    this.traces = [];
 	  }
 	
 	  _createClass(Figure, [{
 	    key: 'plot',
 	    value: function plot() {
-	      _core2.default.newPlot(this.element, this.traces, { displaylogo: false });
+	      _core2.default.newPlot(this.element, this.traces, this.layout, { displaylogo: false });
 	    }
 	  }, {
 	    key: 'newTrace',
@@ -8222,10 +8223,18 @@
 	      _get(Object.getPrototypeOf(SingleProjectFigure.prototype), 'handleResponse', this).call(this, json);
 	      SingleProjectFigure.data = json;
 	      this.makeTraces();
+	      this.plot();
 	    }
 	  }, {
 	    key: 'makeTraces',
 	    value: function makeTraces() {
+	
+	      if (this.traceTypes.indexOf('staff_split') > -1) {
+	        this.makeTrace('cs_perc', '% Civil Servants');
+	        this.makeTrace('contr_perc', '% Contractors');
+	        this.layout.barmode = 'stack';
+	        return;
+	      }
 	
 	      if (this.traceTypes.indexOf('cost') > -1) {
 	        this.makeTrace('cost', 'Monthly Cost £');
@@ -8238,26 +8247,21 @@
 	      }
 	
 	      console.log(this.traces);
-	      this.plot();
-	    }
-	  }, {
-	    key: 'display',
-	    value: function display(url, traceTypes) {
-	      this.getData(url);
-	      this.traceTypes = traceTypes;
 	    }
 	  }, {
 	    key: 'updateData',
 	    value: function updateData(url) {
+	      console.log('>>>Requesting data');
 	      this.postRequestFigure(url, SingleProjectFigure.requestData);
 	    }
 	  }, {
-	    key: 'getData',
-	    value: function getData(url) {
+	    key: 'init',
+	    value: function init(url, traceTypes) {
+	      this.traceTypes = traceTypes;
 	      if (SingleProjectFigure.data != {}) {
 	        this.updateData(url);
 	      } else {
-	        console.log('Data already aquired, use updateData to refresh');
+	        console.log('>>>Using stored data');
 	        this.plot();
 	      }
 	    }
@@ -8344,8 +8348,9 @@
 	  var fB = new SingleProjectFigure(figB);
 	  var fC = new SingleProjectFigure(figC);
 	
-	  fA.display('/getdata/', ['cost', 'cumulative', 'time']);
-	  fB.display('/getdata/', ['time']);
+	  fA.init('/getdata/', ['cost', 'cumulative', 'time']);
+	  fB.init('/getdata/', ['time']);
+	  fC.init('/getdata/', ['staff_split']);
 	}
 	
 	/**

@@ -20,11 +20,12 @@ class Figure {
     //   throw new TypeError("Figure class is abstract and should not be instantiated");
     // }
     this.element = element;
+    this.layout = {showlegend: true}
     this.traces = [];
   }
 
   plot() {
-    Plotly.newPlot(this.element, this.traces, {displaylogo: false});
+    Plotly.newPlot(this.element, this.traces, this.layout, {displaylogo: false});
   }
 
   newTrace() {
@@ -71,34 +72,39 @@ class SingleProjectFigure extends Figure {
     super.handleResponse(json);
     SingleProjectFigure.data = json;
     this.makeTraces();
+    this.plot();
   }
 
   makeTraces() {
+
+    if (this.traceTypes.indexOf('staff_split') > -1) {
+      this.makeTrace('cs_perc', '% Civil Servants');
+      this.makeTrace('contr_perc', '% Contractors');
+      this.layout.barmode = 'stack';
+      return;
+    }
 
     if (this.traceTypes.indexOf('cost') > -1) { this.makeTrace('cost', 'Monthly Cost £'); }
     if (this.traceTypes.indexOf('time') > -1) { this.makeTrace('time', 'Person Days'); }
     if (this.traceTypes.indexOf('cumulative') > -1) { this.makeTrace('cumul_cost', 'Cumulative Cost £', 'line'); }
 
     console.log(this.traces);
-    this.plot();
 
-  }
 
-  display(url, traceTypes) {
-    this.getData(url);
-    this.traceTypes = traceTypes;
   }
 
   updateData(url) {
+    console.log('>>>Requesting data');
     this.postRequestFigure(url, SingleProjectFigure.requestData);
   }
 
-  getData(url) {
+  init(url, traceTypes) {
+    this.traceTypes = traceTypes;
     if (SingleProjectFigure.data != {}) {
       this.updateData(url);
     }
     else {
-      console.log('Data already aquired, use updateData to refresh');
+      console.log('>>>Using stored data');
       this.plot();
     }
   }
@@ -159,8 +165,9 @@ function plot() {
   const fB = new SingleProjectFigure(figB);
   const fC = new SingleProjectFigure(figC);
 
-  fA.display('/getdata/', ['cost', 'cumulative', 'time']);
-  fB.display('/getdata/', ['time']);
+  fA.init('/getdata/', ['cost', 'cumulative', 'time']);
+  fB.init('/getdata/', ['time']);
+  fC.init('/getdata/', ['staff_split']);
 
 }
 
