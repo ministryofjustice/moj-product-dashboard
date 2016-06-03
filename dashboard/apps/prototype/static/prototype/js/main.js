@@ -16,11 +16,11 @@ require('../styles/main.css');
 class Figure {
 
   constructor(element) {
-    // if (new.target === Figure) {
-    //   throw new TypeError("Figure class is abstract and should not be instantiated");
-    // }
+    if (new.target === Figure) {
+      throw new TypeError("Figure class is abstract and should not be instantiated");
+    }
     this.element = element;
-    this.layout = {showlegend: true}
+    this.layout = {showlegend: true};
     this.traces = [];
   }
 
@@ -109,21 +109,6 @@ class SingleProjectFigure extends Figure {
     }
   }
 
-  // makeCostTrace() {
-  //
-  //   let costTrace = this.newTrace();
-  //
-  //   for (let timeWindow of SingleProjectFigure.data) {
-  //
-  //     costTrace.x.push(timeWindow.label);
-  //     costTrace.y.push(timeWindow.cost);
-  //
-  //   }
-  //
-  //   this.traces.push(costTrace);
-  //
-  // }
-
   makeTrace(key, name, type='bar') {
 
     let trace = this.newTrace();
@@ -146,10 +131,10 @@ SingleProjectFigure.data = {};
 SingleProjectFigure.requestData = {
 
   request_type : 'single_project',
-  project_id : 52,
+  project_id : 52, // Now set from select box
   start_date: '2015-01-01',
   end_date: '2016-06-01',
-  time_increment: 'month',
+  time_increment: 'month', // month, week or day
   filter_empty: false
 
 };
@@ -164,8 +149,8 @@ function plot() {
   const fA = new SingleProjectFigure(figA);
   const fB = new SingleProjectFigure(figB);
   const fC = new SingleProjectFigure(figC);
-
-  fA.init('/getdata/', ['cost', 'cumulative', 'time']);
+  
+  fA.init('/getdata/', ['cost', 'cumulative']);
   fB.init('/getdata/', ['time']);
   fC.init('/getdata/', ['staff_split']);
 
@@ -186,6 +171,7 @@ function loadProject(id) {
   const url = [location.protocol, '//', location.host, location.pathname].join('');
 
   window.location.href = url + '?projectid=' + id;
+
 };
 
 
@@ -193,6 +179,7 @@ function loadProject(id) {
 $(() => {
   const projectId = getProjectId();
   // plot project
+  SingleProjectFigure.requestData.project_id = projectId;
   plot();
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {

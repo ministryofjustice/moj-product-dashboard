@@ -8145,9 +8145,9 @@
 	  function Figure(element) {
 	    _classCallCheck(this, Figure);
 	
-	    // if (new.target === Figure) {
-	    //   throw new TypeError("Figure class is abstract and should not be instantiated");
-	    // }
+	    if (new.target === Figure) {
+	      throw new TypeError("Figure class is abstract and should not be instantiated");
+	    }
 	    this.element = element;
 	    this.layout = { showlegend: true };
 	    this.traces = [];
@@ -8265,22 +8265,6 @@
 	        this.plot();
 	      }
 	    }
-	
-	    // makeCostTrace() {
-	    //
-	    //   let costTrace = this.newTrace();
-	    //
-	    //   for (let timeWindow of SingleProjectFigure.data) {
-	    //
-	    //     costTrace.x.push(timeWindow.label);
-	    //     costTrace.y.push(timeWindow.cost);
-	    //
-	    //   }
-	    //
-	    //   this.traces.push(costTrace);
-	    //
-	    // }
-	
 	  }, {
 	    key: 'makeTrace',
 	    value: function makeTrace(key, name) {
@@ -8330,10 +8314,10 @@
 	SingleProjectFigure.requestData = {
 	
 	  request_type: 'single_project',
-	  project_id: 52,
+	  project_id: 52, // Now set from select box
 	  start_date: '2015-01-01',
 	  end_date: '2016-06-01',
-	  time_increment: 'month',
+	  time_increment: 'month', // month, week or day
 	  filter_empty: false
 	
 	};
@@ -8348,7 +8332,7 @@
 	  var fB = new SingleProjectFigure(figB);
 	  var fC = new SingleProjectFigure(figC);
 	
-	  fA.init('/getdata/', ['cost', 'cumulative', 'time']);
+	  fA.init('/getdata/', ['cost', 'cumulative']);
 	  fB.init('/getdata/', ['time']);
 	  fC.init('/getdata/', ['staff_split']);
 	}
@@ -8371,6 +8355,7 @@
 	(0, _jquery2.default)(function () {
 	  var projectId = getProjectId();
 	  // plot project
+	  SingleProjectFigure.requestData.project_id = projectId;
 	  plot();
 	  // dropdown project selector
 	  (0, _jquery2.default)('#projects').select2().on("select2:select", function (e) {
