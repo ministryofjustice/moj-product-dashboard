@@ -17,3 +17,12 @@
       - ['change_person', 'prototype', 'person']
       - ['change_project', 'prototype', 'project']
       - ['change_task', 'prototype', 'task']
+- model: auth.group
+  pk: 3
+  fields:
+    name: Delivery
+    permissions:
+      - ['change_client', 'prototype', 'client']
+      - ['change_person', 'prototype', 'person']
+      - ['change_project', 'prototype', 'project']
+      - ['change_task', 'prototype', 'task']
