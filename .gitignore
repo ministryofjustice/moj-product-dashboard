@@ -13,3 +13,5 @@ var/*
 node_modules/
 output.log
 *.map
+
+.coverage
