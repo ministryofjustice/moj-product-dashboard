@@ -2,8 +2,9 @@ from decimal import Decimal
 from datetime import date
 
 from django.test import TestCase
+from model_mommy import mommy
 
-from dashboard.apps.prototype.models import Task
+from dashboard.apps.prototype.models import Person, Project, Task, Rate
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -64,3 +65,44 @@ class TaskTimeSpentTestCase(TestCase):
         days = self.task_1.time_spent(start_date=date(2016, 3, 25),
                                       end_date=date(2016, 3, 25))
         self.assertEqual(days, Decimal('0'))
+
+
+class TaskMoneySpentTestCase(TestCase):
+
+    def setUp(self):
+        self.billable_project = mommy.make(
+            Project, is_billable=True)
+        self.non_billable_project = mommy.make(
+            Project, is_billable=False)
+        self.person = mommy.make(Person)
+        mommy.make(Rate, start_date=date(2015, 1, 1), rate=Decimal('400'),
+                   person=self.person)
+        self.non_billable_task = mommy.make(
+            Task, project=self.non_billable_project,
+            start_date=date(2016, 6, 1),
+            end_date=date(2016, 6, 10),
+            days=8)
+        self.billable_task = mommy.make(
+            Task, project=self.billable_project,
+            person=self.person,
+            start_date=date(2016, 6, 1),
+            end_date=date(2016, 6, 10),
+            days=8)
+
+    def test_non_billable_task_spending(self):
+        assert self.non_billable_task.money_spent() == 0
+
+    def test_billable_task_total_spending(self):
+        assert self.billable_task.money_spent() == 400 * 8
+
+    def test_billable_task_weekday_spending(self):
+        assert self.billable_task.money_spent(
+            date(2016, 6, 1), date(2016, 6, 3)) == 400 * 3
+
+    def test_billable_task_weekend_spending_is_zero(self):
+        assert self.billable_task.money_spent(
+            date(2016, 6, 4), date(2016, 6, 5)) == 0
+
+    def test_billable_task_weekday_plus_weekend_spending(self):
+        assert self.billable_task.money_spent(
+            date(2016, 6, 1), date(2016, 6, 5)) == 400 * 3
