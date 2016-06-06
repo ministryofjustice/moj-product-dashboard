@@ -150,11 +150,11 @@ class Project(models.Model):
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
     client = models.ForeignKey('Client', related_name='projects', null=True)
-    discovery_date = models.DateField(null=True)
-    alpha_date = models.DateField(null=True)
-    beta_date = models.DateField(null=True)
-    live_date = models.DateField(null=True)
-    end_date = models.DateField(null=True)
+    discovery_date = models.DateField(null=True, blank=True)
+    alpha_date = models.DateField(null=True, blank=True)
+    beta_date = models.DateField(null=True, blank=True)
+    live_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
 
