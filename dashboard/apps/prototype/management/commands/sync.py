@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
-from dashboard.libs.queries import valid_date
+from dashboard.libs.date_tools import parse_date
 from .helpers import logger
 
 FLOAT_DATA_DIR = settings.location('../var/float')
@@ -213,9 +213,9 @@ class Command(BaseCommand):
         today = date.today()
         three_month_in_the_past = today - timedelta(days=90)
         three_month_in_future = today + timedelta(days=90)
-        parser.add_argument('-s', '--start-date', type=valid_date,
+        parser.add_argument('-s', '--start-date', type=parse_date,
                             default=three_month_in_the_past)
-        parser.add_argument('-e', '--end-date', type=valid_date,
+        parser.add_argument('-e', '--end-date', type=parse_date,
                             default=three_month_in_future)
         parser.add_argument('-t', '--token', type=str)
         parser.add_argument('-o', '--output-dir', type=ensure_directory,
