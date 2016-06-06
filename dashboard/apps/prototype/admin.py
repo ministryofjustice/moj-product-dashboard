@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Person, Rate, Client, Project, Task
+from .models import (Person, Rate, Client, Project, Task, Cost, Budget, RAG,
+                     Note)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -36,9 +37,35 @@ class ClientAdmin(ReadOnlyAdmin):
     exclude = ['raw_data']
 
 
-class ProjectAdmin(ReadOnlyAdmin):
-    search_fields = ('name', 'float_id')
+class CostInline(admin.TabularInline):
+    model = Cost
+    extra = 0
+
+
+class BudgetInline(admin.TabularInline):
+    model = Budget
+    extra = 0
+
+
+class RAGInline(admin.TabularInline):
+    model = RAG
+    extra = 0
+
+
+class NoetInline(admin.TabularInline):
+    model = Note
+    extra = 0
+
+
+class ProjectAdmin(admin.ModelAdmin):
+    fields = ['name', 'description', 'float_id', 'is_billable',
+              'project_manager', 'client', 'discovery_date', 'alpha_date',
+              'beta_date', 'live_date', 'end_date', 'visible']
     exclude = ['raw_data']
+    inlines = [CostInline, BudgetInline, RAGInline, NoetInline]
+    readonly_fields = ('name', 'description', 'float_id', 'is_billable',
+                       'project_manager', 'client')
+    search_fields = ('name', 'float_id')
 
     def get_queryset(self, request):
         qs = self.model._default_manager.get_queryset()
@@ -56,5 +83,10 @@ class TaskAdmin(ReadOnlyAdmin):
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Rate, RateAdmin)
 admin.site.register(Client, ClientAdmin)
-admin.site.register(Project, ProjectAdmin)
 admin.site.register(Task, TaskAdmin)
+
+admin.site.register(Project, ProjectAdmin)
+admin.site.register(Cost)
+admin.site.register(Budget)
+admin.site.register(RAG)
+admin.site.register(Note)

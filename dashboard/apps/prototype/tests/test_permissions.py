@@ -86,5 +86,4 @@ class TaskTimeSpentTestCase(TestCase):
 
     def test_read_only_fields(self):
         self.assertFieldsReadOnly(self.finance_admin, ClientAdmin, Client)
-        self.assertFieldsReadOnly(self.finance_admin, ProjectAdmin, Project)
         self.assertFieldsReadOnly(self.finance_admin, TaskAdmin, Task)
