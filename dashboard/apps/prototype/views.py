@@ -2,12 +2,10 @@ import json
 from collections import OrderedDict
 
 from django.shortcuts import render, redirect
-from django.http import (JsonResponse, HttpResponseBadRequest,
-                         HttpResponseNotFound)
+from django.http import JsonResponse, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required
 
 from .models import Project, Client
-from dashboard.libs.figure_gen import get_figure
 
 
 def get_total_times(projects):
@@ -49,22 +47,6 @@ def index(request):
     areas = OrderedDict(sorted([(k, v) for k, v in areas.items() if v]))
     context = {'areas': areas,  'project': project}
     return render(request, 'index.html', context)
-
-
-def send_figure(request):
-
-    if request.method == 'GET':
-        request_data = request.GET
-    elif request.method == 'POST':
-        request_data = json.loads(request.body.decode())
-    else:
-        return HttpResponseBadRequest()
-
-    print(request_data)
-
-    figure = get_figure(request_data['requested_figure'], request_data)
-
-    return JsonResponse(figure, safe=False)
 
 
 @login_required
