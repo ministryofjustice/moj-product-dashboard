@@ -38,5 +38,11 @@ def project_json(request):
     """
     # TODO handle errors
     request_data = json.loads(request.body.decode())
-    project = Project.objects.get(id=request_data['projectid'])
+    try:
+        project = Project.objects.get(
+            id=request_data['projectid'])
+    except Project.DoesNotExist:
+        return HttpResponseNotFound(
+            'cannot find project with projectid={}'
+            .format(request_data['projectid']))
     return JsonResponse(project.profile())
