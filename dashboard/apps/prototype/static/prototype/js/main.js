@@ -193,13 +193,13 @@ var testRequest = {
 
 // TODO this function needs some structure
 function plotProject(project) {
-  const pairs = _.toPairs(project).sort();
+  const costs = _.toPairs(project.spendings).sort();
   const months = _.map(
-      pairs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
+      costs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
   const contractorCosts = _.map(
-      pairs, ([k, v]) => parseFloat(v['contractor']));
+      costs, ([k, v]) => parseFloat(v['contractor']));
   const civilServantCosts = _.map(
-      pairs, ([k, v]) => parseFloat(v['non-contractor']));
+      costs, ([k, v]) => parseFloat(v['non-contractor']));
   const totalCosts = _.map(
       _.zip(contractorCosts, civilServantCosts),
       ([x, y]) => x + y);
@@ -234,6 +234,7 @@ function plotProject(project) {
     }
   }
   const layout = {
+    title: project.name,
     barmode: 'stack',
     yaxis: {
       title: 'monthly cost'
