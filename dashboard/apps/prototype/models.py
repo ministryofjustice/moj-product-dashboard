@@ -11,6 +11,8 @@ from dashboard.libs.date_tools import (
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 
+from .constants import RAG_TYPES, COST_TYPES
+
 
 class Person(models.Model):
     float_id = models.CharField(max_length=128, unique=True)
@@ -213,6 +215,35 @@ class Project(models.Model):
         spending_per_task = [task.money_spent(start_date, end_date)
                              for task in tasks]
         return sum(spending_per_task)
+
+
+class Cost(models.Model):
+    project = models.ForeignKey('Project', related_name='costs')
+    date = models.DateField()
+    name = models.CharField(max_length=128)
+    note = models.TextField()
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    type = models.PositiveSmallIntegerField(
+        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
+
+
+class Budget(models.Model):
+    project = models.ForeignKey('Project', related_name='budgets')
+    start_date = models.DateField()
+    budget = models.DecimalField(max_digits=16, decimal_places=2)
+
+
+class RAG(models.Model):
+    project = models.ForeignKey('Project', related_name='rags')
+    start_date = models.DateField()
+    rag = models.PositiveSmallIntegerField(
+        choices=RAG_TYPES, default=RAG_TYPES.GREEN)
+
+
+class Note(models.Model):
+    project = models.ForeignKey('Project', related_name='notes')
+    date = models.DateField()
+    note = models.TextField()
 
 
 class Task(models.Model):
