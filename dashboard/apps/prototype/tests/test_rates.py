@@ -42,3 +42,9 @@ class RateTestCase(TestCase):
         self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2016, 5, 31)), '240')
 
         self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2020, 5, 30)), '229.61')
+
+    def test_rate_string(self):
+        rate = self._add_rate(RATE_TYPES.MONTH, 4600, date(2016, 5, 26))
+        expected = '"{}" @ "4600 Monthly salary" from "2016-05-26"'.format(
+            self.person.name)
+        self.assertEquals(str(rate), expected)

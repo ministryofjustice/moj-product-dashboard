@@ -91,7 +91,7 @@ class Rate(models.Model):
     objects = RatesManager()
 
     def __str__(self):
-        return '"{}" @ "{}"/{} from "{}"'.format(
+        return '"{}" @ "{} {}" from "{}"'.format(
             self.person, self.rate,
             RATE_TYPES.for_value(self.rate_type).display, self.start_date)
 
