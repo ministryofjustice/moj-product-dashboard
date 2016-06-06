@@ -254,7 +254,8 @@ class RAG(models.Model):
 class Note(models.Model):
     project = models.ForeignKey('Project', related_name='notes')
     date = models.DateField()
-    note = models.TextField()
+    name = models.CharField(max_length=128, null=True)
+    note = models.TextField(null=True, blank=True)
 
 
 class Task(models.Model):
