@@ -215,6 +215,16 @@ class Project(models.Model):
         return sum(spending_per_task)
 
 
+class TaskManager(models.Manager):
+
+    def between(self, start_date, end_date):
+        return self.filter(
+            models.Q(start_date__gte=start_date, start_date__lte=end_date) |
+            models.Q(end_date__gte=start_date, end_date__lte=end_date) |
+            models.Q(start_date__lt=start_date, end_date__gt=end_date)
+        )
+
+
 class Task(models.Model):
     name = models.CharField(max_length=128, null=True)
     person = models.ForeignKey('Person', related_name='tasks')
@@ -224,6 +234,7 @@ class Task(models.Model):
     days = models.DecimalField(max_digits=10, decimal_places=5)
     float_id = models.CharField(max_length=128, unique=True)
     raw_data = JSONField(null=True)
+    objects = TaskManager()
 
     def __str__(self):
         if self.name:
