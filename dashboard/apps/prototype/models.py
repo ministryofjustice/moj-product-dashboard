@@ -135,6 +135,13 @@ class Client(models.Model):
         return self.name
 
 
+class ProjectManager(models.Manager):
+    use_for_related_fields = True
+
+    def get_queryset(self):
+        return super(ProjectManager, self).get_queryset().filter(visible=True)
+
+
 class Project(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField()
@@ -148,7 +155,11 @@ class Project(models.Model):
     beta_date = models.DateField(null=True)
     live_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
+    visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
+
+    objects = ProjectManager()
+    all = models.Manager()
 
     @property
     def first_task(self):

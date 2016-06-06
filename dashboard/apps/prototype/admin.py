@@ -40,6 +40,13 @@ class ProjectAdmin(ReadOnlyAdmin):
     search_fields = ('name', 'float_id')
     exclude = ['raw_data']
 
+    def get_queryset(self, request):
+        qs = self.model._default_manager.get_queryset()
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
+
 
 class TaskAdmin(ReadOnlyAdmin):
     search_fields = ('name', 'person__name', 'project__name', 'float_id')
