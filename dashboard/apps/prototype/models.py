@@ -162,14 +162,22 @@ class Project(models.Model):
         if not end_date:
             end_date = self.last_task.end_date
         time_windows = slice_time_window(start_date, end_date, freq)
-        result = {}
+        result = {
+            'name': self.name,
+            'description': self.description,
+            'alpha_date': self.alpha_date,
+            'beta_date': self.beta_date,
+            'live_date': self.live_date,
+            'end_date': self.end_date,
+            'spendings': {}
+        }
         for sdate, edate in time_windows:
             key = sdate.strftime('%Y-%m')
             contractor_cost = self.money_spent(
                 sdate, edate, contractor_only=True)
             non_contractor_cost = self.money_spent(
                 sdate, edate, non_contractor_only=True)
-            result[key] = {
+            result['spendings'][key] = {
                 'contractor': contractor_cost,
                 'non-contractor': non_contractor_cost
             }
