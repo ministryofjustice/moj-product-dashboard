@@ -13,8 +13,17 @@ import requests
 BANK_HOLIDAY_URL = 'https://www.gov.uk/bank-holidays/england-and-wales.json'
 
 
-def parse(date_string):
-    return datetime.strptime(date_string, '%Y-%m-%d').date()
+def parse_date(date_string, format='%Y-%m-%d'):
+    """
+    parse a date string
+    :param date_string: a string representing a date
+    :param format: format of the string, default to '%Y-%m-%d'
+    :return: a date object
+    """
+    return datetime.strptime(date_string, format).date()
+
+# TODO replace reference to parse in the code base by parse_date
+parse = parse_date
 
 
 @lru_cache()
