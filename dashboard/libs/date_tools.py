@@ -22,9 +22,6 @@ def parse_date(date_string, format='%Y-%m-%d'):
     """
     return datetime.strptime(date_string, format).date()
 
-# TODO replace reference to parse in the code base by parse_date
-parse = parse_date
-
 
 @lru_cache()
 def get_bank_holidays():
@@ -35,7 +32,7 @@ def get_bank_holidays():
     """
     response = requests.get(BANK_HOLIDAY_URL)
     response.raise_for_status()
-    return [parse(event['date']) for event in response.json()['events']]
+    return [parse_date(event['date']) for event in response.json()['events']]
 
 
 def get_workdays(start_date, end_date):

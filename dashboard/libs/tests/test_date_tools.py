@@ -1,7 +1,7 @@
 from datetime import date
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_bank_holidays, get_overlap, parse,
+    get_workdays, get_bank_holidays, get_overlap, parse_date,
     slice_time_window)
 import pytest
 
@@ -17,7 +17,7 @@ import pytest
     ('2016-02-01', '2016-02-28', 20),  # Feb 2016
 ])
 def test_get_work_days(start_date, end_date, expected):
-    workdays = get_workdays(parse(start_date), parse(end_date))
+    workdays = get_workdays(parse_date(start_date), parse_date(end_date))
     assert workdays == expected
 
 
@@ -29,7 +29,7 @@ def test_get_work_days(start_date, end_date, expected):
     '2016-12-27',  # christmas day (substitue day)
 ])
 def test_get_bank_holidays_good_days(day):
-    assert parse(day) in get_bank_holidays(), \
+    assert parse_date(day) in get_bank_holidays(), \
         '{} is a bank holiday!'.format(day)
 
 
@@ -38,7 +38,7 @@ def test_get_bank_holidays_good_days(day):
     '2016-08-01',  # summer bank holiday (Scotland)
 ])
 def test_get_bank_holidays_bad_days(day):
-    assert parse(day) not in get_bank_holidays()
+    assert parse_date(day) not in get_bank_holidays()
 
 
 @pytest.mark.parametrize(
@@ -54,10 +54,10 @@ def test_get_bank_holidays_bad_days(day):
          ('2015-12-31', '2016-01-01')),
     ])
 def test_get_overlap(start_date0, end_date0, start_date1, end_date1, expected):
-    overlap = get_overlap((parse(start_date0), parse(end_date0)),
-                          (parse(start_date1), parse(end_date1)))
+    overlap = get_overlap((parse_date(start_date0), parse_date(end_date0)),
+                          (parse_date(start_date1), parse_date(end_date1)))
     if expected:
-        expected = parse(expected[0]), parse(expected[1])
+        expected = parse_date(expected[0]), parse_date(expected[1])
     assert expected == overlap
 
 
