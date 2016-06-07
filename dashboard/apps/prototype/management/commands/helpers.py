@@ -90,10 +90,7 @@ def get_persons(names, as_filter=True):
             return []
         else:
             return Person.objects.all()
-    query = Q()
-    for item in [Q(name__icontains=name) for name in names]:
-        query |= item
-    persons = Person.objects.filter(query)
+    persons = Person.objects.filter(contains_any('name', names))
     if not persons:
         raise NoMatchFound(
             'could not find any person with name(s) {}'.format(
@@ -109,10 +106,7 @@ def get_areas(names, as_filter=True):
             return []
         else:
             return Client.objects.all()
-    query = Q()
-    for item in [Q(name__icontains=name) for name in names]:
-        query |= item
-    areas = Client.objects.filter(query)
+    areas = Client.objects.filter(contains_any('name', names))
     if not areas:
         raise NoMatchFound(
             'could not find any area with name(s) {}'.format(
@@ -129,10 +123,7 @@ def get_projects(names, areas, as_filter=True):
         else:
             return Project.objects.all()
 
-    filter_by_name = Q()
-    for item in [Q(name__icontains=name) for name in names]:
-        filter_by_name |= item
-    projects = Project.objects.filter(filter_by_name)
+    projects = Project.objects.filter(contains_any('name', names))
 
     if areas:
         if not isinstance(areas[0], Client):
@@ -145,3 +136,16 @@ def get_projects(names, areas, as_filter=True):
             ('could not find any project with name(s) {} and area(s) {}'
              ).format(','.join(names), area_names))
     logger.info('projects: {}'.format(', '.join([p.name for p in projects])))
+
+
+def contains_any(field, values, ignore_case=True):
+    if ignore_case:
+        key = '{}__icontains'.format(field)
+    else:
+        key = '{}__contains'.format(field)
+
+    filter_by_values = Q()
+    for value in values:
+        filter_by_values |= Q(**{key: value})
+
+    return filter_by_values

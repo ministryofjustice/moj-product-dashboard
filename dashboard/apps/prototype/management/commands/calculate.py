@@ -9,7 +9,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 from dashboard.libs.date_tools import parse_date
 from dashboard.apps.prototype.models import Task
-from .helpers import print_person, print_task, logger, get_persons, get_projects, get_areas, NoMatchFound
+from .helpers import (print_person, print_task, logger, get_persons,
+                      get_projects, get_areas, NoMatchFound)
 
 
 class Command(BaseCommand):
