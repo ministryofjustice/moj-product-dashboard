@@ -4,6 +4,7 @@
 tools for dealing with dates
 """
 from datetime import datetime, timedelta
+from dateutil.rrule import rrule, MONTHLY
 from functools import lru_cache
 
 from numpy import busday_count
@@ -104,3 +105,21 @@ def slice_time_window(start_date, end_date, freq):
         current_ed = next_sd - timedelta(days=1)
         time_windows.append((current_sd, current_ed))
     return time_windows
+
+
+def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None):
+    """
+    returns list of dates of freq (MONTHLY, YEARLY) between two dates
+    :param start_date: date object - date to start on
+    :param end_date:  date object - date to end on
+    :param freq: int object - dateutil.rrule constant
+    :param bymonthday: int or list of ints - see rrule
+    :param bysetpos: int or list of ints - see rrule
+    :return: list object - list of date objects
+    """
+    if start_date.day > 28 and freq == MONTHLY:
+        bymonthday = range(28, start_date.day + 1)
+        bysetpos = -1
+    return [dt.date() for dt in
+            rrule(freq, dtstart=start_date, until=end_date,
+                  bymonthday=bymonthday, bysetpos=bysetpos)]

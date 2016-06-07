@@ -1,8 +1,9 @@
 from datetime import date
+from dateutil.rrule import MONTHLY, YEARLY
 
 from dashboard.libs.date_tools import (
     get_workdays, get_bank_holidays, get_overlap, parse,
-    slice_time_window)
+    slice_time_window, dates_between)
 import pytest
 
 
@@ -68,3 +69,24 @@ def test_slice_time_window():
     sliced = slice_time_window(start_date, end_date, 'MS')
     assert sliced[0] == (date(2015, 1, 2), date(2015, 1, 31))
     assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+
+
+@pytest.mark.parametrize("start_date, end_date, frequency, expected", [
+    (date(2015, 1, 2), date(2015, 3, 3), MONTHLY,
+     [date(2015, 1, 2), date(2015, 2, 2), date(2015, 3, 2)]),
+
+    (date(2015, 1, 31), date(2015, 3, 31), MONTHLY,
+     [date(2015, 1, 31), date(2015, 2, 28), date(2015, 3, 31)]),
+
+    (date(2015, 1, 29), date(2015, 3, 31), MONTHLY,
+     [date(2015, 1, 29), date(2015, 2, 28), date(2015, 3, 29)]),
+
+    (date(2015, 1, 2), date(2017, 3, 3), YEARLY,
+     [date(2015, 1, 2), date(2016, 1, 2), date(2017, 1, 2)]),
+
+    (date(2015, 1, 30), date(2017, 3, 3), YEARLY,
+     [date(2015, 1, 30), date(2016, 1, 30), date(2017, 1, 30)]),
+])
+def test_slice_on_date(start_date, end_date, frequency, expected):
+    dates = dates_between(start_date, end_date, frequency)
+    assert dates == expected
