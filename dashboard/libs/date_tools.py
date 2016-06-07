@@ -23,6 +23,15 @@ def parse_date(date_string, format='%Y-%m-%d'):
     return datetime.strptime(date_string, format).date()
 
 
+def to_datetime(date):
+    """
+    convert a date object to datetime object
+    :param date: a date object
+    :return: a datetime object
+    """
+    return datetime(*date.timetuple()[:6])
+
+
 @lru_cache()
 def get_bank_holidays():
     """

@@ -1,8 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 
 from dashboard.libs.date_tools import (
     get_workdays, get_bank_holidays, get_overlap, parse_date,
-    slice_time_window)
+    to_datetime, slice_time_window)
 import pytest
 
 
@@ -68,3 +68,7 @@ def test_slice_time_window():
     sliced = slice_time_window(start_date, end_date, 'MS')
     assert sliced[0] == (date(2015, 1, 2), date(2015, 1, 31))
     assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+
+
+def test_to_datetime():
+    assert to_datetime(date(2015, 12, 1)) == datetime(2015, 12, 1, 0, 0, 0)
