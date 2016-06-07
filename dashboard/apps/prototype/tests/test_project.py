@@ -114,6 +114,13 @@ def test_project_costs():
     mommy.make(
         Cost,
         project=project,
+        start_date=date(2015, 1, 1),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    mommy.make(
+        Cost,
+        project=project,
         start_date=date(2016, 1, 1),
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('50')

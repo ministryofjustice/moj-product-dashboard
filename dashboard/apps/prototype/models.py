@@ -253,9 +253,10 @@ class Cost(models.Model):
     def cost_between(self, start_date, end_date):
         start_date = max(start_date, self.start_date)
         end_date = min(end_date, self.end_date or end_date)
-        if self.type == COST_TYPES.ONE_OFF and \
-           start_date <= self.start_date <= end_date:
-            return self.cost
+        if self.type == COST_TYPES.ONE_OFF:
+            if start_date <= self.start_date <= end_date:
+                return self.cost
+            return Decimal('0')
         if self.type == COST_TYPES.MONTHLY:
             freq = MONTHLY
         elif self.type == COST_TYPES.ANNUALLY:
