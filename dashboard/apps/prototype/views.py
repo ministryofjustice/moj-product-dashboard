@@ -23,7 +23,7 @@ def index(request):
         return HttpResponseNotFound(
             'cannot find project with projectid={}'.format(project_id))
     areas = {
-        area.name: {p.id: p.name for p in area.projects.all()}
+        area.name: {p.id: p.name for p in area.projects.visible().all()}
         for area in Client.objects.all()
     }
     areas = OrderedDict(sorted([(k, v) for k, v in areas.items() if v]))
