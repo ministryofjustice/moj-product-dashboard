@@ -91,7 +91,7 @@ class Rate(models.Model):
     objects = RatesManager()
 
     def __str__(self):
-        return '"{}" @ "{}"/{} from "{}"'.format(
+        return '"{}" @ "{} {}" from "{}"'.format(
             self.person, self.rate,
             RATE_TYPES.for_value(self.rate_type).display, self.start_date)
 
@@ -157,11 +157,6 @@ class Project(models.Model):
         return self.tasks.order_by('-end_date').first()
 
     def profile(self, start_date=None, end_date=None, freq='MS'):
-        if not start_date:
-            start_date = self.first_task.start_date
-        if not end_date:
-            end_date = self.last_task.end_date
-        time_windows = slice_time_window(start_date, end_date, freq)
         result = {
             'name': self.name,
             'description': self.description,
@@ -171,6 +166,14 @@ class Project(models.Model):
             'end_date': self.end_date,
             'spendings': {}
         }
+        try:
+            if not start_date:
+                start_date = self.first_task.start_date
+            if not end_date:
+                end_date = self.last_task.end_date
+        except AttributeError:  # when there is no task in a project
+            return result
+        time_windows = slice_time_window(start_date, end_date, freq)
         for sdate, edate in time_windows:
             key = sdate.strftime('%Y-%m')
             contractor_cost = self.money_spent(
