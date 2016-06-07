@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'moj_template',
 
     'dashboard.apps.prototype',
+
+    'dashboard.apps.moj_admin'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -58,6 +60,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'dashboard.apps.moj_admin.middleware.MoJAdminMiddleWare'
 ]
 
 ROOT_URLCONF = 'dashboard.urls'

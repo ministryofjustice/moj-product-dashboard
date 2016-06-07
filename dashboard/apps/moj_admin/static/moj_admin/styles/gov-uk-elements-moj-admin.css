@@ -1,0 +1,33 @@
+table, table th, table td {
+    font-size: 16px;
+}
+
+@media (min-width: 641px) {
+   table, caption, table th, table td {
+       font-size: 16px;
+   }
+}
+
+caption {
+    /*font-size: 16px;*/
+    font-weight: bold;
+    text-align: left;
+    /*color: white;*/
+    /*background-color: #005ea5;*/
+}
+
+/*caption.a {*/
+    /*color: white;*/
+/*}*/
+
+/*caption.a:visited {*/
+    /*color: white;*/
+/*}*/
+
+table {
+    margin-bottom: 30px;
+}
+
+/*#user-tools {*/
+    /*margin-bottom: 30px;*/
+/*}*/
