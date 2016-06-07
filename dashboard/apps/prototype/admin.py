@@ -52,7 +52,7 @@ class RAGInline(admin.TabularInline):
     extra = 0
 
 
-class NoetInline(admin.TabularInline):
+class NoteInline(admin.TabularInline):
     model = Note
     extra = 0
 
@@ -62,7 +62,7 @@ class ProjectAdmin(admin.ModelAdmin):
               'project_manager', 'client', 'discovery_date', 'alpha_date',
               'beta_date', 'live_date', 'end_date', 'visible']
     exclude = ['raw_data']
-    inlines = [CostInline, BudgetInline, RAGInline, NoetInline]
+    inlines = [CostInline, BudgetInline, RAGInline, NoteInline]
     readonly_fields = ('name', 'description', 'float_id', 'is_billable',
                        'project_manager', 'client')
     search_fields = ('name', 'float_id')
