@@ -230,9 +230,9 @@ function plotProject(project) {
     mode: 'lines',
     yaxis: 'y2',
     marker: {
-      color: '#112684'
+      color: '#6F777B'
     }
-  }
+  };
   const layout = {
     title: project.name,
     barmode: 'stack',
