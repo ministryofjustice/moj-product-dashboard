@@ -18,6 +18,7 @@ start_date = parse(task_time_ranges[0][0])
 end_date = parse(task_time_ranges[-1][1])
 contractor_rate = Decimal('400')
 non_contractor_rate = Decimal('350')
+man_days = len(task_time_ranges)  # 1 day on each task
 
 
 def make_project():
@@ -26,13 +27,13 @@ def make_project():
     non_contractor = mommy.make(Person, is_contractor=False)
     mommy.make(
         Rate,
-        start_date=parse('2015-01-01'),
+        start_date=start_date,
         rate=contractor_rate,
         person=contractor
     )
     mommy.make(
         Rate,
-        start_date=parse('2015-01-01'),
+        start_date=start_date,
         rate=non_contractor_rate,
         person=non_contractor
     )
@@ -79,8 +80,8 @@ def test_project_without_tasks():
 @pytest.mark.django_db
 def test_project_profiles():
     profile = make_project().profile()
-    spendings = {'contractor': contractor_rate * 4,
-                 'non-contractor': non_contractor_rate * 4}
+    spendings = {'contractor': contractor_rate * man_days,
+                 'non-contractor': non_contractor_rate * man_days}
     assert profile['spendings'] == {'2016-01': spendings}
 
 
@@ -90,11 +91,11 @@ def test_project_money_spent():
     assert project.money_spent(
         start_date=start_date,
         end_date=end_date,
-        contractor_only=True) == contractor_rate * 4
+        contractor_only=True) == contractor_rate * man_days
     assert project.money_spent(
         start_date=start_date,
         end_date=end_date,
-        non_contractor_only=True) == non_contractor_rate * 4
+        non_contractor_only=True) == non_contractor_rate * man_days
 
     with pytest.raises(ValueError):
         project.money_spent(
