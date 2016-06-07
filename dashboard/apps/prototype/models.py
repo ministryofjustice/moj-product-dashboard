@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from decimal import Decimal
+from dateutil.rrule import MONTHLY, YEARLY
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_overlap, slice_time_window)
+    get_workdays, get_overlap, slice_time_window, dates_between)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 
@@ -225,7 +227,17 @@ class Project(models.Model):
             tasks = tasks.all()
         spending_per_task = [task.money_spent(start_date, end_date)
                              for task in tasks]
-        return sum(spending_per_task)
+        costs = self.cost_between(start_date, end_date)
+        return sum(spending_per_task) + costs
+
+    def cost_between(self, start_date, end_date):
+        def cost_of_cost(cost):
+            return cost.cost_between(start_date, end_date)
+
+        return sum(map(cost_of_cost, self.costs.filter(
+            Q(end_date__lte=end_date) | Q(end_date__isnull=True),
+            start_date__gte=start_date
+        ))) or Decimal('0')
 
 
 class Cost(models.Model):
@@ -237,6 +249,19 @@ class Cost(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=2)
     type = models.PositiveSmallIntegerField(
         choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
+
+    def cost_between(self, start_date, end_date):
+        start_date = max(start_date, self.start_date)
+        end_date = min(end_date, self.end_date or end_date)
+        if self.type == COST_TYPES.ONE_OFF and \
+           start_date <= self.start_date <= end_date:
+            return self.cost
+        if self.type == COST_TYPES.MONTHLY:
+            freq = MONTHLY
+        elif self.type == COST_TYPES.ANNUALLY:
+            freq = YEARLY
+        dates = dates_between(start_date, end_date, freq)
+        return len(dates) * self.cost
 
 
 class Budget(models.Model):
