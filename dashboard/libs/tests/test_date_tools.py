@@ -1,8 +1,8 @@
 from datetime import date, datetime
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_bank_holidays, get_overlap, parse_date,
-    to_datetime, slice_time_window)
+    get_workdays, get_workdays_list, get_bank_holidays, get_overlap,
+    parse_date, to_datetime, slice_time_window)
 import pytest
 
 
@@ -16,9 +16,26 @@ import pytest
     ('2016-01-01', '2016-01-31', 20),  # Jan 2016
     ('2016-02-01', '2016-02-28', 20),  # Feb 2016
 ])
-def test_get_work_days(start_date, end_date, expected):
+def test_get_workdays(start_date, end_date, expected):
     workdays = get_workdays(parse_date(start_date), parse_date(end_date))
     assert workdays == expected
+
+
+@pytest.mark.parametrize("start_date, end_date, expected", [
+    ('2016-04-28', '2016-04-28', ['2016-04-28']),  # same working day
+    ('2016-04-30', '2016-04-30', []),  # same weekend day
+    ('2016-04-27', '2016-04-29',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # just work days
+    ('2016-04-27', '2016-04-30',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # one weekend day
+    ('2016-04-27', '2016-05-01',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # two weekend days
+    ('2016-04-27', '2016-05-02',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # plus a bank holiday
+])
+def test_get_workdays_list(start_date, end_date, expected):
+    workdays = get_workdays_list(parse_date(start_date), parse_date(end_date))
+    assert workdays == [parse_date(day) for day in expected]
 
 
 @pytest.mark.parametrize("day", [
@@ -59,6 +76,20 @@ def test_get_overlap(start_date0, end_date0, start_date1, end_date1, expected):
     if expected:
         expected = parse_date(expected[0]), parse_date(expected[1])
     assert expected == overlap
+
+
+@pytest.mark.parametrize(
+    "start_date0, end_date0, start_date1, end_date1", [
+        # time window0 start date > end date
+        ('2016-01-31', '2016-01-01', '2015-12-01', '2015-12-31'),
+        # time window1 start date > end date
+        ('2015-12-01', '2015-12-31', '2016-01-31', '2016-01-01'),
+    ])
+def test_get_overlap_value_error(start_date0, end_date0,
+                                 start_date1, end_date1):
+    with pytest.raises(ValueError):
+        get_overlap((parse_date(start_date0), parse_date(end_date0)),
+                    (parse_date(start_date1), parse_date(end_date1)))
 
 
 # TODO more tests!
