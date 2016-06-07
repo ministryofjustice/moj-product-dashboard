@@ -43,3 +43,18 @@
     date_joined: 2016-05-20 14:48:11+00:00
     groups: [2]
     user_permissions: []
+- model: auth.user
+  pk: 4
+  fields:
+    password: pbkdf2_sha256$24000$Z0k9IaSdUMti$4PTHh0ygFTdpPKVGrIiE1HiF0rtgpzgO2HjIMUWu9jI=
+    last_login: null
+    is_superuser: false
+    username: test_dm
+    first_name: ''
+    last_name: ''
+    email: ''
+    is_staff: true
+    is_active: true
+    date_joined: 2016-05-20 14:48:11+00:00
+    groups: [3]
+    user_permissions: []
