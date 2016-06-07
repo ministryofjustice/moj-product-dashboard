@@ -77,12 +77,12 @@ def get_projects(names, areas, as_filter=True, logger=None):
         if as_filter:
             return []
         else:
-            return Project.objects.all()
+            return Project.all.all()
 
     filter_by_name = Q()
     for item in [Q(name__icontains=name) for name in names]:
         filter_by_name |= item
-    projects = Project.objects.filter(filter_by_name)
+    projects = Project.all.filter(filter_by_name)
 
     if areas:
         if not isinstance(areas[0], Client):
@@ -106,7 +106,7 @@ def get_all_projects(names):
     filter_by_name = Q()
     for item in [Q(name__icontains=name) for name in names]:
         filter_by_name |= item
-    projects = Project.objects.filter(filter_by_name)
+    projects = Project.all.filter(filter_by_name)
 
     if not projects:
         raise NoMatchFound(

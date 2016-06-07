@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from decimal import Decimal
+from dateutil.rrule import MONTHLY, YEARLY
 
 from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_overlap, slice_time_window)
+    get_workdays, get_overlap, slice_time_window, dates_between)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
+
+from .constants import RAG_TYPES, COST_TYPES
 
 
 class Person(models.Model):
@@ -133,6 +137,13 @@ class Client(models.Model):
         return self.name
 
 
+class ProjectManager(models.Manager):
+    use_for_related_fields = True
+
+    def visible(self):
+        return self.get_queryset().filter(visible=True)
+
+
 class Project(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField()
@@ -141,12 +152,15 @@ class Project(models.Model):
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
     client = models.ForeignKey('Client', related_name='projects', null=True)
-    discovery_date = models.DateField(null=True)
-    alpha_date = models.DateField(null=True)
-    beta_date = models.DateField(null=True)
-    live_date = models.DateField(null=True)
-    end_date = models.DateField(null=True)
+    discovery_date = models.DateField(null=True, blank=True)
+    alpha_date = models.DateField(null=True, blank=True)
+    beta_date = models.DateField(null=True, blank=True)
+    live_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
+
+    objects = ProjectManager()
 
     @property
     def first_task(self):
@@ -212,7 +226,62 @@ class Project(models.Model):
             tasks = tasks.all()
         spending_per_task = [task.money_spent(start_date, end_date)
                              for task in tasks]
-        return sum(spending_per_task)
+        costs = self.cost_between(start_date, end_date)
+        return sum(spending_per_task) + costs
+
+    def cost_between(self, start_date, end_date):
+        def cost_of_cost(cost):
+            return cost.cost_between(start_date, end_date)
+
+        return sum(map(cost_of_cost, self.costs.filter(
+            Q(end_date__lte=end_date) | Q(end_date__isnull=True),
+            start_date__gte=start_date
+        ))) or Decimal('0')
+
+
+class Cost(models.Model):
+    project = models.ForeignKey('Project', related_name='costs')
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    name = models.CharField(max_length=128, null=True)
+    note = models.TextField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    type = models.PositiveSmallIntegerField(
+        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
+
+    def cost_between(self, start_date, end_date):
+        start_date = max(start_date, self.start_date)
+        end_date = min(end_date, self.end_date or end_date)
+        if self.type == COST_TYPES.ONE_OFF:
+            if start_date <= self.start_date <= end_date:
+                return self.cost
+            return Decimal('0')
+        if self.type == COST_TYPES.MONTHLY:
+            freq = MONTHLY
+        elif self.type == COST_TYPES.ANNUALLY:
+            freq = YEARLY
+        dates = dates_between(start_date, end_date, freq)
+        return len(dates) * self.cost
+
+
+class Budget(models.Model):
+    project = models.ForeignKey('Project', related_name='budgets')
+    start_date = models.DateField()
+    budget = models.DecimalField(max_digits=16, decimal_places=2)
+
+
+class RAG(models.Model):
+    project = models.ForeignKey('Project', related_name='rags')
+    start_date = models.DateField()
+    rag = models.PositiveSmallIntegerField(
+        choices=RAG_TYPES, default=RAG_TYPES.GREEN)
+
+
+class Note(models.Model):
+    project = models.ForeignKey('Project', related_name='notes')
+    date = models.DateField()
+    name = models.CharField(max_length=128, null=True)
+    note = models.TextField(null=True, blank=True)
 
 
 class Task(models.Model):

@@ -2,30 +2,10 @@ import json
 from collections import OrderedDict
 
 from django.shortcuts import render, redirect
-from django.http import (JsonResponse, HttpResponseBadRequest,
-                         HttpResponseNotFound)
+from django.http import JsonResponse, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required
 
 from .models import Project, Client
-from dashboard.libs.figure_gen import get_figure
-
-
-def get_total_times(projects):
-
-    project_days = []
-    project_names = []
-
-    for project in projects:
-        tasks = project.tasks.all()
-
-        total_days = 0
-        for task in tasks:
-            total_days += task.days
-
-        project_days.append(total_days)
-        project_names.append(project.name)
-
-    return project_names, project_days
 
 
 @login_required
@@ -33,11 +13,11 @@ def index(request):
     try:
         project_id = request.GET['projectid']
     except KeyError:
-        project_id = Project.objects.first().id
+        project_id = Project.objects.visible().first().id
         return redirect('/?projectid={}'.format(project_id))
     try:
         project_id = int(project_id)
-        project = Project.objects.get(id=project_id)
+        project = Project.objects.visible().get(id=project_id)
     except (ValueError, Project.DoesNotExist):
         # TODO better error page
         return HttpResponseNotFound(
@@ -51,22 +31,6 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-def send_figure(request):
-
-    if request.method == 'GET':
-        request_data = request.GET
-    elif request.method == 'POST':
-        request_data = json.loads(request.body.decode())
-    else:
-        return HttpResponseBadRequest()
-
-    print(request_data)
-
-    figure = get_figure(request_data['requested_figure'], request_data)
-
-    return JsonResponse(figure, safe=False)
-
-
 @login_required
 def project_json(request):
     """
@@ -74,5 +38,11 @@ def project_json(request):
     """
     # TODO handle errors
     request_data = json.loads(request.body.decode())
-    project = Project.objects.get(id=request_data['projectid'])
+    try:
+        project = Project.objects.visible().get(
+            id=request_data['projectid'])
+    except Project.DoesNotExist:
+        return HttpResponseNotFound(
+            'cannot find project with projectid={}'
+            .format(request_data['projectid']))
     return JsonResponse(project.profile())

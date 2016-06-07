@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+from datetime import date
 from decimal import Decimal
 
 import pytest
 from model_mommy import mommy
 
-from dashboard.apps.prototype.models import Project, Task, Person, Rate
+from dashboard.apps.prototype.models import Project, Task, Person, Rate, Cost
 from dashboard.libs.date_tools import parse
+from prototype.constants import COST_TYPES
 
 
 task_time_ranges = [
@@ -104,3 +106,48 @@ def test_project_money_spent():
             non_contractor_only=True,
             contractor_only=True
         )
+
+
+@pytest.mark.django_db
+def test_project_costs():
+    project = mommy.make(Project)
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date(2015, 1, 1),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date(2016, 1, 1),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date(2016, 1, 31),
+        type=COST_TYPES.MONTHLY,
+        cost=Decimal('55')
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date(2016, 1, 3),
+        type=COST_TYPES.ANNUALLY,
+        cost=Decimal('60')
+    )
+
+    assert project.money_spent(
+        start_date=date(2016, 1, 1),
+        end_date=date(2016, 1, 2)) == Decimal('50')
+
+    assert project.money_spent(
+        start_date=date(2016, 1, 1),
+        end_date=date(2016, 1, 3)) == Decimal('110')
+
+    assert project.money_spent(
+        start_date=date(2016, 1, 1),
+        end_date=date(2017, 2, 3)) == Decimal('885')
