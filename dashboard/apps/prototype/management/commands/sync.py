@@ -143,11 +143,11 @@ def sync_projects(data_dir):
             'raw_data': item,
         }
         try:
-            project = Project.all.get(float_id=useful_data['float_id'])
+            project = Project.objects.get(float_id=useful_data['float_id'])
             diff = compare(project, useful_data)
             update(project, diff)
         except Project.DoesNotExist:
-            project = Project.all.create(**useful_data)
+            project = Project.objects.create(**useful_data)
             logger.info('new project found "%s"', project)
             project.save()
 
@@ -162,7 +162,7 @@ def sync_tasks(data_dir):
         person_id = Person.objects.get(float_id=float_person_id).id
         for task in item['tasks']:
             float_project_id = task['project_id']
-            project_id = Project.all.get(float_id=float_project_id).id
+            project_id = Project.objects.get(float_id=float_project_id).id
             start_date = datetime.strptime(
                 task['start_date'], '%Y-%m-%d').date()
             end_date = datetime.strptime(task['end_date'], '%Y-%m-%d').date()

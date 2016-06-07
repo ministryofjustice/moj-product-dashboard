@@ -13,11 +13,11 @@ def index(request):
     try:
         project_id = request.GET['projectid']
     except KeyError:
-        project_id = Project.objects.first().id
+        project_id = Project.objects.visible().first().id
         return redirect('/?projectid={}'.format(project_id))
     try:
         project_id = int(project_id)
-        project = Project.objects.get(id=project_id)
+        project = Project.objects.visible().get(id=project_id)
     except (ValueError, Project.DoesNotExist):
         # TODO better error page
         return HttpResponseNotFound(
@@ -39,7 +39,7 @@ def project_json(request):
     # TODO handle errors
     request_data = json.loads(request.body.decode())
     try:
-        project = Project.objects.get(
+        project = Project.objects.visible().get(
             id=request_data['projectid'])
     except Project.DoesNotExist:
         return HttpResponseNotFound(

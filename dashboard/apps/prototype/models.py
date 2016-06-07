@@ -140,8 +140,8 @@ class Client(models.Model):
 class ProjectManager(models.Manager):
     use_for_related_fields = True
 
-    def get_queryset(self):
-        return super(ProjectManager, self).get_queryset().filter(visible=True)
+    def visible(self):
+        return self.get_queryset().filter(visible=True)
 
 
 class Project(models.Model):
@@ -161,7 +161,6 @@ class Project(models.Model):
     raw_data = JSONField(null=True)
 
     objects = ProjectManager()
-    all = models.Manager()
 
     @property
     def first_task(self):
