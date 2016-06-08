@@ -2,7 +2,8 @@ import json
 from collections import OrderedDict
 
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import (
+    JsonResponse, HttpResponseNotFound, HttpResponseServerError)
 from django.contrib.auth.decorators import login_required
 
 from .models import Project, Client
@@ -10,13 +11,18 @@ from .models import Project, Client
 
 @login_required
 def index(request):
+    # when no 'projectid' is provided redirect to the first project
     try:
         project_id = request.GET['projectid']
     except KeyError:
-        project_id = Project.objects.visible().first().id
-        return redirect('/?projectid={}'.format(project_id))
+        try:
+            project_id = Project.objects.visible().first().id
+            return redirect('/?projectid={}'.format(project_id))
+        except AttributeError:  # when no project objects in the db
+            # TODO better error page
+            return HttpResponseServerError('cannot find any project')
+
     try:
-        project_id = int(project_id)
         project = Project.objects.visible().get(id=project_id)
     except (ValueError, Project.DoesNotExist):
         # TODO better error page
@@ -41,8 +47,8 @@ def project_json(request):
     try:
         project = Project.objects.visible().get(
             id=request_data['projectid'])
-    except Project.DoesNotExist:
-        return HttpResponseNotFound(
-            'cannot find project with projectid={}'
-            .format(request_data['projectid']))
+    except (ValueError, Project.DoesNotExist):
+        error = 'cannot find project with projectid={}'.format(
+            request_data['projectid'])
+        return JsonResponse({'error': error}, status=404)
     return JsonResponse(project.profile())
