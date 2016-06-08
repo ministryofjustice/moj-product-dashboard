@@ -207,6 +207,8 @@ function plotProject(project) {
       ([x, y, a]) => x + y + a);
   const totalCostsCumulative = [];
   totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
+  const budget = _.map(
+      costs, ([k, v]) => parseFloat(v['budget']));
   const civilServiceTrace = {
     x: months,
     y: civilServantCosts,
@@ -244,6 +246,16 @@ function plotProject(project) {
       color: '#6F777B'
     }
   };
+  const budgetTrace = {
+    x: months,
+    y: budget,
+    name: 'Budget',
+    mode: 'lines',
+    yaxis: 'y2',
+    marker: {
+      color: '#F0E891'
+    }
+  };
   const layout = {
     title: project.name,
     barmode: 'stack',
@@ -261,7 +273,8 @@ function plotProject(project) {
   };
   Plotly.newPlot(
       document.getElementById('fig-a'),
-      [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace],
+      [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
+        budgetTrace],
       layout);
 };
 
