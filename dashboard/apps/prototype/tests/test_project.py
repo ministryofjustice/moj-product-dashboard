@@ -72,7 +72,7 @@ def test_project_without_tasks():
     assert project.first_task is None
     assert project.last_task is None
 
-    assert project.money_spent(start_date=start_date, end_date=end_date) == 0
+    assert project.people_costs(start_date=start_date, end_date=end_date) == 0
     profile = project.profile(freq='MS')
     assert 'name' in profile
     assert 'description' in profile
@@ -88,19 +88,19 @@ def test_project_profiles():
 
 
 @pytest.mark.django_db
-def test_project_money_spent():
+def test_project_people_costs():
     project = make_project()
-    assert project.money_spent(
+    assert project.people_costs(
         start_date=start_date,
         end_date=end_date,
         contractor_only=True) == contractor_rate * man_days
-    assert project.money_spent(
+    assert project.people_costs(
         start_date=start_date,
         end_date=end_date,
         non_contractor_only=True) == non_contractor_rate * man_days
 
     with pytest.raises(ValueError):
-        project.money_spent(
+        project.people_costs(
             start_date=start_date,
             end_date=end_date,
             non_contractor_only=True,
@@ -140,14 +140,14 @@ def test_project_costs():
         cost=Decimal('60')
     )
 
-    assert project.money_spent(
+    assert project.people_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2016, 1, 2)) == Decimal('50')
 
-    assert project.money_spent(
+    assert project.people_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2016, 1, 3)) == Decimal('110')
 
-    assert project.money_spent(
+    assert project.people_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2017, 2, 3)) == Decimal('885')
