@@ -83,7 +83,9 @@ def test_project_without_tasks():
 def test_project_profiles():
     profile = make_project().profile()
     financial = {'contractor': contractor_rate * man_days,
-                 'non-contractor': non_contractor_rate * man_days}
+                 'non-contractor': non_contractor_rate * man_days,
+                 'additional': Decimal('0'),
+                 'budget': Decimal('0')}
     assert profile['financial'] == {'2016-01': financial}
 
 
@@ -140,14 +142,14 @@ def test_project_costs():
         cost=Decimal('60')
     )
 
-    assert project.people_costs(
+    assert project.additional_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2016, 1, 2)) == Decimal('50')
 
-    assert project.people_costs(
+    assert project.additional_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2016, 1, 3)) == Decimal('110')
 
-    assert project.people_costs(
+    assert project.additional_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2017, 2, 3)) == Decimal('885')
