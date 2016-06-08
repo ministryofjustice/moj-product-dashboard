@@ -1,4 +1,4 @@
-def moj(request):
+def moj(request):  # pragma: no cover
     return {
         'app_title': 'MoJ Product Dashboard',
         'proposition_title': 'MoJ Product Dashboard',
