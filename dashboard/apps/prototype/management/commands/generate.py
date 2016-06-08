@@ -37,8 +37,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            people = get_persons(options['names'], as_filter=False,
-                                 logger=logger)
+            people = get_persons(options['names'], as_filter=False)
         except NoMatchFound as exc:
             raise CommandError(exc.args)
         start_date = options['start_date']
