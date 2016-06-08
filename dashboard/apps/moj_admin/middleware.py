@@ -9,29 +9,40 @@ class MoJAdminMiddleWare(object):
     def __init__(self):
         self.extra_css_files = [settings.STATIC_URL + 'moj_admin/styles/gov-uk-elements.css',
                                 settings.STATIC_URL + 'moj_admin/styles/gov-uk-elements-moj-admin.css']
-        self.moj_template_url = 'moj_admin.html'
+        self.moj_template_url = 'moj_template/base.html'
 
     def process_response(self, request, response):
 
         if 'admin' in request.path:
 
             # return response
-            # import ipdb; ipdb.set_trace()
+
             admin_doc = self.get_admin_doc(response)
-            admin_elements = self.get_admin_elements(admin_doc)
-            admin_scripts = admin_doc.find_all('script')
-            added_styles = self.get_added_styles()
-
+            # admin_head_elements = self.get_head_elements(admin_doc)
             moj_doc = self.get_moj_doc(request)
-            moj_main_div = moj_doc.find(id='content')
 
-            self.append_elements(moj_doc.body, admin_scripts)
+            # Take content as block and insert
+            script_elements = admin_doc.head.find_all('script')
+            admin_doc_content = admin_doc.find(id='container')
+            admin_header = admin_doc_content.find(id='header')
+            admin_header.extract()
+            self.append_elements(moj_doc.head, script_elements)
+            moj_main_element = moj_doc.find(id='content')
+            moj_main_element.append(admin_doc_content)
+            added_styles = self.get_added_styles()
             self.append_elements(moj_doc.head, added_styles)
-            self.append_admin_elements(moj_main_div, admin_elements)
+
+
 
             response = HttpResponse(str(moj_doc))
+            # import ipdb; ipdb.set_trace()
 
         return response
+
+    # def get_head_elements(self, document):
+    #     script_elements = document.head.find_all('script')
+    #     # style_elements = document.head.find_all('link')
+    #     return script_elements  # + style_elements
 
     def append_admin_elements(self, target_element, element_dict):
 
@@ -93,15 +104,3 @@ class MoJAdminMiddleWare(object):
         moj_doc = BeautifulSoup(moj_content_str, 'lxml')
         return moj_doc
 
-    def merge_pages(self, admin_doc, moj_doc):
-
-        admin_styles = self.get_style_links(admin_doc)
-        admin_main_div = admin_doc.find(id='content-main')
-
-        moj_main_div = moj_doc.find(id='content')
-
-        self.append_elements(moj_doc.head, admin_styles)
-
-        moj_main_div.append(admin_main_div)
-
-        return moj_doc
