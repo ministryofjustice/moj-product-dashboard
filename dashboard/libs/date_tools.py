@@ -14,8 +14,23 @@ import requests
 BANK_HOLIDAY_URL = 'https://www.gov.uk/bank-holidays/england-and-wales.json'
 
 
-def parse(date_string):
-    return datetime.strptime(date_string, '%Y-%m-%d').date()
+def parse_date(date_string, format='%Y-%m-%d'):
+    """
+    parse a date string
+    :param date_string: a string representing a date
+    :param format: format of the string, default to '%Y-%m-%d'
+    :return: a date object
+    """
+    return datetime.strptime(date_string, format).date()
+
+
+def to_datetime(date):
+    """
+    convert a date object to datetime object
+    :param date: a date object
+    :return: a datetime object
+    """
+    return datetime(*date.timetuple()[:6])
 
 
 @lru_cache()
@@ -27,7 +42,7 @@ def get_bank_holidays():
     """
     response = requests.get(BANK_HOLIDAY_URL)
     response.raise_for_status()
-    return [parse(event['date']) for event in response.json()['events']]
+    return [parse_date(event['date']) for event in response.json()['events']]
 
 
 def get_workdays(start_date, end_date):
@@ -43,12 +58,18 @@ def get_workdays(start_date, end_date):
 
 
 def get_workdays_list(start_date, end_date):
+    """
+    get a list of workdays in a time window defined by start date and end date
+    :param start_date: date object for the start date
+    :param end_date: date object for the end date
+    :return: a list of date objects
+    """
     days = (start_date + timedelta(i) for i in
             range((end_date - start_date).days + 1))
     bank_holidays = get_bank_holidays()
     workdays = [
         d for d in days if
-        d.weekday() < 5 and d.strftime('%Y-%m-%d') not in bank_holidays]
+        d.weekday() < 5 and d not in bank_holidays]
 
     return workdays
 

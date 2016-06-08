@@ -1,10 +1,11 @@
-from datetime import date
+from datetime import date, datetime
+
 from dateutil.rrule import MONTHLY, YEARLY
+import pytest
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_bank_holidays, get_overlap, parse,
-    slice_time_window, dates_between)
-import pytest
+    get_workdays, get_workdays_list, get_bank_holidays, get_overlap,
+    parse_date, to_datetime, slice_time_window, dates_between)
 
 
 @pytest.mark.parametrize("start_date, end_date, expected", [
@@ -17,9 +18,26 @@ import pytest
     ('2016-01-01', '2016-01-31', 20),  # Jan 2016
     ('2016-02-01', '2016-02-28', 20),  # Feb 2016
 ])
-def test_get_work_days(start_date, end_date, expected):
-    workdays = get_workdays(parse(start_date), parse(end_date))
+def test_get_workdays(start_date, end_date, expected):
+    workdays = get_workdays(parse_date(start_date), parse_date(end_date))
     assert workdays == expected
+
+
+@pytest.mark.parametrize("start_date, end_date, expected", [
+    ('2016-04-28', '2016-04-28', ['2016-04-28']),  # same working day
+    ('2016-04-30', '2016-04-30', []),  # same weekend day
+    ('2016-04-27', '2016-04-29',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # just work days
+    ('2016-04-27', '2016-04-30',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # one weekend day
+    ('2016-04-27', '2016-05-01',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # two weekend days
+    ('2016-04-27', '2016-05-02',
+     ['2016-04-27', '2016-04-28', '2016-04-29']),  # plus a bank holiday
+])
+def test_get_workdays_list(start_date, end_date, expected):
+    workdays = get_workdays_list(parse_date(start_date), parse_date(end_date))
+    assert workdays == [parse_date(day) for day in expected]
 
 
 @pytest.mark.parametrize("day", [
@@ -30,7 +48,7 @@ def test_get_work_days(start_date, end_date, expected):
     '2016-12-27',  # christmas day (substitue day)
 ])
 def test_get_bank_holidays_good_days(day):
-    assert parse(day) in get_bank_holidays(), \
+    assert parse_date(day) in get_bank_holidays(), \
         '{} is a bank holiday!'.format(day)
 
 
@@ -39,7 +57,7 @@ def test_get_bank_holidays_good_days(day):
     '2016-08-01',  # summer bank holiday (Scotland)
 ])
 def test_get_bank_holidays_bad_days(day):
-    assert parse(day) not in get_bank_holidays()
+    assert parse_date(day) not in get_bank_holidays()
 
 
 @pytest.mark.parametrize(
@@ -55,11 +73,25 @@ def test_get_bank_holidays_bad_days(day):
          ('2015-12-31', '2016-01-01')),
     ])
 def test_get_overlap(start_date0, end_date0, start_date1, end_date1, expected):
-    overlap = get_overlap((parse(start_date0), parse(end_date0)),
-                          (parse(start_date1), parse(end_date1)))
+    overlap = get_overlap((parse_date(start_date0), parse_date(end_date0)),
+                          (parse_date(start_date1), parse_date(end_date1)))
     if expected:
-        expected = parse(expected[0]), parse(expected[1])
+        expected = parse_date(expected[0]), parse_date(expected[1])
     assert expected == overlap
+
+
+@pytest.mark.parametrize(
+    "start_date0, end_date0, start_date1, end_date1", [
+        # time window0 start date > end date
+        ('2016-01-31', '2016-01-01', '2015-12-01', '2015-12-31'),
+        # time window1 start date > end date
+        ('2015-12-01', '2015-12-31', '2016-01-31', '2016-01-01'),
+    ])
+def test_get_overlap_value_error(start_date0, end_date0,
+                                 start_date1, end_date1):
+    with pytest.raises(ValueError):
+        get_overlap((parse_date(start_date0), parse_date(end_date0)),
+                    (parse_date(start_date1), parse_date(end_date1)))
 
 
 # TODO more tests!
@@ -69,6 +101,10 @@ def test_slice_time_window():
     sliced = slice_time_window(start_date, end_date, 'MS')
     assert sliced[0] == (date(2015, 1, 2), date(2015, 1, 31))
     assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+
+
+def test_to_datetime():
+    assert to_datetime(date(2015, 12, 1)) == datetime(2015, 12, 1, 0, 0, 0)
 
 
 @pytest.mark.parametrize("start_date, end_date, frequency, expected", [

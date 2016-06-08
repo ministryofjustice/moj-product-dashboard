@@ -3,8 +3,10 @@ from datetime import date
 
 from django.test import TestCase
 from model_mommy import mommy
+from faker import Faker
 
 from dashboard.apps.prototype.models import Person, Project, Task, Rate
+from dashboard.libs.date_tools import parse_date, to_datetime
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -129,3 +131,74 @@ class TaskString(TestCase):
             'task 0 - John on project 0'
             ' from 2016-06-01 to 2016-06-10 for 8 days')
         assert str(task_with_name) == expected
+
+
+year_start = parse_date('2016-01-01')
+first_half_end = parse_date('2016-06-30')
+second_half_start = parse_date('2016-07-01')
+year_end = parse_date('2016-12-31')
+
+
+class TestTaskManager(TestCase):
+
+    def setUp(self):
+        self.first_half_year_tasks = []
+        self.second_half_year_tasks = []
+
+        fake = Faker()
+
+        # create 10 tasks for the 1st half year
+        for _ in range(10):
+            rand_sd = fake.date_time_between(
+                to_datetime(year_start),
+                to_datetime(first_half_end)
+            )
+            rand_ed = fake.date_time_between(
+                rand_sd,
+                to_datetime(first_half_end)
+            )
+            task = mommy.make(
+                Task,
+                start_date=rand_sd.date(),
+                end_date=rand_ed.date()
+            )
+            self.first_half_year_tasks.append(task)
+
+        # create another 10 tasks for the 2st half year
+        for _ in range(10):
+            rand_sd = fake.date_time_between(
+                to_datetime(second_half_start),
+                to_datetime(year_end)
+            )
+            rand_ed = fake.date_time_between(
+                rand_sd,
+                to_datetime(year_end)
+            )
+
+            task = mommy.make(
+                Task,
+                start_date=rand_sd.date(),
+                end_date=rand_ed.date()
+            )
+            self.second_half_year_tasks.append(task)
+
+    @staticmethod
+    def assert_tasks_equals(tasks1, tasks2):
+        t1_ids = [t.id for t in tasks1]
+        t2_ids = [t.id for t in tasks2]
+        assert sorted(t1_ids) == sorted(t2_ids)
+
+    def test_all_tasks(self):
+        all_tasks = self.first_half_year_tasks + self.second_half_year_tasks
+        self.assert_tasks_equals(Task.objects.all(), all_tasks)
+
+    def test_between(self):
+        first_half_year_tasks = Task.objects.between(
+            year_start, first_half_end)
+        second_half_year_tasks = Task.objects.between(
+            second_half_start, year_end)
+
+        self.assert_tasks_equals(
+            first_half_year_tasks, self.first_half_year_tasks)
+        self.assert_tasks_equals(
+            second_half_year_tasks, self.second_half_year_tasks)

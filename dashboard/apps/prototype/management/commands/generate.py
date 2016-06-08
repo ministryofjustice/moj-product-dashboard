@@ -10,8 +10,8 @@ from django.db.utils import IntegrityError
 
 from dashboard.apps.prototype.models import Rate
 from dashboard.libs.rate_generator import gen_rates, get_reference_rate
-from dashboard.libs.queries import valid_date, get_persons, NoMatchFound
-from .helpers import logger
+from dashboard.libs.date_tools import parse_date
+from .helpers import logger, get_persons, NoMatchFound
 
 
 class Command(BaseCommand):
@@ -19,9 +19,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         a_year_today = date.today() + timedelta(days=365)
-        parser.add_argument('-s', '--start-date', type=valid_date,
+        parser.add_argument('-s', '--start-date', type=parse_date,
                             default=date(2015, 1, 1))
-        parser.add_argument('-e', '--end-date', type=valid_date,
+        parser.add_argument('-e', '--end-date', type=parse_date,
                             default=a_year_today)
         parser.add_argument('-n', '--names', nargs='*', type=str)
         parser.add_argument(
@@ -37,8 +37,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            people = get_persons(options['names'], as_filter=False,
-                                 logger=logger)
+            people = get_persons(options['names'], as_filter=False)
         except NoMatchFound as exc:
             raise CommandError(exc.args)
         start_date = options['start_date']

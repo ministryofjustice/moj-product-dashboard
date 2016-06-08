@@ -3,6 +3,14 @@ some helper functions for creating commands
 """
 import logging
 
+from django.db.models import Q
+
+from dashboard.apps.prototype.models import Person, Project, Client
+
+
+class NoMatchFound(Exception):
+    pass
+
 
 def get_logger():
     LOGGING = {
@@ -73,3 +81,71 @@ def print_task(task, start_date, end_date, padding='  '):
         else:
             logger.info('%s  %s', padding, line)
     return time_spent, money_spent
+
+
+def get_persons(names, as_filter=True):
+    if not names:
+        logger.info('people: all')
+        if as_filter:
+            return []
+        else:
+            return Person.objects.all()
+    persons = Person.objects.filter(contains_any('name', names))
+    if not persons:
+        raise NoMatchFound(
+            'could not find any person with name(s) {}'.format(
+                ','.join(names)))
+    logger.info('people: {}'.format(', '.join([p.name for p in persons])))
+    return persons
+
+
+def get_areas(names, as_filter=True):
+    if not names:
+        logger.info('areas: all')
+        if as_filter:
+            return []
+        else:
+            return Client.objects.all()
+    areas = Client.objects.filter(contains_any('name', names))
+    if not areas:
+        raise NoMatchFound(
+            'could not find any area with name(s) {}'.format(
+                ','.join(names)))
+    logger.info('areas: {}'.format(', '.join([p.name for p in areas])))
+    return areas
+
+
+def get_projects(names, areas, as_filter=True):
+    if not names and not areas:
+        logger.info('projects: all')
+        if as_filter:
+            return []
+        else:
+            return Project.objects.all()
+
+    projects = Project.objects.filter(contains_any('name', names))
+
+    if areas:
+        if not isinstance(areas[0], Client):
+            areas = get_areas(areas)
+        projects = projects.filter(client__in=areas)
+
+    if not projects:
+        area_names = ','.join([area.name for area in areas]) or 'all'
+        raise NoMatchFound(
+            ('could not find any project with name(s) {} and area(s) {}'
+             ).format(','.join(names), area_names))
+    logger.info('projects: {}'.format(', '.join([p.name for p in projects])))
+
+
+def contains_any(field, values, ignore_case=True):
+    if ignore_case:
+        key = '{}__icontains'.format(field)
+    else:
+        key = '{}__contains'.format(field)
+
+    filter_by_values = Q()
+    for value in values:
+        filter_by_values |= Q(**{key: value})
+
+    return filter_by_values

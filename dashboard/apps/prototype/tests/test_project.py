@@ -5,8 +5,8 @@ from decimal import Decimal
 import pytest
 from model_mommy import mommy
 
+from dashboard.libs.date_tools import parse_date
 from dashboard.apps.prototype.models import Project, Task, Person, Rate, Cost
-from dashboard.libs.date_tools import parse
 from prototype.constants import COST_TYPES
 
 
@@ -16,8 +16,8 @@ task_time_ranges = [
     ('2016-01-14', '2016-01-15'),
     ('2016-01-10', '2016-01-20'),  # last starts earlier than the one prior
 ]
-start_date = parse(task_time_ranges[0][0])
-end_date = parse(task_time_ranges[-1][1])
+start_date = parse_date(task_time_ranges[0][0])
+end_date = parse_date(task_time_ranges[-1][1])
 contractor_rate = Decimal('400')
 non_contractor_rate = Decimal('350')
 man_days = len(task_time_ranges)  # 1 day on each task
@@ -44,16 +44,16 @@ def make_project():
             Task,
             person=contractor,
             project=project,
-            start_date=parse(sd),
-            end_date=parse(ed),
+            start_date=parse_date(sd),
+            end_date=parse_date(ed),
             days=1
         )
         mommy.make(
             Task,
             person=non_contractor,
             project=project,
-            start_date=parse(sd),
-            end_date=parse(ed),
+            start_date=parse_date(sd),
+            end_date=parse_date(ed),
             days=1
         )
     return project

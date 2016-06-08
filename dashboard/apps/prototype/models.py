@@ -284,6 +284,25 @@ class Note(models.Model):
     note = models.TextField(null=True, blank=True)
 
 
+class TaskManager(models.Manager):
+
+    def between(self, start_date, end_date):
+        """"
+        retrieve all tasks, which has any time spent in a time window defined
+        by the start date and end date. the following types are all included:
+        1. tasks starting in the time window
+        2. tasks ending in the time window
+        3. tasks running through the entire time window
+        :param start_date: a date object for the start of the time window
+        :param end_date: a date object for the end of the time window
+        """
+        return self.filter(
+            models.Q(start_date__gte=start_date, start_date__lte=end_date) |
+            models.Q(end_date__gte=start_date, end_date__lte=end_date) |
+            models.Q(start_date__lt=start_date, end_date__gt=end_date)
+        )
+
+
 class Task(models.Model):
     name = models.CharField(max_length=128, null=True)
     person = models.ForeignKey('Person', related_name='tasks')
@@ -293,6 +312,7 @@ class Task(models.Model):
     days = models.DecimalField(max_digits=10, decimal_places=5)
     float_id = models.CharField(max_length=128, unique=True)
     raw_data = JSONField(null=True)
+    objects = TaskManager()
 
     def __str__(self):
         if self.name:
