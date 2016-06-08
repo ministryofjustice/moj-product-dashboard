@@ -83,26 +83,26 @@ class TaskMoneySpentTestCase(TestCase):
             days=8)
 
     def test_task_total_spending(self):
-        assert self.task_0.money_spent() == 400 * 8
+        assert self.task_0.people_costs() == 400 * 8
 
     def test_task_weekday_spending(self):
-        assert self.task_0.money_spent(
+        assert self.task_0.people_costs(
             date(2016, 6, 1), date(2016, 6, 3)) == 400 * 3
 
     def test_task_weekend_spending_is_zero(self):
-        assert self.task_0.money_spent(
+        assert self.task_0.people_costs(
             date(2016, 6, 4), date(2016, 6, 5)) == 0
 
     def test_task_weekday_plus_weekend_spending(self):
-        assert self.task_0.money_spent(
+        assert self.task_0.people_costs(
             date(2016, 6, 1), date(2016, 6, 5)) == 400 * 3
 
     def test_task_spending_after_end_date_is_zero(self):
-        assert self.task_0.money_spent(
+        assert self.task_0.people_costs(
             date(2016, 6, 11), date(2016, 6, 12)) == 0
 
     def test_task_spending_before_staart_date_is_zero(self):
-        assert self.task_0.money_spent(
+        assert self.task_0.people_costs(
             date(2016, 5, 25), date(2016, 5, 31)) == 0
 
 

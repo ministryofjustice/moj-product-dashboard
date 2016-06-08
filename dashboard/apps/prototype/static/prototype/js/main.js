@@ -193,19 +193,23 @@ var testRequest = {
 
 // TODO this function needs some structure
 function plotProject(project) {
-  const costs = _.toPairs(project.spendings).sort();
+  const costs = _.toPairs(project.financial).sort();
   const months = _.map(
       costs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
   const contractorCosts = _.map(
       costs, ([k, v]) => parseFloat(v['contractor']));
   const civilServantCosts = _.map(
       costs, ([k, v]) => parseFloat(v['non-contractor']));
+  const additionalCosts = _.map(
+      costs, ([k, v]) => parseFloat(v['additional']));
   const totalCosts = _.map(
-      _.zip(contractorCosts, civilServantCosts),
-      ([x, y]) => x + y);
+      _.zip(contractorCosts, civilServantCosts, additionalCosts),
+      ([x, y, a]) => x + y + a);
   const totalCostsCumulative = [];
   totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
-  const trace1 = {
+  const budget = _.map(
+      costs, ([k, v]) => parseFloat(v['budget']));
+  const civilServiceTrace = {
     x: months,
     y: civilServantCosts,
     name: 'Civil Servant',
@@ -214,7 +218,7 @@ function plotProject(project) {
       color: '#c0c2dc'
     }
   };
-  const trace2 = {
+  const contractorTrace = {
     x: months,
     y: contractorCosts,
     name: 'Contractor',
@@ -223,7 +227,16 @@ function plotProject(project) {
       color: '#b5d8df'
     }
   };
-  const trace3 = {
+  const additionalTrace = {
+    x: months,
+    y: additionalCosts,
+    name: 'additional',
+    type: 'bar',
+    marker: {
+      color: '#B2CFB2'
+    }
+  };
+  const totalCostTrace = {
     x: months,
     y: totalCostsCumulative,
     name: 'Cumulative',
@@ -231,6 +244,16 @@ function plotProject(project) {
     yaxis: 'y2',
     marker: {
       color: '#6F777B'
+    }
+  };
+  const budgetTrace = {
+    x: months,
+    y: budget,
+    name: 'Budget',
+    mode: 'lines',
+    yaxis: 'y2',
+    marker: {
+      color: '#F0E891'
     }
   };
   const layout = {
@@ -250,7 +273,8 @@ function plotProject(project) {
   };
   Plotly.newPlot(
       document.getElementById('fig-a'),
-      [trace1, trace2, trace3],
+      [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
+        budgetTrace],
       layout);
 };
 

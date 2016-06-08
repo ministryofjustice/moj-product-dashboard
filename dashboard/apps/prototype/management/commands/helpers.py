@@ -71,16 +71,16 @@ def print_task(task, start_date, end_date, padding='  '):
     lines.append('task start: {}, end: {}, total: {:.5f} working days'.format(
         task.start_date, task.end_date, task.days))
     time_spent = task.time_spent(start_date, end_date)
-    money_spent = task.money_spent(start_date, end_date)
+    people_costs = task.people_costs(start_date, end_date)
     lines.append(
         'spendings in this time frame: {:.5f} days, £{:.2f}'.format(
-            time_spent, money_spent))
+            time_spent, people_costs))
     for index, line in enumerate(lines):
         if index == 0:
             logger.info('%s- %s', padding, line)
         else:
             logger.info('%s  %s', padding, line)
-    return time_spent, money_spent
+    return time_spent, people_costs
 
 
 def get_persons(names, as_filter=True):

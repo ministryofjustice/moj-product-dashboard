@@ -178,7 +178,7 @@ class Project(models.Model):
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
-            'spendings': {}
+            'financial': {}
         }
         try:
             if not start_date:
@@ -190,21 +190,25 @@ class Project(models.Model):
         time_windows = slice_time_window(start_date, end_date, freq)
         for sdate, edate in time_windows:
             key = sdate.strftime('%Y-%m')
-            contractor_cost = self.money_spent(
+            contractor_cost = self.people_costs(
                 sdate, edate, contractor_only=True)
-            non_contractor_cost = self.money_spent(
+            non_contractor_cost = self.people_costs(
                 sdate, edate, non_contractor_only=True)
-            result['spendings'][key] = {
+            additional_costs = self.additional_costs(sdate, edate)
+            result['financial'][key] = {
                 'contractor': contractor_cost,
-                'non-contractor': non_contractor_cost
+                'non-contractor': non_contractor_cost,
+                'additional': additional_costs,
+                'budget': self.budget(sdate),
             }
+
         return result
 
     def __str__(self):
         return self.name
 
-    def money_spent(self, start_date, end_date, contractor_only=False,
-                    non_contractor_only=False):
+    def people_costs(self, start_date, end_date, contractor_only=False,
+                     non_contractor_only=False):
         """
         get money spent in a time window
         :param start_date: start date of time window, a date object
@@ -224,12 +228,11 @@ class Project(models.Model):
             tasks = tasks.filter(person__is_contractor=False)
         else:
             tasks = tasks.all()
-        spending_per_task = [task.money_spent(start_date, end_date)
+        spending_per_task = [task.people_costs(start_date, end_date)
                              for task in tasks]
-        costs = self.cost_between(start_date, end_date)
-        return sum(spending_per_task) + costs
+        return sum(spending_per_task)
 
-    def cost_between(self, start_date, end_date):
+    def additional_costs(self, start_date, end_date):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
@@ -237,6 +240,11 @@ class Project(models.Model):
             Q(end_date__lte=end_date) | Q(end_date__isnull=True),
             start_date__gte=start_date
         ))) or Decimal('0')
+
+    def budget(self, on):
+        budget = self.budgets.filter(start_date__lte=on)\
+            .order_by('-start_date').first()
+        return budget.budget if budget else Decimal('0')
 
 
 class Cost(models.Model):
@@ -369,7 +377,7 @@ class Task(models.Model):
 
         return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
 
-    def money_spent(self, start_date=None, end_date=None):
+    def people_costs(self, start_date=None, end_date=None):
         """
         get the money spent on the task during a time window.
         :param start_date: start date of the time window, a date object
