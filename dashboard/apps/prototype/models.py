@@ -194,9 +194,11 @@ class Project(models.Model):
                 sdate, edate, contractor_only=True)
             non_contractor_cost = self.people_costs(
                 sdate, edate, non_contractor_only=True)
+            aditional_costs = self.aditional_costs(sdate, edate)
             result['spendings'][key] = {
                 'contractor': contractor_cost,
-                'non-contractor': non_contractor_cost
+                'non-contractor': non_contractor_cost,
+                'aditional': aditional_costs,
             }
         return result
 
@@ -226,10 +228,9 @@ class Project(models.Model):
             tasks = tasks.all()
         spending_per_task = [task.people_costs(start_date, end_date)
                              for task in tasks]
-        costs = self.cost_between(start_date, end_date)
-        return sum(spending_per_task) + costs
+        return sum(spending_per_task)
 
-    def cost_between(self, start_date, end_date):
+    def aditional_costs(self, start_date, end_date):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
