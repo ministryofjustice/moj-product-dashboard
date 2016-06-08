@@ -22,7 +22,7 @@ class PersonAdmin(ReadOnlyAdmin):
     search_fields = ('name', 'job_title')
     exclude = ['raw_data']
 
-    def avatar_tag(self, obj):
+    def avatar_tag(self, obj):  # pragma: no cover
         return '<img src="{}" style="height:40px;"/>'.format(obj.avatar)
     avatar_tag.allow_tags = True
     avatar_tag.short_description = 'image'
