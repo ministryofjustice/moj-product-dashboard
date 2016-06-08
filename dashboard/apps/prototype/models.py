@@ -199,7 +199,9 @@ class Project(models.Model):
                 'contractor': contractor_cost,
                 'non-contractor': non_contractor_cost,
                 'additional': additional_costs,
+                'budget': self.budget(sdate),
             }
+
         return result
 
     def __str__(self):
@@ -238,6 +240,11 @@ class Project(models.Model):
             Q(end_date__lte=end_date) | Q(end_date__isnull=True),
             start_date__gte=start_date
         ))) or Decimal('0')
+
+    def budget(self, on):
+        budget = self.budgets.filter(start_date__lte=on)\
+            .order_by('-start_date').first()
+        return budget.budget if budget else Decimal('0')
 
 
 class Cost(models.Model):
