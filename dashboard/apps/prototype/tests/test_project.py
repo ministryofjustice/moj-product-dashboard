@@ -76,15 +76,15 @@ def test_project_without_tasks():
     profile = project.profile(freq='MS')
     assert 'name' in profile
     assert 'description' in profile
-    assert profile['spendings'] == {}
+    assert profile['financial'] == {}
 
 
 @pytest.mark.django_db
 def test_project_profiles():
     profile = make_project().profile()
-    spendings = {'contractor': contractor_rate * man_days,
+    financial = {'contractor': contractor_rate * man_days,
                  'non-contractor': non_contractor_rate * man_days}
-    assert profile['spendings'] == {'2016-01': spendings}
+    assert profile['financial'] == {'2016-01': financial}
 
 
 @pytest.mark.django_db

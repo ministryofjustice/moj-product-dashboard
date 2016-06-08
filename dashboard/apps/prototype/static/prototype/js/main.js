@@ -193,17 +193,17 @@ var testRequest = {
 
 // TODO this function needs some structure
 function plotProject(project) {
-  const costs = _.toPairs(project.spendings).sort();
+  const costs = _.toPairs(project.financial).sort();
   const months = _.map(
       costs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
   const contractorCosts = _.map(
       costs, ([k, v]) => parseFloat(v['contractor']));
   const civilServantCosts = _.map(
       costs, ([k, v]) => parseFloat(v['non-contractor']));
-  const aditionalCosts = _.map(
-      costs, ([k, v]) => parseFloat(v['aditional']));
+  const additionalCosts = _.map(
+      costs, ([k, v]) => parseFloat(v['additional']));
   const totalCosts = _.map(
-      _.zip(contractorCosts, civilServantCosts, aditionalCosts),
+      _.zip(contractorCosts, civilServantCosts, additionalCosts),
       ([x, y, a]) => x + y + a);
   const totalCostsCumulative = [];
   totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
@@ -225,10 +225,10 @@ function plotProject(project) {
       color: '#b5d8df'
     }
   };
-  const aditionalTrace = {
+  const additionalTrace = {
     x: months,
-    y: aditionalCosts,
-    name: 'Aditional',
+    y: additionalCosts,
+    name: 'additional',
     type: 'bar',
     marker: {
       color: '#B2CFB2'
@@ -261,7 +261,7 @@ function plotProject(project) {
   };
   Plotly.newPlot(
       document.getElementById('fig-a'),
-      [civilServiceTrace, contractorTrace, aditionalTrace, totalCostTrace],
+      [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace],
       layout);
 };
 

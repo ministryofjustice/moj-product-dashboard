@@ -178,7 +178,7 @@ class Project(models.Model):
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
-            'spendings': {}
+            'financial': {}
         }
         try:
             if not start_date:
@@ -194,11 +194,11 @@ class Project(models.Model):
                 sdate, edate, contractor_only=True)
             non_contractor_cost = self.people_costs(
                 sdate, edate, non_contractor_only=True)
-            aditional_costs = self.aditional_costs(sdate, edate)
-            result['spendings'][key] = {
+            additional_costs = self.additional_costs(sdate, edate)
+            result['financial'][key] = {
                 'contractor': contractor_cost,
                 'non-contractor': non_contractor_cost,
-                'aditional': aditional_costs,
+                'additional': additional_costs,
             }
         return result
 
@@ -230,7 +230,7 @@ class Project(models.Model):
                              for task in tasks]
         return sum(spending_per_task)
 
-    def aditional_costs(self, start_date, end_date):
+    def additional_costs(self, start_date, end_date):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
