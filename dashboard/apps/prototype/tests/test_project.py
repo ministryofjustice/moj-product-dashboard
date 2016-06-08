@@ -153,3 +153,11 @@ def test_project_costs():
     assert project.additional_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2017, 2, 3)) == Decimal('885')
+
+
+@pytest.mark.django_db
+def test_project_visible():
+    mommy.make(Project, visible=False)
+    mommy.make(Project, visible=True)
+
+    assert Project.objects.visible().count() == 1
