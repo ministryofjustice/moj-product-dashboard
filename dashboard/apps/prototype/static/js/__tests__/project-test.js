@@ -1,5 +1,3 @@
-jest.unmock('../project');
-
 import * as project from '../project';
 
 describe('parseProjectFinancials', () => {
