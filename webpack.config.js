@@ -1,6 +1,6 @@
 var path = require('path');
 
-var directory = path.resolve(__dirname, "dashboard/apps/prototype/static/prototype");
+var directory = path.resolve(__dirname, "dashboard/apps/prototype/static");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
   ],
   output: {
     path: path.resolve(directory, 'dist'),
-    filename: "bundle.js"
+    filename: "prototype.js"
   },
 
   module: {
@@ -36,7 +36,7 @@ module.exports = {
     }
   },
   plugins: [
-    new ExtractTextPlugin("styles.css")
+    new ExtractTextPlugin("prototype.css")
   ],
   devtool: 'source-map'
 };
