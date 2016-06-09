@@ -119,7 +119,7 @@ export function plotProject(project, elem) {
     mode: 'lines',
     yaxis: 'y2',
     marker: {
-      color: '#F0E891'
+      color: '#FFBF47'
     }
   };
   const layout = {
