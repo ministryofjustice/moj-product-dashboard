@@ -29,10 +29,7 @@
     "presets": ["es2015"]
   },
   "jest": {
-      "unmockedModulePathPatterns": [
-          "./node_modules/lodash",
-          "./node_modules/moment"
-      ]
+      "automock": false
   },
   "scripts": {
     "test": "jest",
