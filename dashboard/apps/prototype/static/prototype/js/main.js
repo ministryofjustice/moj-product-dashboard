@@ -14,204 +14,61 @@ require('select2/dist/css/select2.min.css');
 require('../styles/gov-uk-elements.css');
 require('../styles/main.css');
 
-class Figure {
 
-  constructor(element) {
-    this.element = element;
-    this.data = {};
-    this.layout = {};
-  }
-
-  plot() {
-    Plotly.newPlot(this.element, this.data, this.layout, {displaylogo: false});
-  }
-
-  handleResponse(json) {
-    this.data = json.data;
-    this.layout = json.layout;
-    this.plot();
-  }
-
-  getRequestFigure (url) {
-    fetch(url)
-      .then((response) => response.json())
-      .then((json) => this.handleResponse(json));
-  }
-
-  postRequestFigure (url, requestJson) {
-    fetch(url, {
-      credentials: 'same-origin',
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': Cookies.get('csrftoken'),
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestJson)
-    })
-    .then((response) => response.json())
-      .then((json) => this.handleResponse(json));
-  }
-
+/**
+ * send a POST request to the backend to retrieve project profile
+ */
+function getProjectData(id) {
+  return fetch('/project.json', {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': Cookies.get('csrftoken'),
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({projectid: id})
+  }).then(response => response.json());
 }
 
-class ProjectCostFigure extends Figure {
+/**
+ * parse the financial infomation about the project
+ */
+function parseProjectFinancials(financial) {
+  let [months, costs] = _(financial).toPairs().sort().unzip().value();
+  months = months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
 
-  constructor(element) {
-    super(element);
-    this.data = {};
-    this.incrementLengths = ['day', 'week', 'month', 'year'];
-    this.startDate = undefined;
-    this.monthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-    this.getMonthData = () => {
-
-      let monthlyBreakdowns = this.getMonthsInProject();
-
-      monthlyBreakdowns = this.calcMonthlyData(monthlyBreakdowns);
-
-      let monthCostTrace = this.makeMonthlyTrace(monthlyBreakdowns, 'monthCost', 'Monthly Cost', 'bar');
-      let cumulCostTrace = this.makeCumulTrace(monthlyBreakdowns);
-
-      let traces = [monthCostTrace, cumulCostTrace];
-
-      Plotly.newPlot(this.element, traces, {showlegend: false}, {displaylogo: false});
-    };
-
-  }
-
-  makeMonthlyTrace(monthlyBreakdowns, y_series, name, type) {
-
-    let x_axis = [];
-    let y_axis = [];
-
-    for (let month of monthlyBreakdowns) {
-
-      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
-      y_axis.push(month[y_series]);
-
-    }
-
-    let trace = {
-      x: x_axis,
-      y: y_axis,
-      name: name,
-      type: type
-    };
-    return trace
-  }
-
-  makeCumulTrace(monthlyBreakdowns) {
-
-    let x_axis = [];
-    let y_axis = [];
-    let cumulCost = 0;
-    for (let month of monthlyBreakdowns) {
-      cumulCost += month.monthCost;
-
-      x_axis.push(this.monthNames[month.monthNum] + ' ' + month.yearNum);
-      y_axis.push(cumulCost);
-
-    }
-
-    let trace = {
-      x: x_axis,
-      y: y_axis,
-      name: name,
-      mode: 'lines'
-    };
-    return trace
-  }
-
-  calcMonthlyData(monthlyBreakdowns) {
-
-    for (let i = 0; i < monthlyBreakdowns.length; i++) {
-
-      for (let j = 0; j < this.data.days.length; j++) {
-
-        let date = new Date(this.data.days[j]);
-
-        if (date.getMonth() == monthlyBreakdowns[i].monthNum && date.getFullYear() == monthlyBreakdowns[i].yearNum) {
-
-
-          monthlyBreakdowns[i].monthCost += parseInt( this.data.costs[j] );
-          monthlyBreakdowns[i].cumulCost += monthlyBreakdowns[i].monthCost;
-
-        }
-
-      }
-    }
-
-    return monthlyBreakdowns;
-
-  }
-
-  getMonthsInProject() {
-
-    let month = this.startDate.getMonth();
-    let year = this.startDate.getFullYear();
-    let thisYear = new Date().getFullYear();
-    let monthlyBreakdowns = [];
-
-    for (year; year <= thisYear; year++) {
-
-      for (month; month <= 12; month++) {
-
-        monthlyBreakdowns.push({
-          monthNum: month,
-          yearNum: year,
-          monthCost: 0,
-          cumulCost: 0,
-          monthTimeSpent: 0
-        });
-
-      }
-      month = 1;
-    }
-    return monthlyBreakdowns;
-  }
-
-  handleResponse(json) {
-
-    this.startDate = new Date(json.start_date);
-
-    this.data = json.data;
-    this.getMonthData();
-
-  }
-
-}
-
-var testRequest = {
-  requested_figure : 'staff_split',
-  projectids : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  persons : [],
-  areas : [],
-  start_date: '2015-01-01',
-  end_date: '2016-05-23'
-};
-
-// TODO this function needs some structure
-function plotProject(project) {
-  const costs = _.toPairs(project.financial).sort();
-  const months = _.map(
-      costs, ([k, v]) => moment(k, 'YYYY-MM').format('MMM YY'));
-  const contractorCosts = _.map(
-      costs, ([k, v]) => parseFloat(v['contractor']));
-  const civilServantCosts = _.map(
-      costs, ([k, v]) => parseFloat(v['non-contractor']));
-  const additionalCosts = _.map(
-      costs, ([k, v]) => parseFloat(v['additional']));
-  const totalCosts = _.map(
-      _.zip(contractorCosts, civilServantCosts, additionalCosts),
-      ([x, y, a]) => x + y + a);
+  const _mapFloat = key => costs.map(c => parseFloat(c[key]));
+  const contractorCosts = _mapFloat('contractor');
+  const civilServantCosts = _mapFloat('non-contractor');
+  const additionalCosts = _mapFloat('additional');
+  const budget = _mapFloat('budget');
+  
+  const totalCosts = _.zip(contractorCosts, civilServantCosts, additionalCosts)
+                      .map(([x, y, a]) => x + y + a);
   const totalCostsCumulative = [];
   totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
-  const budget = _.map(
-      costs, ([k, v]) => parseFloat(v['budget']));
+
+  return {
+    months,
+    budget,
+    civilServantCosts,
+    contractorCosts,
+    additionalCosts,
+    totalCostsCumulative
+  };
+}
+
+/**
+ * plot the graphs for a project
+ */
+function plotProject(project, elem) {
+  const financial = parseProjectFinancials(project.financial);
+  const months = financial.months;
+
   const civilServiceTrace = {
     x: months,
-    y: civilServantCosts,
+    y: financial.civilServantCosts,
     name: 'Civil Servant',
     type: 'bar',
     marker: {
@@ -220,7 +77,7 @@ function plotProject(project) {
   };
   const contractorTrace = {
     x: months,
-    y: contractorCosts,
+    y: financial.contractorCosts,
     name: 'Contractor',
     type: 'bar',
     marker: {
@@ -229,7 +86,7 @@ function plotProject(project) {
   };
   const additionalTrace = {
     x: months,
-    y: additionalCosts,
+    y: financial.additionalCosts,
     name: 'additional',
     type: 'bar',
     marker: {
@@ -238,7 +95,7 @@ function plotProject(project) {
   };
   const totalCostTrace = {
     x: months,
-    y: totalCostsCumulative,
+    y: financial.totalCostsCumulative,
     name: 'Cumulative',
     mode: 'lines',
     yaxis: 'y2',
@@ -248,7 +105,7 @@ function plotProject(project) {
   };
   const budgetTrace = {
     x: months,
-    y: budget,
+    y: financial.budget,
     name: 'Budget',
     mode: 'lines',
     yaxis: 'y2',
@@ -272,46 +129,41 @@ function plotProject(project) {
     }
   };
   Plotly.newPlot(
-      document.getElementById('fig-a'),
+      elem,
       [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
-        budgetTrace],
+       budgetTrace],
       layout);
-};
+}
 
-function getProjectJSON(id) {
-  return fetch('/project.json', {
-    credentials: 'same-origin',
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': Cookies.get('csrftoken'),
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({projectid: id})
-  }).then(response => response.json());
-};
 
 /**
  * get projectId based on the query string
  */
 function getProjectId() {
   return URI(window.location.href).query(true).projectid;
-};
+}
 
 
-function loadProject(id) {
+/**
+ * load the page for the project based on id
+ **/
+function loadProjectPage(id) {
   const url = [location.protocol, '//', location.host, location.pathname].join('');
   window.location.href = url + '?projectid=' + id;
-};
+}
 
-
+  
 $(() => {
+  // get the DOM element for the graph
+  const elem = document.getElementById('fig-a');
+  // get the projectId
   const projectId = getProjectId();
-  // plot project
-  getProjectJSON(projectId)
-    .then(plotProject);
+  // plot the project
+  getProjectData(projectId)
+    .then(projectData => plotProject(projectData, elem));
+
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
-    loadProject(e.params.data.id);
+    loadProjectPage(e.params.data.id);
   });
-})
+});
