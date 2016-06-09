@@ -4,7 +4,7 @@ import 'whatwg-fetch';
 import URI from 'urijs';
 import moment from 'moment';
 import _ from 'lodash';
-import Plotly from './custom-plotly';
+import Plotly from './plotly-custom';
 
 /**
  * send a POST request to the backend to retrieve project profile
