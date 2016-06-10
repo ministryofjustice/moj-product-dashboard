@@ -66,15 +66,52 @@ Install frontend dependencies:
 Development
 ============
 
-In addition to running the Django development server (python manage.py runserver) run npm run --watch from the same
-directory to ensure that changes to the front-end code are reflected immediately.
+Run the Django development server:
+
+::
+
+    python manage.py runserver
+
+Watch and compile JS and CSS when code changes detected:
+
+::
+
+    npm run watch
+
+
+Build compressed JS and CSS:
+
+::
+
+    npm run build
 
 
 Testing
 =======
+
+Run unit tests for python code:
 
 ::
 
     py.test --cov=dashboard --cov-report term-missing
 
 
+Run unit tests for JS code:
+
+::
+
+    npm run test
+
+
+Generate coverage report for JS code:
+
+::
+
+    npm run test -- --coverage
+
+
+Watch and rerun JS unit tests when code changes detected:
+
+::
+
+    npm run test -- --watch
