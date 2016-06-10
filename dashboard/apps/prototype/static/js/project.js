@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import 'whatwg-fetch';
 import URI from 'urijs';
 import moment from 'moment';
@@ -8,12 +7,12 @@ import Plotly from './plotly-custom';
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(id) {
+export function getProjectData(id, csrftoken) {
   return fetch('/project.json', {
     credentials: 'same-origin',
     method: 'POST',
     headers: {
-      'X-CSRFToken': Cookies.get('csrftoken'),
+      'X-CSRFToken': csrftoken,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },

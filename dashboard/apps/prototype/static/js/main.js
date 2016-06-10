@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import select2 from 'select2';
+import Cookies from 'js-cookie';
 import {getProjectId, getProjectURL, getProjectData, plotProject} from './project';
 
 require('select2/dist/css/select2.min.css');
@@ -12,7 +13,7 @@ $(() => {
   // get the projectId
   const projectId = getProjectId(window.location.href);
   // plot the project
-  getProjectData(projectId)
+  getProjectData(projectId, Cookies.get('csrftoken'))
     .then(projectData => plotProject(projectData, elem));
 
   // dropdown project selector

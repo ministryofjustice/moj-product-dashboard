@@ -67,7 +67,7 @@ describe('getProjectData', () => {
   it('does a POST to the /project.json endpoint', () => {
     window.fetch = jest.fn().mockImplementation(
         () => Promise.resolve({json: () => {}}));
-    getProjectData('1');
+    getProjectData('1', 'csrftoken');
     expect(window.fetch).toBeCalled();
     const [url, init] = window.fetch.mock.calls[0];
     expect(url).toEqual('/project.json');
