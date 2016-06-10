@@ -1,4 +1,3 @@
-'use strict';
 import Cookies from 'js-cookie';
 import 'whatwg-fetch';
 import URI from 'urijs';
@@ -34,7 +33,7 @@ export function parseProjectFinancials(financial) {
   const civilServantCosts = _mapFloat('non-contractor');
   const additionalCosts = _mapFloat('additional');
   const budget = _mapFloat('budget');
-  
+
   const totalCosts = _.zip(contractorCosts, civilServantCosts, additionalCosts)
                       .map(([x, y, a]) => x + y + a);
   const totalCostsCumulative = [];
