@@ -64,6 +64,9 @@ describe('plotProject', () => {
 
 
 describe('getProjectData', () => {
+  it('uses the window.fetch from the ployfill', () => {
+    expect(window.fetch.polyfill).toBe(true);
+  });
   it('does a POST to the /project.json endpoint', () => {
     window.fetch = jest.fn().mockImplementation(
         () => Promise.resolve({json: () => {}}));
