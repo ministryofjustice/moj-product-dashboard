@@ -25,14 +25,14 @@ export function getProjectData(id) {
  * parse the financial infomation about the project
  */
 export function parseProjectFinancials(financial) {
-  let [months, costs] = _(financial).toPairs().sort().unzip().value();
-  months = months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
+  const [_months, costs] = _(financial).toPairs().sort().unzip().value();
+  const months = _months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
 
-  const _mapFloat = key => costs.map(c => parseFloat(c[key]));
-  const contractorCosts = _mapFloat('contractor');
-  const civilServantCosts = _mapFloat('non-contractor');
-  const additionalCosts = _mapFloat('additional');
-  const budget = _mapFloat('budget');
+  const mapFloat = key => costs.map(c => parseFloat(c[key]));
+  const contractorCosts = mapFloat('contractor');
+  const civilServantCosts = mapFloat('non-contractor');
+  const additionalCosts = mapFloat('additional');
+  const budget = mapFloat('budget');
 
   const totalCosts = _.zip(contractorCosts, civilServantCosts, additionalCosts)
                       .map(([x, y, a]) => x + y + a);
@@ -53,17 +53,16 @@ export function parseProjectFinancials(financial) {
 /**
  * get projectId based on the query string
  */
-export function getProjectId() {
-  return URI(window.location.href).query(true).projectid;
+export function getProjectId(pageURL) {
+  return URI(pageURL).query(true).projectid;
 }
 
 
 /**
- * load the page for the project based on id
+ * get the page for the project based on id
  **/
-export function loadProjectPage(id) {
-  const url = [location.protocol, '//', location.host, location.pathname].join('');
-  window.location.href = url + '?projectid=' + id;
+export function getProjectURL(pageURL, projectid) {
+  return URI(pageURL).setQuery('projectid', projectid).href();
 }
 
 
@@ -137,8 +136,8 @@ export function plotProject(project, elem) {
     }
   };
   Plotly.newPlot(
-      elem,
-      [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
-       budgetTrace],
-      layout);
+    elem,
+    [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
+    budgetTrace],
+    layout);
 }
