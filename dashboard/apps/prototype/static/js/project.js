@@ -8,7 +8,7 @@ import Plotly from './plotly-custom';
  * send a POST request to the backend to retrieve project profile
  */
 export function getProjectData(id, csrftoken) {
-  return fetch('/project.json', {
+  const init = {
     credentials: 'same-origin',
     method: 'POST',
     headers: {
@@ -17,7 +17,9 @@ export function getProjectData(id, csrftoken) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({projectid: id})
-  }).then(response => response.json());
+  };
+  return fetch('/project.json', init)
+    .then(response => response.json());
 }
 
 /**

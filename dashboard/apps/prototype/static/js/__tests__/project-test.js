@@ -26,7 +26,7 @@ const financial = {
 };
 
 describe('parseProjectFinancials', () => {
-  it('extracts and the converts the months and financial figures', () => {
+  it(`extracts and the converts the months and financial figures`, () => {
     const parsed = parseProjectFinancials(financial);
     expect(parsed.months).toEqual([ 'Jan 16', 'Feb 16', 'Mar 16' ]);
     expect(parsed.budget).toEqual([ 300, 300, 300 ]);
@@ -39,7 +39,7 @@ describe('parseProjectFinancials', () => {
 
 
 describe('getProjectId', () => {
-  it('extracts the projectid from the query string of the url', () => {
+  it(`extracts the projectid from the query string of the url`, () => {
     const projectid = getProjectId('http://127.0.0.1:8000/?projectid=51');
     expect(projectid).toEqual('51');
   });
@@ -47,7 +47,7 @@ describe('getProjectId', () => {
 
 
 describe('getProjectURL', () => {
-  it('gets the project url based on the page url and project id', () => {
+  it(`gets the project url based on the page url and project id`, () => {
     const projectURL = getProjectURL('http://127.0.0.1:8000/?projectid=1', '50');
     expect(projectURL).toEqual('http://127.0.0.1:8000/?projectid=50');
   });
@@ -55,7 +55,7 @@ describe('getProjectURL', () => {
 
 
 describe('plotProject', () => {
-  it('calls the Plotly.newPlot function', () => {
+  it(`calls the Plotly.newPlot function`, () => {
     const elem = jest.fn();
     plotProject({financial}, elem);
     expect(Plotly.newPlot).toBeCalled();
@@ -64,16 +64,36 @@ describe('plotProject', () => {
 
 
 describe('getProjectData', () => {
-  it('uses the window.fetch from the ployfill', () => {
+  it(`uses the window.fetch from the ployfill`, () => {
     expect(window.fetch.polyfill).toBe(true);
   });
-  it('does a POST to the /project.json endpoint', () => {
-    window.fetch = jest.fn().mockImplementation(
-        () => Promise.resolve({json: () => {}}));
-    getProjectData('1', 'csrftoken');
-    expect(window.fetch).toBeCalled();
-    const [url, init] = window.fetch.mock.calls[0];
-    expect(url).toEqual('/project.json');
-    expect(init.method).toEqual('POST');
+
+  it(`does a POST to the /project.json endpoint.
+      when succeeds, returns a Promise with the project data`, () => {
+    const data = {project: 'some data'};
+    window.fetch = jest.fn().mockReturnValueOnce(
+        new Promise((resolve, reject) => resolve({json: () => data})));
+    return getProjectData('1', 'csrftoken')
+      .then(projectData => {
+        expect(window.fetch).toBeCalled();
+        expect(projectData).toEqual(data);
+        const [url, init] = window.fetch.mock.calls[0];
+        expect(url).toEqual('/project.json');
+        expect(init.method).toEqual('POST');
+      });
+  });
+
+  it(`when fails, throws and error`, () => {
+    const error = {message: 'something went wrong'};
+    window.fetch = jest.fn().mockReturnValueOnce(
+        new Promise((resolve, reject) => reject(error)));
+    return getProjectData('2', 'csrftoken')
+      .catch(err => {
+        expect(window.fetch).toBeCalled();
+        expect(err).toEqual(error);
+        const [url, init] = window.fetch.mock.calls[0];
+        expect(url).toEqual('/project.json');
+        expect(init.method).toEqual('POST');
+      });
   });
 });
