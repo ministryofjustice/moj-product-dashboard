@@ -9,7 +9,14 @@
     },
     "rules": {
         "quotes": 0,
-        "no-unused-vars": 0,
-        "no-underscore-dangle": 0
+        "no-underscore-dangle": 0,
+        "prefer-const": 1,
+        "indent": [2, 2, {
+          "VariableDeclarator": {
+            "var": 2,
+            "let": 2,
+            "const": 3
+          }
+        }],
     }
 }
