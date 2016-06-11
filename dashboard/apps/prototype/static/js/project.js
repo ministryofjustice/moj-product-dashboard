@@ -1,7 +1,6 @@
 import 'whatwg-fetch';
 import URI from 'urijs';
 import moment from 'moment';
-import _ from 'lodash';
 import Plotly from './plotly-custom';
 
 /**
@@ -26,7 +25,8 @@ export function getProjectData(id, csrftoken) {
  * parse the financial infomation about the project
  */
 export function parseProjectFinancials(financial) {
-  const [_months, costs] = _(financial).toPairs().sort().unzip().value();
+  const _months = Object.keys(financial).sort();
+  const costs = _months.map(month => financial[month]);
   const months = _months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
 
   const mapFloat = key => costs.map(c => parseFloat(c[key]));
@@ -35,10 +35,14 @@ export function parseProjectFinancials(financial) {
   const additionalCosts = mapFloat('additional');
   const budget = mapFloat('budget');
 
-  const totalCosts = _.zip(contractorCosts, civilServantCosts, additionalCosts)
-                      .map(([x, y, a]) => x + y + a);
+  const totalCosts = months.map(
+    (month, i) => contractorCosts[i] + civilServantCosts[i] + additionalCosts[i]);
   const totalCostsCumulative = [];
-  totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
+  let cumulative = 0;
+  totalCosts.map(costs => {
+    cumulative += costs;
+    totalCostsCumulative.push(cumulative);
+  });
 
   return {
     months,
@@ -49,7 +53,6 @@ export function parseProjectFinancials(financial) {
     totalCostsCumulative
   };
 }
-
 
 /**
  * get projectId based on the query string

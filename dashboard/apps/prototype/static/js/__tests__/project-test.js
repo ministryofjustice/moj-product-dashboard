@@ -83,7 +83,7 @@ describe('getProjectData', () => {
       });
   });
 
-  it(`when fails, throws and error`, () => {
+  it(`when fails, throws an error`, () => {
     const error = {message: 'something went wrong'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => reject(error)));
