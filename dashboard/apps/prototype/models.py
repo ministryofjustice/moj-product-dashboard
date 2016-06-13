@@ -264,12 +264,23 @@ class Cost(models.Model):
             if start_date <= self.start_date <= end_date:
                 return self.cost
             return Decimal('0')
-        if self.type == COST_TYPES.MONTHLY:
-            freq = MONTHLY
-        elif self.type == COST_TYPES.ANNUALLY:
-            freq = YEARLY
-        dates = dates_between(start_date, end_date, freq)
+
+        dates = dates_between(start_date, end_date, self.freq,
+                              byyearday=self.byyearday)
+        # print(self, start_date, end_date, dates)
         return len(dates) * self.cost
+
+    @property
+    def byyearday(self):
+        if self.type == COST_TYPES.ANNUALLY:
+            return self.start_date.timetuple().tm_yday
+
+    @property
+    def freq(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return MONTHLY
+        elif self.type == COST_TYPES.ANNUALLY:
+            return YEARLY
 
 
 class Budget(models.Model):

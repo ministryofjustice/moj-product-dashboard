@@ -128,7 +128,8 @@ def slice_time_window(start_date, end_date, freq):
     return time_windows
 
 
-def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None):
+def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None,
+                  byyearday=None):
     """
     returns list of dates of freq (MONTHLY, YEARLY) between two dates
     :param start_date: date object - date to start on
@@ -143,4 +144,5 @@ def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None):
         bysetpos = -1
     return [dt.date() for dt in
             rrule(freq, dtstart=start_date, until=end_date,
-                  bymonthday=bymonthday, bysetpos=bysetpos)]
+                  bymonthday=bymonthday, bysetpos=bysetpos,
+                  byyearday=byyearday)]
