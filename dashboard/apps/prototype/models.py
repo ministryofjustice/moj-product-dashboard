@@ -237,8 +237,8 @@ class Project(models.Model):
             return cost.cost_between(start_date, end_date)
 
         return sum(map(cost_of_cost, self.costs.filter(
-            Q(end_date__lte=end_date) | Q(end_date__isnull=True),
-            start_date__gte=start_date
+            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+            start_date__lte=end_date
         ))) or Decimal('0')
 
     def budget(self, on):
