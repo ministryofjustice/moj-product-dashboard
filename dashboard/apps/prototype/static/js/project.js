@@ -126,6 +126,9 @@ export function plotProject(project, elem) {
   };
   const layout = {
     title: project.name,
+    font: {
+      family: 'nta'
+    },
     barmode: 'stack',
     yaxis: {
       title: 'monthly cost'
