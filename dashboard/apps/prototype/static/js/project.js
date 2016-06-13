@@ -101,7 +101,7 @@ export function plotProject(project, elem) {
     name: 'additional',
     type: 'bar',
     marker: {
-      color: '#B2CFB2'
+      color: '#E7DCD3'
     }
   };
   const totalCostTrace = {
@@ -136,7 +136,8 @@ export function plotProject(project, elem) {
     yaxis2: {
       title: 'cumulative',
       overlaying: 'y',
-      side: 'right'
+      side: 'right',
+      rangemode: 'tozero'
     },
     legend: {
       yanchor: 'bottom'
