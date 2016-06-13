@@ -136,7 +136,8 @@ export function plotProject(project, elem) {
     yaxis2: {
       title: 'cumulative',
       overlaying: 'y',
-      side: 'right'
+      side: 'right',
+      rangemode: 'tozero'
     },
     legend: {
       yanchor: 'bottom'
