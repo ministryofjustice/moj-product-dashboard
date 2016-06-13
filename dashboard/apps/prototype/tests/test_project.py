@@ -131,6 +131,7 @@ def test_project_costs():
         Cost,
         project=project,
         start_date=date(2016, 1, 31),
+        end_date=date(2018, 3, 31),
         type=COST_TYPES.MONTHLY,
         cost=Decimal('55')
     )
@@ -140,6 +141,14 @@ def test_project_costs():
         start_date=date(2016, 1, 3),
         type=COST_TYPES.ANNUALLY,
         cost=Decimal('60')
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date(2018, 4, 30),
+        end_date=date(2018, 7, 31),
+        type=COST_TYPES.MONTHLY,
+        cost=Decimal('100')
     )
 
     assert project.additional_costs(
@@ -153,6 +162,10 @@ def test_project_costs():
     assert project.additional_costs(
         start_date=date(2016, 1, 1),
         end_date=date(2017, 2, 3)) == Decimal('885')
+
+    assert project.additional_costs(
+        start_date=date(2018, 4, 30),
+        end_date=date(2018, 7, 31)) == Decimal('400')
 
 
 @pytest.mark.django_db

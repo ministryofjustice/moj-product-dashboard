@@ -237,8 +237,8 @@ class Project(models.Model):
             return cost.cost_between(start_date, end_date)
 
         return sum(map(cost_of_cost, self.costs.filter(
-            Q(end_date__lte=end_date) | Q(end_date__isnull=True),
-            start_date__gte=start_date
+            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+            start_date__lte=end_date
         ))) or Decimal('0')
 
     def budget(self, on):
@@ -264,12 +264,29 @@ class Cost(models.Model):
             if start_date <= self.start_date <= end_date:
                 return self.cost
             return Decimal('0')
-        if self.type == COST_TYPES.MONTHLY:
-            freq = MONTHLY
-        elif self.type == COST_TYPES.ANNUALLY:
-            freq = YEARLY
-        dates = dates_between(start_date, end_date, freq)
+
+        dates = dates_between(start_date, end_date, self.freq,
+                              bymonthday=self.bymonthday,
+                              byyearday=self.byyearday)
+        # print(self, start_date, end_date, dates)
         return len(dates) * self.cost
+
+    @property
+    def byyearday(self):
+        if self.type == COST_TYPES.ANNUALLY:
+            return self.start_date.timetuple().tm_yday
+
+    @property
+    def bymonthday(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return self.start_date.day
+
+    @property
+    def freq(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return MONTHLY
+        elif self.type == COST_TYPES.ANNUALLY:
+            return YEARLY
 
 
 class Budget(models.Model):

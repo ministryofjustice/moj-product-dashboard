@@ -107,22 +107,23 @@ def test_to_datetime():
     assert to_datetime(date(2015, 12, 1)) == datetime(2015, 12, 1, 0, 0, 0)
 
 
-@pytest.mark.parametrize("start_date, end_date, frequency, expected", [
-    (date(2015, 1, 2), date(2015, 3, 3), MONTHLY,
+@pytest.mark.parametrize("start_date, end_date, frequency, bymonthday, expected", [
+    (date(2015, 1, 2), date(2015, 3, 3), MONTHLY, 2,
      [date(2015, 1, 2), date(2015, 2, 2), date(2015, 3, 2)]),
 
-    (date(2015, 1, 31), date(2015, 3, 31), MONTHLY,
+    (date(2015, 1, 31), date(2015, 3, 31), MONTHLY, 31,
      [date(2015, 1, 31), date(2015, 2, 28), date(2015, 3, 31)]),
 
-    (date(2015, 1, 29), date(2015, 3, 31), MONTHLY,
+    (date(2015, 1, 29), date(2015, 3, 31), MONTHLY, 29,
      [date(2015, 1, 29), date(2015, 2, 28), date(2015, 3, 29)]),
 
-    (date(2015, 1, 2), date(2017, 3, 3), YEARLY,
+    (date(2015, 1, 2), date(2017, 3, 3), YEARLY, None,
      [date(2015, 1, 2), date(2016, 1, 2), date(2017, 1, 2)]),
 
-    (date(2015, 1, 30), date(2017, 3, 3), YEARLY,
+    (date(2015, 1, 30), date(2017, 3, 3), YEARLY, None,
      [date(2015, 1, 30), date(2016, 1, 30), date(2017, 1, 30)]),
 ])
-def test_slice_on_date(start_date, end_date, frequency, expected):
-    dates = dates_between(start_date, end_date, frequency)
+def test_slice_on_date(start_date, end_date, frequency, bymonthday, expected):
+    dates = dates_between(start_date, end_date, frequency,
+                          bymonthday=bymonthday)
     assert dates == expected
