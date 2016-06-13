@@ -139,8 +139,8 @@ def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None,
     :param bysetpos: int or list of ints - see rrule
     :return: list object - list of date objects
     """
-    if start_date.day > 28 and freq == MONTHLY:
-        bymonthday = range(28, start_date.day + 1)
+    if bymonthday and bymonthday > 28 and freq == MONTHLY:
+        bymonthday = range(28, bymonthday + 1)
         bysetpos = -1
     return [dt.date() for dt in
             rrule(freq, dtstart=start_date, until=end_date,

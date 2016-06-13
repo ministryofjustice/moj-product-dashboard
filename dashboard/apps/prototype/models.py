@@ -266,6 +266,7 @@ class Cost(models.Model):
             return Decimal('0')
 
         dates = dates_between(start_date, end_date, self.freq,
+                              bymonthday=self.bymonthday,
                               byyearday=self.byyearday)
         # print(self, start_date, end_date, dates)
         return len(dates) * self.cost
@@ -274,6 +275,11 @@ class Cost(models.Model):
     def byyearday(self):
         if self.type == COST_TYPES.ANNUALLY:
             return self.start_date.timetuple().tm_yday
+
+    @property
+    def bymonthday(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return self.start_date.day
 
     @property
     def freq(self):
