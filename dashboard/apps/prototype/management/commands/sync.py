@@ -27,10 +27,16 @@ def export(token, start_date, weeks, output_dir):
         filename = os.path.join(output_dir, '{}.json'.format(endpoint))
         with open(filename, 'w') as fw:
             fw.write(json.dumps(data, indent=2))
+
     tasks = many('tasks', token, start_day=start_date, weeks=weeks)
     tasks_filename = os.path.join(output_dir, 'tasks.json')
     with open(tasks_filename, 'w') as fw:
         fw.write(json.dumps(tasks, indent=2))
+
+    active_people = many('people', token, active=1)
+    active_people_filename = os.path.join(output_dir, 'people-active.json')
+    with open(active_people_filename, 'w') as fw:
+        fw.write(json.dumps(active_people, indent=2))
 
 
 def compare(existing_object, data, ignores=('raw_data',)):
@@ -95,9 +101,14 @@ def sync_clients(data_dir):
 
 def sync_people(data_dir):
     logger.info('sync people')
-    source = os.path.join(data_dir, 'people.json')
-    with open(source, 'r') as sf:
+    source1 = os.path.join(data_dir, 'people.json')
+    source2 = os.path.join(data_dir, 'people-active.json')
+    with open(source1, 'r') as sf:
         data = json.loads(sf.read())
+    with open(source2, 'r') as sf:
+        active_people = {
+            p['people_id']: p for p in json.loads(sf.read())['people']}
+
     for item in data['people']:
         useful_data = {
             'float_id': item['people_id'],
@@ -107,6 +118,7 @@ def sync_people(data_dir):
             'is_contractor': item['contractor'],
             'avatar': item['avatar_file'],
             'raw_data': item,
+            'is_current': item['people_id'] in active_people
         }
         try:
             person = Person.objects.get(float_id=useful_data['float_id'])
@@ -206,8 +218,9 @@ def ensure_directory(d):
 
 class Command(BaseCommand):
     help = 'Sync with float'
-    output = ['accounts.json', 'clients.json', 'people.json',
-              'projects.json', 'tasks.json']
+    output = ['accounts.json', 'clients.json',
+              'projects.json', 'tasks.json',
+              'people.json', 'people-active.json']
 
     def add_arguments(self, parser):
         today = date.today()
