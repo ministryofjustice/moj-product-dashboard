@@ -1,43 +1,48 @@
-import Cookies from 'js-cookie';
 import 'whatwg-fetch';
 import URI from 'urijs';
 import moment from 'moment';
-import _ from 'lodash';
 import Plotly from './plotly-custom';
 
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(id) {
-  return fetch('/project.json', {
+export function getProjectData(id, csrftoken) {
+  const init = {
     credentials: 'same-origin',
     method: 'POST',
     headers: {
-      'X-CSRFToken': Cookies.get('csrftoken'),
+      'X-CSRFToken': csrftoken,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({projectid: id})
-  }).then(response => response.json());
+  };
+  return fetch('/project.json', init)
+    .then(response => response.json());
 }
 
 /**
  * parse the financial infomation about the project
  */
 export function parseProjectFinancials(financial) {
-  let [months, costs] = _(financial).toPairs().sort().unzip().value();
-  months = months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
+  const _months = Object.keys(financial).sort();
+  const costs = _months.map(month => financial[month]);
+  const months = _months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
 
-  const _mapFloat = key => costs.map(c => parseFloat(c[key]));
-  const contractorCosts = _mapFloat('contractor');
-  const civilServantCosts = _mapFloat('non-contractor');
-  const additionalCosts = _mapFloat('additional');
-  const budget = _mapFloat('budget');
+  const mapFloat = key => costs.map(c => parseFloat(c[key]));
+  const contractorCosts = mapFloat('contractor');
+  const civilServantCosts = mapFloat('non-contractor');
+  const additionalCosts = mapFloat('additional');
+  const budget = mapFloat('budget');
 
-  const totalCosts = _.zip(contractorCosts, civilServantCosts, additionalCosts)
-                      .map(([x, y, a]) => x + y + a);
+  const totalCosts = months.map(
+    (month, i) => contractorCosts[i] + civilServantCosts[i] + additionalCosts[i]);
   const totalCostsCumulative = [];
-  totalCosts.reduce((x, y, i) => totalCostsCumulative[i] = x + y, 0);
+  let cumulative = 0;
+  totalCosts.map(costs => {
+    cumulative += costs;
+    totalCostsCumulative.push(cumulative);
+  });
 
   return {
     months,
@@ -49,21 +54,19 @@ export function parseProjectFinancials(financial) {
   };
 }
 
-
 /**
  * get projectId based on the query string
  */
-export function getProjectId() {
-  return URI(window.location.href).query(true).projectid;
+export function getProjectId(pageURL) {
+  return URI(pageURL).query(true).projectid;
 }
 
 
 /**
- * load the page for the project based on id
+ * get the page for the project based on id
  **/
-export function loadProjectPage(id) {
-  const url = [location.protocol, '//', location.host, location.pathname].join('');
-  window.location.href = url + '?projectid=' + id;
+export function getProjectURL(pageURL, projectid) {
+  return URI(pageURL).setQuery('projectid', projectid).href();
 }
 
 
@@ -137,8 +140,8 @@ export function plotProject(project, elem) {
     }
   };
   Plotly.newPlot(
-      elem,
-      [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
-       budgetTrace],
-      layout);
+    elem,
+    [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
+    budgetTrace],
+    layout);
 }

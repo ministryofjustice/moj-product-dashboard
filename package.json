@@ -19,17 +19,18 @@
     "css-loader": "^0.23.1",
     "extract-text-webpack-plugin": "^1.0.1",
     "jest-cli": "^12.1.1",
-    "lodash": "^4.13.1",
     "moment": "^2.13.0",
     "style-loader": "^0.13.1",
     "urijs": "^1.18.1",
     "webpack": "^1.13.0"
   },
   "babel": {
-    "presets": ["es2015"]
+    "presets": [
+      "es2015"
+    ]
   },
   "jest": {
-      "automock": false
+    "automock": false
   },
   "scripts": {
     "test": "jest",
