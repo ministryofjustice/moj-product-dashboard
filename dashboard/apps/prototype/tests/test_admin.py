@@ -25,7 +25,7 @@ def test_is_civil_servant_filter(value, names):
     filter = IsCivilServantFilter(
         None, {'is_civil_servant': value}, Person, PersonAdmin)
     result = filter.queryset(None, Person.objects.all())
-    assert set([p.name for p in result]) == set(names)
+    assert {p.name for p in result} == set(names)
 
 
 @pytest.mark.parametrize('value,names', [
@@ -39,7 +39,7 @@ def test_is_current_staff_filter(value, names):
     filter = IsCurrentStaffFilter(
         None, {'is_current_staff': value}, Person, PersonAdmin)
     result = filter.queryset(None, Person.objects.all())
-    assert set([p.name for p in result]) == set(names)
+    assert {p.name for p in result} == set(names)
 
 
 @pytest.mark.parametrize('key,expected', [
