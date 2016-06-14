@@ -1,0 +1,15 @@
+{% extends "admin/index.html" %}
+{% load i18n admin_modify %}
+{% block bodyclass %}{{ opts.app_label }}-{{ opts.object_name.lower }} change-form{% endblock %}
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+     <a href="../../../../">{% trans "Home" %}</a> ›
+     <a href="../../../">{{ opts.app_label|capfirst|escape }}</a> ›
+     <a href="../../">{{ opts.verbose_name_plural|capfirst }}</a> ›
+     <a href="../">{{ original.name }}</a> ›
+     {% trans 'Upload monthly payroll' %}</div>
+{% endif %}{% endblock %}
+
+{% block content %}
+    <h1>Upload payroll</h1>
+{% endblock %}

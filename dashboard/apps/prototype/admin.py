@@ -1,4 +1,12 @@
+from django.conf.urls import patterns, url
 from django.contrib import admin
+from django.contrib.auth.admin import csrf_protect_m
+from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.utils.decorators import method_decorator
 
 from .models import (Person, Rate, Client, Project, Task, Cost, Budget, RAG,
                      Note)
@@ -122,7 +130,7 @@ class NoteInline(admin.TabularInline):
     extra = 0
 
 
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     fields = ['name', 'description', 'float_id', 'is_billable',
               'project_manager', 'client', 'discovery_date', 'alpha_date',
               'beta_date', 'live_date', 'end_date', 'visible']
@@ -131,6 +139,44 @@ class ProjectAdmin(admin.ModelAdmin):
     readonly_fields = ('name', 'description', 'float_id', 'is_billable',
                        'project_manager', 'client')
     search_fields = ('name', 'float_id')
+
+    def get_urls(self):
+        urls = patterns(
+            '',
+            url(
+                r'^(.+)/upload/$',
+                self.admin_site.admin_view(self.upoload_view),
+                name='dashboard_prototype_upload'),
+        )
+        return urls + super(ProjectAdmin, self).get_urls()
+
+    def has_upload_permission(self, request, obj=None):
+        return self.is_finance(request.user)
+
+    def get_model_perms(self, request):
+        perms = super(ProjectAdmin, self).get_model_perms(request)
+        perms.update({
+            'upload': self.has_upload_permission(request),
+        })
+        return perms
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.upload_project',
+                                          raise_exception=True))
+    def upoload_view(self, request, object_id, *args, **kwargs):
+        obj = self.get_object(request, object_id)
+        if not self.has_upload_permission(request, obj):
+            raise PermissionDenied
+        return render_to_response(
+            'admin/prototype/upload.html',
+            {
+                'opts': self.model._meta,
+                'has_permission': self.has_upload_permission(request, obj),
+                'original': obj,
+                'object_id': object_id,
+            },
+            context_instance=RequestContext(request))
 
 
 class TaskAdmin(ReadOnlyAdmin):
