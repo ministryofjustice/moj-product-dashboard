@@ -68,6 +68,7 @@ class IsCurrentFilter(admin.SimpleListFilter):
 
 class PersonAdmin(ReadOnlyAdmin):
     inlines = [RateInline]
+    ordering = ('name',)
     readonly_fields = ('avatar_tag', )
     list_display = ('avatar_tag', 'name', 'job_title',
                     'contractor_civil_servant', 'is_current')
