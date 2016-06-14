@@ -14,12 +14,44 @@ class RateInline(FinancePermissions, admin.TabularInline):
     extra = 0
 
 
+class IsCurrentFilter(admin.SimpleListFilter):
+    """
+    this filter shows `is_current=True` by default
+    """
+    title = 'is current staff?'
+    parameter_name = 'is_current'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('all', 'All'),
+            (None, 'Yes'),
+            ('no', 'No'),
+        )
+
+    def choices(self, cl):
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': cl.get_query_string({
+                    self.parameter_name: lookup,
+                }, []),
+                'display': title,
+            }
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset.filter(is_current=True)
+        elif self.value() == 'no':
+            return queryset.filter(is_current=False)
+
+
 class PersonAdmin(ReadOnlyAdmin):
     inlines = [RateInline]
     readonly_fields = ('avatar_tag', )
     list_display = ('avatar_tag', 'name', 'job_title', 'is_contractor',
                     'is_current')
     search_fields = ('name', 'job_title')
+    list_filter = ('is_contractor', IsCurrentFilter)
     exclude = ['raw_data']
 
     def avatar_tag(self, obj):  # pragma: no cover

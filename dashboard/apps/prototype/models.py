@@ -21,9 +21,15 @@ class Person(models.Model):
     name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
-    is_contractor = models.BooleanField(default=False)
+    is_contractor = models.BooleanField(
+        default=False,
+        verbose_name='is contractor?'
+    )
     job_title = models.CharField(max_length=128, null=True)
-    is_current = models.BooleanField(default=True)
+    is_current = models.BooleanField(
+        default=True,
+        verbose_name='is current staff?'
+    )
     raw_data = JSONField(null=True)
 
     def __str__(self):
