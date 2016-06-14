@@ -363,6 +363,11 @@ class Project(models.Model):
         workdays = get_workdays(start_date, end_date)
         return self.time_spent(start_date, end_date) / workdays
 
+    class Meta:
+        permissions = (
+            ('upload_project', 'Can upload monthly payroll'),
+        )
+
 
 class Cost(models.Model):
     project = models.ForeignKey('Project', related_name='costs')
