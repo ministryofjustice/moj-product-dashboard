@@ -146,7 +146,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
             url(
                 r'^(.+)/upload/$',
                 self.admin_site.admin_view(self.upoload_view),
-                name='dashboard_prototype_upload'),
+                name='project_upload_payroll'),
         )
         return urls + super(ProjectAdmin, self).get_urls()
 
