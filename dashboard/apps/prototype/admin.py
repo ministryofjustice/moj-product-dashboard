@@ -33,14 +33,16 @@ class IsCivilServantFilter(admin.SimpleListFilter):
             return queryset.filter(is_contractor=False)
         elif self.value() == 'no':
             return queryset.filter(is_contractor=True)
+        else:
+            return queryset
 
 
-class IsCurrentFilter(admin.SimpleListFilter):
+class IsCurrentStaffFilter(admin.SimpleListFilter):
     """
     this filter shows `is_current=True` by default
     """
     title = 'is current staff?'
-    parameter_name = 'is_current'
+    parameter_name = 'is_current_staff'
 
     def lookups(self, request, model_admin):
         return (
@@ -50,7 +52,7 @@ class IsCurrentFilter(admin.SimpleListFilter):
         )
 
     def choices(self, cl):
-        for lookup, title in self.lookup_choices:
+        for lookup, title in self.lookup_choices:  # pragma: no cover
             yield {
                 'selected': self.value() == lookup,
                 'query_string': cl.get_query_string({
@@ -64,6 +66,8 @@ class IsCurrentFilter(admin.SimpleListFilter):
             return queryset.filter(is_current=True)
         elif self.value() == 'no':
             return queryset.filter(is_current=False)
+        else:
+            return queryset
 
 
 class PersonAdmin(ReadOnlyAdmin):
@@ -73,7 +77,7 @@ class PersonAdmin(ReadOnlyAdmin):
     list_display = ('avatar_tag', 'name', 'job_title',
                     'contractor_civil_servant', 'is_current')
     search_fields = ('name', 'job_title')
-    list_filter = (IsCivilServantFilter, IsCurrentFilter)
+    list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     exclude = ['raw_data']
 
     def avatar_tag(self, obj):  # pragma: no cover
