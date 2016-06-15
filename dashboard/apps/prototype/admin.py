@@ -14,18 +14,83 @@ class RateInline(FinancePermissions, admin.TabularInline):
     extra = 0
 
 
+class IsCivilServantFilter(admin.SimpleListFilter):
+    """
+    this filter shows labels of civil servant or contractor
+    instead of boolean flags
+    """
+    title = 'civil servant | contractor'
+    parameter_name = 'is_civil_servant'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Civil Servant'),
+            ('no', 'Contractor'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(is_contractor=False)
+        elif self.value() == 'no':
+            return queryset.filter(is_contractor=True)
+        else:
+            return queryset
+
+
+class IsCurrentStaffFilter(admin.SimpleListFilter):
+    """
+    this filter shows `is_current=True` by default
+    """
+    title = 'is current staff?'
+    parameter_name = 'is_current_staff'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('all', 'All'),
+            (None, 'Yes'),
+            ('no', 'No'),
+        )
+
+    def choices(self, cl):
+        for lookup, title in self.lookup_choices:  # pragma: no cover
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': cl.get_query_string({
+                    self.parameter_name: lookup,
+                }, []),
+                'display': title,
+            }
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset.filter(is_current=True)
+        elif self.value() == 'no':
+            return queryset.filter(is_current=False)
+        else:
+            return queryset
+
+
 class PersonAdmin(ReadOnlyAdmin):
     inlines = [RateInline]
+    ordering = ('name',)
     readonly_fields = ('avatar_tag', )
-    list_display = ('avatar_tag', 'name', 'job_title', 'is_contractor',
-                    'is_current')
+    list_display = ('avatar_tag', 'name', 'job_title',
+                    'contractor_civil_servant', 'is_current')
     search_fields = ('name', 'job_title')
+    list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     exclude = ['raw_data']
 
     def avatar_tag(self, obj):  # pragma: no cover
         return '<img src="{}" style="height:40px;"/>'.format(obj.avatar)
     avatar_tag.allow_tags = True
     avatar_tag.short_description = 'image'
+
+    def contractor_civil_servant(self, obj):
+        if obj.is_contractor:
+            return 'Contractor'
+        else:
+            return 'Civil Servant'
+    contractor_civil_servant.short_description = 'Contractor | Civil Servant'
 
 
 class RateAdmin(FinancePermissions, admin.ModelAdmin):
