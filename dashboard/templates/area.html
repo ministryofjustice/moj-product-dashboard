@@ -1,0 +1,20 @@
+{% extends 'common.html' %}
+
+{% load staticfiles %}
+
+{% block main %}
+    <div class="column-one-quarter">
+      <label class="heading-medium" for="area-name"><strong>Service Area</strong></label>
+    </div>
+    <div class="column-three-quarters">
+      <select id="areas">
+        {% for area_id, name in areas.items %}
+          {% if area_id == id %}
+          <option value="{{ area_id }}" selected>{{ name }}</option>
+          {% else %}
+          <option value="{{ area_id }}">{{ name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+{% endblock %}

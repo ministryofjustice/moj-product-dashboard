@@ -1,8 +1,7 @@
 jest.mock('../plotly-custom');
 import Plotly from '../plotly-custom';
 
-import {parseProjectFinancials, getProjectId, getProjectURL, plotProject,
-        getProjectData} from '../project';
+import {parseProjectFinancials, plotProject, getProjectData} from '../project';
 
 const financial = {
   '2016-01': {
@@ -34,22 +33,6 @@ describe('parseProjectFinancials', () => {
     expect(parsed.civilServantCosts).toEqual([ 200.8, 100.2, 150.2 ]);
     expect(parsed.additionalCosts).toEqual([ 50.2, 70.4, 10.2 ]);
     expect(parsed.totalCostsCumulative).toEqual([ 351.5, 722.6, 1033.5 ]);
-  });
-});
-
-
-describe('getProjectId', () => {
-  it(`extracts the projectid from the query string of the url`, () => {
-    const projectid = getProjectId('http://127.0.0.1:8000/?projectid=51');
-    expect(projectid).toEqual('51');
-  });
-});
-
-
-describe('getProjectURL', () => {
-  it(`gets the project url based on the page url and project id`, () => {
-    const projectURL = getProjectURL('http://127.0.0.1:8000/?projectid=1', '50');
-    expect(projectURL).toEqual('http://127.0.0.1:8000/?projectid=50');
   });
 });
 

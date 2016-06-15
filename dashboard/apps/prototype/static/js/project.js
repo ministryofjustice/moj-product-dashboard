@@ -1,5 +1,4 @@
 import 'whatwg-fetch';
-import URI from 'urijs';
 import moment from 'moment';
 import Plotly from './plotly-custom';
 
@@ -15,7 +14,7 @@ export function getProjectData(id, csrftoken) {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({projectid: id})
+    body: JSON.stringify({id: id})
   };
   return fetch('/project.json', init)
     .then(response => response.json());
@@ -52,21 +51,6 @@ export function parseProjectFinancials(financial) {
     additionalCosts,
     totalCostsCumulative
   };
-}
-
-/**
- * get projectId based on the query string
- */
-export function getProjectId(pageURL) {
-  return URI(pageURL).query(true).projectid;
-}
-
-
-/**
- * get the page for the project based on id
- **/
-export function getProjectURL(pageURL, projectid) {
-  return URI(pageURL).setQuery('projectid', projectid).href();
 }
 
 
