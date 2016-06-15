@@ -131,13 +131,15 @@ export function plotProject(project, elem) {
     },
     barmode: 'stack',
     yaxis: {
-      title: 'monthly cost'
+      title: 'monthly cost',
+      tickprefix: '\u00a3'
     },
     yaxis2: {
       title: 'cumulative',
       overlaying: 'y',
       side: 'right',
-      rangemode: 'tozero'
+      rangemode: 'tozero',
+      tickprefix: '\u00a3'
     },
     legend: {
       yanchor: 'bottom'
