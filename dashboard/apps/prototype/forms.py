@@ -28,5 +28,5 @@ class PayrollUploadForm(forms.Form, ConvertDateMixin):
 
     @property
     def month(self):
-        return self._convert_date(self.cleaned_data['date'])
+        return self.cleaned_data['date'].strftime('%Y-%m')
 
