@@ -11,5 +11,11 @@
 {% endif %}{% endblock %}
 
 {% block content %}
-    <h1>Upload payroll</h1>
+  <h1>Upload payroll</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+  <input type="submit" value="Upload payroll" />
+  </form>
 {% endblock %}

@@ -8,6 +8,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
 
+from .forms import PayrollUploadForm
 from .models import (Person, Rate, Client, Project, Task, Cost, Budget, RAG,
                      Note)
 from .permissions import ReadOnlyPermissions, FinancePermissions
@@ -175,6 +176,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
                 'has_permission': self.has_upload_permission(request, obj),
                 'original': obj,
                 'object_id': object_id,
+                'form': form,
             },
             context_instance=RequestContext(request))
 
