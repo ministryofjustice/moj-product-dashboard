@@ -169,6 +169,18 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
         obj = self.get_object(request, object_id)
         if not self.has_upload_permission(request, obj):
             raise PermissionDenied
+
+        if request.method == 'POST':
+            form = PayrollUploadForm(data=request.POST, files=request.FILES)
+            if form.is_valid():
+                form.process_upload()
+                self.message_user(
+                    request,
+                    'Successfully uploaded %s payroll for %s' %
+                    (form.month, obj.name))
+        else:
+            form = PayrollUploadForm()
+
         return render_to_response(
             'admin/prototype/upload.html',
             {

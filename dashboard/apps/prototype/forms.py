@@ -21,8 +21,8 @@ class ConvertDateMixin(object):
 
 
 class PayrollUploadForm(forms.Form, ConvertDateMixin):
-    payroll_file = forms.FileField()
-    date = forms.DateField(widget=MonthYearWidget(
+    payroll_file = forms.FileField(required=True)
+    date = forms.DateField(required=True, widget=MonthYearWidget(
         years=year_range(backward=4, forward=3)
     ))
 
