@@ -77,13 +77,16 @@ export function plotProject(project, elem) {
   const financial = parseProjectFinancials(project.financial);
   const months = financial.months;
 
+  // NOTE: those lines for ie9 is related to this issue
+  // https://github.com/plotly/plotly.js/issues/166
   const civilServiceTrace = {
     x: months,
     y: financial.civilServantCosts,
     name: 'Civil Servant',
     type: 'bar',
     marker: {
-      color: '#c0c2dc'
+      color: '#c0c2dc',
+      line: {width: 0}  // for ie9 only
     }
   };
   const contractorTrace = {
@@ -92,7 +95,8 @@ export function plotProject(project, elem) {
     name: 'Contractor',
     type: 'bar',
     marker: {
-      color: '#b5d8df'
+      color: '#b5d8df',
+      line: {width: 0}  // for ie9 only
     }
   };
   const additionalTrace = {
@@ -101,7 +105,8 @@ export function plotProject(project, elem) {
     name: 'additional',
     type: 'bar',
     marker: {
-      color: '#E7DCD3'
+      color: '#E7DCD3',
+      line: {width: 0}  // for ie9 only
     }
   };
   const totalCostTrace = {
@@ -111,7 +116,8 @@ export function plotProject(project, elem) {
     mode: 'lines',
     yaxis: 'y2',
     marker: {
-      color: '#6F777B'
+      color: '#6F777B',
+      line: {width: 0}  // for ie9 only
     }
   };
   const budgetTrace = {
@@ -121,7 +127,8 @@ export function plotProject(project, elem) {
     mode: 'lines',
     yaxis: 'y2',
     marker: {
-      color: '#FFBF47'
+      color: '#FFBF47',
+      line: {width: 0}  // for ie9 only
     }
   };
   const layout = {
@@ -145,9 +152,12 @@ export function plotProject(project, elem) {
       yanchor: 'bottom'
     }
   };
-  Plotly.newPlot(
-    elem,
-    [civilServiceTrace, contractorTrace, additionalTrace, totalCostTrace,
-    budgetTrace],
-    layout);
+  const data = [
+    civilServiceTrace,
+    contractorTrace,
+    additionalTrace,
+    totalCostTrace,
+    budgetTrace
+  ];
+  Plotly.newPlot(elem, data, layout);
 }
