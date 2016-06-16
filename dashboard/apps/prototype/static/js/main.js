@@ -1,12 +1,13 @@
 import $ from 'jquery';
 import select2 from 'select2';
 import Cookies from 'js-cookie';
-import URI from 'urijs';
 import {getProjectData, plotProject} from './project';
+import { createHistory } from 'history';
 
 require('select2/dist/css/select2.min.css');
 require('../styles/gov-uk-elements.css');
 require('../styles/main.css');
+
 
 function project(id) {
   // get the DOM element for the graph
@@ -22,6 +23,7 @@ function project(id) {
   });
 }
 
+
 function area(id) {
   // dropdown area selector
   $('#areas').select2().on("select2:select", (e) => {
@@ -30,22 +32,25 @@ function area(id) {
   });
 }
 
+
 function route(path) {
   // call different loading functions based on page url
   const pattern = /(projects|areas)\/(\d+)/;
   const matches = pattern.exec(path);
 
-  if (matches === null) return;
+  if (matches === null)
+    return;
 
-  switch (matches[1]) {
+  const [_, endpoint, id] = matches;
+
+  switch (endpoint) {
     case 'projects':
-      project(matches[2]);
+      project(id);
     case 'areas':
-      area(matches[2]);
+      area(id);
   };
 }
 
-$(() => {
-  const path = URI(window.location.href).path();
-  route(path);
-});
+
+const location = createHistory().getCurrentLocation();
+route(location.pathname);
