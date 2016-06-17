@@ -139,6 +139,9 @@ class Client(models.Model):
     float_id = models.CharField(max_length=128, unique=True)
     raw_data = JSONField(null=True)
 
+    class Meta:
+        verbose_name = ugettext_lazy('service area')
+
     def __str__(self):
         return self.name
 

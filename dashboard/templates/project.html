@@ -12,8 +12,8 @@
     </div>
     <div class="column-three-quarters">
       <select id="projects">
-        {% for area_name, projects in areas.items %}
-          <optgroup label="{{ area_name }}">
+        {% for service_name, projects in services.items %}
+          <optgroup label="{{ service_name }}">
           {% for id, name in projects.items %}
             {% if id == project.id %}
             <option value="{{ id }}" selected>{{ name }}</option>
