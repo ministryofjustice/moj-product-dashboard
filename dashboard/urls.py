@@ -19,14 +19,14 @@ from django.contrib import admin
 from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.prototype.views import (
-    index, area_html, area_json, project_html, project_json)
+    index, service_html, service_json, project_html, project_json)
 from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     url(r'^$', index, name='index'),
-    url(r'^areas/(?P<id>[0-9]+)$', area_html, name='area'),
-    url(r'^area.json', area_json, name='area_json'),
+    url(r'^services/(?P<id>[0-9]+)$', service_html, name='service'),
+    url(r'^service.json', service_json, name='service_json'),
     url(r'^projects/(?P<id>[0-9]+)$', project_html, name='project'),
     url(r'^project.json', project_json, name='project_json'),
     url(r'^admin/', admin.site.urls),

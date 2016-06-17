@@ -24,18 +24,18 @@ function project(id) {
 }
 
 
-function area(id) {
-  // dropdown area selector
-  $('#areas').select2().on("select2:select", (e) => {
-    const areaId = e.params.data.id;
-    window.location.href = `/areas/${areaId}`;
+function service(id) {
+  // dropdown serviceselector
+  $('#services').select2().on("select2:select", (e) => {
+    const serviceId = e.params.data.id;
+    window.location.href = `/services/${serviceId}`;
   });
 }
 
 
 function route(path) {
   // call different loading functions based on page url
-  const pattern = /(projects|areas)\/(\d+)/;
+  const pattern = /(projects|services)\/(\d+)/;
   const matches = pattern.exec(path);
 
   if (matches === null)
@@ -46,8 +46,8 @@ function route(path) {
   switch (endpoint) {
     case 'projects':
       project(id);
-    case 'areas':
-      area(id);
+    case 'services':
+      service(id);
   };
 }
 

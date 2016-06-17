@@ -33,12 +33,12 @@ def project_html(request, id):
         # TODO better error page
         return HttpResponseNotFound(
             'cannot find project with id={}'.format(id))
-    areas = {
-        area.name: {p.id: p.name for p in area.projects.visible()}
-        for area in Client.objects.all()
+    services = {
+        service.name: {p.id: p.name for p in service.projects.visible()}
+        for service in Client.objects.all()
     }
-    areas = OrderedDict(sorted([(k, v) for k, v in areas.items() if v]))
-    context = {'areas': areas,  'project': project}
+    services = OrderedDict(sorted([(k, v) for k, v in services.items() if v]))
+    context = {'services': services,  'project': project}
     return render(request, 'project.html', context)
 
 
@@ -59,12 +59,12 @@ def project_json(request):
 
 
 @login_required
-def area_html(request, id):
-    areas = {c.id: c.name for c in Client.objects.all()}
-    context = {'areas': areas, 'id': int(id)}
-    return render(request, 'area.html', context=context)
+def service_html(request, id):
+    services = {c.id: c.name for c in Client.objects.all()}
+    context = {'services': services, 'id': int(id)}
+    return render(request, 'service.html', context=context)
 
 
 @login_required
-def area_json(request):
-    return JsonResponse({'data': 'area_json'})
+def service_json(request):
+    return JsonResponse({'data': 'service_json'})

@@ -13,7 +13,7 @@ from faker import Faker
 from model_mommy import mommy
 
 from dashboard.apps.prototype.views import (
-    index, project_html, project_json, area_html, area_json)
+    index, project_html, project_json, service_html, service_json)
 from dashboard.apps.prototype.models import Client as Area, Project
 
 
@@ -102,20 +102,20 @@ def test_project_json_with_invalid_id():
 
 
 @pytest.mark.django_db
-def test_area_html():
+def test_service_html():
     client = make_login_client()
-    area = mommy.make(Area)
-    rsp = client.get(reverse(area_html, kwargs={'id': area.id}))
+    service = mommy.make(Area)
+    rsp = client.get(reverse(service_html, kwargs={'id': service.id}))
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
-def test_area_json():
+def test_service_json():
     client = make_login_client()
-    area = mommy.make(Area)
+    service = mommy.make(Area)
     rsp = client.post(
-        reverse(area_json),
-        json.dumps({'id': area.id}),
+        reverse(service_json),
+        json.dumps({'id': service.id}),
         content_type='application/json'
     )
     assert rsp.status_code == 200
