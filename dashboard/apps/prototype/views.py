@@ -50,8 +50,7 @@ def project_json(request):
     # TODO handle errors
     request_data = json.loads(request.body.decode())
     try:
-        project = Project.objects.visible().get(
-            id=request_data['id'])
+        project = Project.objects.visible().get(id=request_data['id'])
     except (ValueError, Project.DoesNotExist):
         error = 'cannot find project with id={}'.format(request_data['id'])
         return JsonResponse({'error': error}, status=404)
@@ -60,11 +59,25 @@ def project_json(request):
 
 @login_required
 def service_html(request, id):
+    try:
+        service = Client.objects.get(id=id)
+    except (ValueError, Client.DoesNotExist):
+        # TODO better error page
+        return HttpResponseNotFound(
+            'cannot find service with id={}'.format(id))
     services = {c.id: c.name for c in Client.objects.all()}
-    context = {'services': services, 'id': int(id)}
+    projects = {p.id: p.name for p in service.projects.all()}
+    context = {'services': services, 'service': service, 'projects': projects}
     return render(request, 'service.html', context=context)
 
 
 @login_required
 def service_json(request):
-    return JsonResponse({'data': 'service_json'})
+    request_data = json.loads(request.body.decode())
+    try:
+        client = Client.objects.get(id=request_data['id'])
+    except (ValueError, Client.DoesNotExist):
+        error = 'cannot find service area with id={}'.format(
+            request_data['id'])
+        return JsonResponse({'error': error}, status=404)
+    return JsonResponse(client.profile())

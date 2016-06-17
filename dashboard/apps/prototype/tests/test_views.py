@@ -14,7 +14,7 @@ from model_mommy import mommy
 
 from dashboard.apps.prototype.views import (
     index, project_html, project_json, service_html, service_json)
-from dashboard.apps.prototype.models import Client as Area, Project
+from dashboard.apps.prototype.models import Client as Service, Project
 
 
 def make_login_client():
@@ -104,18 +104,38 @@ def test_project_json_with_invalid_id():
 @pytest.mark.django_db
 def test_service_html():
     client = make_login_client()
-    service = mommy.make(Area)
+    service = mommy.make(Service)
     rsp = client.get(reverse(service_html, kwargs={'id': service.id}))
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
+def test_service_html_with_non_existing_id():
+    client = make_login_client()
+    service = mommy.make(Service)
+    rsp = client.get(reverse(service_html, kwargs={'id': service.id + 1}))
+    assert rsp.status_code == 404
+
+
+@pytest.mark.django_db
 def test_service_json():
     client = make_login_client()
-    service = mommy.make(Area)
+    service = mommy.make(Service)
     rsp = client.post(
         reverse(service_json),
         json.dumps({'id': service.id}),
         content_type='application/json'
     )
     assert rsp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_service_json_with_invalid_id():
+    client = make_login_client()
+    rsp = client.post(
+        reverse(service_json),
+        json.dumps({'id': 'invalid_id'}),
+        content_type='application/json'
+    )
+    assert rsp.status_code == 404
+    assert rsp['Content-Type'] == 'application/json'

@@ -8,13 +8,31 @@
     </div>
     <div class="column-three-quarters">
       <select id="services">
-        {% for service_id, name in services.items %}
-          {% if service_id == id %}
-          <option value="{{ service_id }}" selected>{{ name }}</option>
+        {% for id, name in services.items %}
+          {% if id == service.id %}
+          <option value="{{ id }}" selected>{{ name }}</option>
           {% else %}
-          <option value="{{ service_id }}">{{ name }}</option>
+          <option value="{{ id }}">{{ name }}</option>
           {% endif %}
         {% endfor %}
       </select>
+    </div>
+    <div class="panel">
+      <h3 class="heading-medium">Projects</h3>
+      {% for id, name in projects.items %}
+      <ul id="projects">
+        <li>
+          <label class="label">
+            <input type="checkbox" id="{{ id }}" checked> {{ name }}
+          </label>
+        </li>
+      </ul>
+      {% endfor %}
+    </div>
+    <div class="panel">
+      <h3 class="heading-medium">Expenditure</h3>
+        <div class="grid-row">
+          <div id="fig-a"></div>
+        </div>
     </div>
 {% endblock %}
