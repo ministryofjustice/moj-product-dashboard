@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 from datetime import date, datetime, time
+from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 
 from django import forms
-from django.conf import settings
 from django.utils import timezone
 
+import xlrd
+
+from dashboard.libs.date_tools import get_workdays
+
+from .models import Person, Rate
 from .widgets import MonthYearWidget
 
 
@@ -30,3 +36,26 @@ class PayrollUploadForm(forms.Form, ConvertDateMixin):
     def month(self):
         return self.cleaned_data['date'].strftime('%Y-%m')
 
+    def process_upload(self):
+        start = self.cleaned_data['date']
+        workbook = xlrd.open_workbook(
+            file_contents=self.cleaned_data['payroll_file'].read())
+
+        worksheet = workbook.sheet_by_index(0)
+
+        headers = worksheet.row_values(1)
+        for row in range(2, worksheet.nrows):
+            row_data = worksheet.row_values(row)
+            if row_data[0]:
+                data = dict(zip(headers, row_data))
+                person = Person.objects.get(name__icontains=data.get('Surname'))
+                day_rate = Decimal(data['Total']) / get_workdays(
+                    start, start + relativedelta(day=31))
+
+                rate = Rate.objects.create(
+                    rate=day_rate,
+                    person=person,
+                    start_date=start,
+                )
+            else:
+                break
