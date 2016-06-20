@@ -79,7 +79,7 @@ class IsCurrentStaffFilter(admin.SimpleListFilter):
             return queryset
 
 
-class PersonAdmin(ReadOnlyAdmin):
+class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     inlines = [RateInline]
     ordering = ('name',)
     readonly_fields = ('avatar_tag', )
@@ -100,6 +100,53 @@ class PersonAdmin(ReadOnlyAdmin):
         else:
             return 'Civil Servant'
     contractor_civil_servant.short_description = 'Contractor | Civil Servant'
+
+    def get_urls(self):
+        urls = patterns(
+            '',
+            url(
+                r'^upload/$',
+                self.admin_site.admin_view(self.upoload_view),
+                name='person_upload_payroll'),
+        )
+        return urls + super(PersonAdmin, self).get_urls()
+
+    def has_upload_permission(self, request, obj=None):
+        return self.is_finance(request.user)
+
+    def get_model_perms(self, request):
+        perms = super(PersonAdmin, self).get_model_perms(request)
+        perms.update({
+            'upload': self.has_upload_permission(request),
+        })
+        return perms
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.upload_person',
+                                          raise_exception=True))
+    def upoload_view(self, request, *args, **kwargs):
+        if not self.has_upload_permission(request):
+            raise PermissionDenied
+
+        if request.method == 'POST':
+            form = PayrollUploadForm(data=request.POST, files=request.FILES)
+            if form.is_valid():
+                form.process_upload()
+                self.message_user(
+                    request,
+                    'Successfully uploaded %s payroll' % form.month)
+        else:
+            form = PayrollUploadForm()
+
+        return render_to_response(
+            'admin/prototype/upload.html',
+            {
+                'opts': self.model._meta,
+                'has_permission': self.has_upload_permission(request),
+                'form': form,
+            },
+            context_instance=RequestContext(request))
 
 
 class RateAdmin(FinancePermissions, admin.ModelAdmin):
@@ -131,7 +178,7 @@ class NoteInline(admin.TabularInline):
     extra = 0
 
 
-class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
+class ProjectAdmin(admin.ModelAdmin):
     fields = ['name', 'description', 'float_id', 'is_billable',
               'project_manager', 'client', 'discovery_date', 'alpha_date',
               'beta_date', 'live_date', 'end_date', 'visible']
@@ -140,57 +187,6 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     readonly_fields = ('name', 'description', 'float_id', 'is_billable',
                        'project_manager', 'client')
     search_fields = ('name', 'float_id')
-
-    def get_urls(self):
-        urls = patterns(
-            '',
-            url(
-                r'^(.+)/upload/$',
-                self.admin_site.admin_view(self.upoload_view),
-                name='project_upload_payroll'),
-        )
-        return urls + super(ProjectAdmin, self).get_urls()
-
-    def has_upload_permission(self, request, obj=None):
-        return self.is_finance(request.user)
-
-    def get_model_perms(self, request):
-        perms = super(ProjectAdmin, self).get_model_perms(request)
-        perms.update({
-            'upload': self.has_upload_permission(request),
-        })
-        return perms
-
-    @csrf_protect_m
-    @transaction.atomic
-    @method_decorator(permission_required('prototype.upload_project',
-                                          raise_exception=True))
-    def upoload_view(self, request, object_id, *args, **kwargs):
-        obj = self.get_object(request, object_id)
-        if not self.has_upload_permission(request, obj):
-            raise PermissionDenied
-
-        if request.method == 'POST':
-            form = PayrollUploadForm(data=request.POST, files=request.FILES)
-            if form.is_valid():
-                form.process_upload()
-                self.message_user(
-                    request,
-                    'Successfully uploaded %s payroll for %s' %
-                    (form.month, obj.name))
-        else:
-            form = PayrollUploadForm()
-
-        return render_to_response(
-            'admin/prototype/upload.html',
-            {
-                'opts': self.model._meta,
-                'has_permission': self.has_upload_permission(request, obj),
-                'original': obj,
-                'object_id': object_id,
-                'form': form,
-            },
-            context_instance=RequestContext(request))
 
 
 class TaskAdmin(ReadOnlyAdmin):

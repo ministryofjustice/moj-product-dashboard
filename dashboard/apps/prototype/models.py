@@ -37,6 +37,9 @@ class Person(models.Model):
 
     class Meta:
         verbose_name_plural = ugettext_lazy('People')
+        permissions = (
+            ('upload_person', 'Can upload monthly payroll'),
+        )
 
     def rate_between(self, start_date, end_date):
         """
