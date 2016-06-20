@@ -145,6 +145,29 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
+    def profile(self, project_ids=None,
+                start_date=None, end_date=None, freq='MS'):
+        """
+        get the profile of a service area in a time window with a frequency
+        :param project_ids: a list of project_ids, if the value is not
+        specified, get all projects.
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param freq: an offset aliases supported by pandas date_range
+        :return: a dictionary representing the profile
+        """
+        projects = self.projects.filter(visible=True)
+        if project_ids is not None:
+            projects = projects.filter(id__in=project_ids)
+        result = {
+            'name': self.name
+        }
+        result['projects'] = {
+            project.id: project.profile(start_date, end_date, freq)
+            for project in projects
+        }
+        return result
+
 
 class ProjectManager(models.Manager):
     use_for_related_fields = True

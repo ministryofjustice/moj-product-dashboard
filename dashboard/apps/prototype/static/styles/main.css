@@ -3,7 +3,7 @@ strong {
 }
 
 @media (min-width: 641px) {
-  select#projects {
+  select#projects, select#services {
     width: 450px;
   }
 }
