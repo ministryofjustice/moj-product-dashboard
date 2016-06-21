@@ -56,6 +56,11 @@ class PayrollUploadForm(forms.Form, ConvertDateMixin):
                         None,
                         'ERROR ROW %s: Person not found with Surname "%s"' %
                         (row, data.get('Surname')))
+                except Person.MultipleObjectsReturned:
+                    self.add_error(
+                        None,
+                        'ERROR ROW %s: Multiple people found with Surname "%s"' %
+                        (row, data.get('Surname')))
                 else:
                     day_rate = Decimal(data['Total']) / get_workdays(
                         start, start + relativedelta(day=31))
