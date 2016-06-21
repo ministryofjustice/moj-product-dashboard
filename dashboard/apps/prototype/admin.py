@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
+from django.core.checks import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import render_to_response
@@ -133,9 +134,14 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
             form = PayrollUploadForm(data=request.POST, files=request.FILES)
             if form.is_valid():
                 form.process_upload()
-                self.message_user(
-                    request,
-                    'Successfully uploaded %s payroll' % form.month)
+                if form.errors:
+                    level = messages.ERROR
+                    message = 'Errors uploading %s payroll' % form.month
+                else:
+                    level = messages.INFO
+                    message = 'Successfully uploaded %s payroll' % form.month
+
+                self.message_user(request, message, level=level)
         else:
             form = PayrollUploadForm()
 
