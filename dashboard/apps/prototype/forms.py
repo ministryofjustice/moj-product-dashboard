@@ -48,14 +48,22 @@ class PayrollUploadForm(forms.Form, ConvertDateMixin):
             row_data = worksheet.row_values(row)
             if row_data[0]:
                 data = dict(zip(headers, row_data))
-                person = Person.objects.get(name__icontains=data.get('Surname'))
-                day_rate = Decimal(data['Total']) / get_workdays(
-                    start, start + relativedelta(day=31))
+                try:
+                    person = Person.objects.get(
+                        name__icontains=data.get('Surname'))
+                except Person.DoesNotExist:
+                    self.add_error(
+                        None,
+                        'ERROR ROW %s: Person not found with Surname "%s"' %
+                        (row, data.get('Surname')))
+                else:
+                    day_rate = Decimal(data['Total']) / get_workdays(
+                        start, start + relativedelta(day=31))
 
-                rate = Rate.objects.create(
-                    rate=day_rate,
-                    person=person,
-                    start_date=start,
-                )
+                    rate = Rate.objects.create(
+                        rate=day_rate,
+                        person=person,
+                        start_date=start,
+                    )
             else:
                 break
