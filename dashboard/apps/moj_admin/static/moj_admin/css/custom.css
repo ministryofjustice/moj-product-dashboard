@@ -1,0 +1,235 @@
+#content {
+  margin: auto;
+  max-width: 1280px;
+  width: auto;
+  _width: 1280px;
+  min-height: 400px;
+}
+
+table {
+    width: 100%;
+}
+
+#global-header-bar .header-bar {
+    height: auto;
+    background-color: #005ea5;
+    color: #FFFFFF;
+}
+
+.header-bar {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.header-bar a {
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+#user-name {
+    font-weight: bold;
+
+}
+
+#user-links {
+
+    float: right;
+}
+
+.aligned label {
+    font-family: "nta", Arial, sans-serif;
+    font-size: 16px;
+}
+
+p {
+    font-family: "nta", Arial, sans-serif;
+    font-size: 16px;
+
+}
+
+ul {
+    text-align: left;
+}
+
+li {
+    text-align: left;
+    list-style-type: none;
+}
+
+.admin-sidebar-content {
+    padding-left: 0;
+}
+
+
+.admin-sidebar-content li a {
+    padding: 0;
+    margin-right: 20px;
+}
+
+.side-bar-heading {
+    font-weight: bold;
+}
+
+.breadcrumbs {
+    display: none;
+}
+
+table {
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    font-weight: normal;
+    width: 100%;
+}
+
+table th,
+table td {
+  font-family: "nta", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 400;
+  text-transform: none;
+  font-size-adjust: 0.5;
+  padding: 0.6315789474em 1.0526315789em 0.4736842105em 0;
+  text-align: left;
+  color: #0b0c0c;
+  border-bottom: 1px solid #bfc1c3;
+}
+
+.admin-content h1 {
+    margin-top: 36px;
+    font-size: 16px;
+}
+
+div.text {
+    padding: 0;
+    margin-left: 0;
+    width: 12px;
+
+}
+
+div#toolbar {
+    padding-left: 0;
+    margin-right: 0;
+}
+
+div.actions {
+    padding-left: 0;
+}
+
+#changelist .actions {
+    padding-left: 0;
+}
+
+#changelist #toolbar {
+    padding-left: 0;
+}
+
+
+
+input[type="submit"], #changelist #toolbar form input[type="submit"], ul.object-tools a, button.button, #changelist .actions .button {
+    background-color:  #00823b;
+    box-shadow: 0 2px 0 #003618;
+    cursor: pointer;
+    padding: 10px 15px 5px;
+    color: #FFFFFF;
+    border-style: none;
+    font-size: 16px;
+    border-radius: 0;
+
+}
+
+
+input[type="submit"]:hover, #changelist #toolbar form input[type="submit"]:hover, ul.object-tools a:hover, button.button:hover,
+#changelist .actions .button:hover, input[type="submit"]:focus, #changelist #toolbar form input[type="submit"]:focus,
+ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus {
+
+    background-color: #00752E; /* 5% darker than normal background colour */
+
+}
+
+#changelist .actions .button {
+    padding: 4px 8px;
+}
+
+.admin-wrapper {
+
+    width: 100%;
+    overflow: hidden;
+
+}
+
+.right-section {
+    float: left;
+    width: 80%;
+    margin-left: 5%;
+    margin-top: 36px;
+}
+
+.admin-wrapper .admin-sidebar-wrapper {
+
+    float: left;
+    width: 15%;
+    background-color: #F8F8F8;
+}
+
+.messagelist {
+    display: none;
+}
+
+#changelist table thead th {
+    padding-left: 5px;
+}
+
+table th, table td {
+    padding-left: 5px;
+}
+
+div#recent-actions-module {
+    display: none;
+}
+
+.admin-sidebar-content ul {
+    padding-left: 30px;
+}
+
+ul.object-tools li {
+    margin-right: 10px;
+}
+
+ul.object-tools {
+    float: right;
+    /*width: 100px;*/
+}
+
+div#changelist-filter {
+    margin-top: 60px;
+}
+
+#changelist table {
+    width: auto;
+}
+
+#changelist table thead th {
+    overflow: hidden;
+
+}
+
+.filtered #toolbar {
+    margin-right: 0;
+}
+
+table#result_list thead th {
+    /*margin-bottom: 40px;*/
+    /*line-height: 2em;*/
+    min-height: 40px;
+}
+
+
