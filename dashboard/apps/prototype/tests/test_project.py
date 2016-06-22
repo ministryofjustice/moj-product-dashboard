@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
 from model_mommy import mommy
 
-from dashboard.libs.date_tools import parse_date
-from dashboard.apps.prototype.models import Project, Task, Person, Rate, Cost
-from prototype.constants import COST_TYPES
+from dashboard.libs.date_tools import parse_date, get_workdays
+from dashboard.apps.prototype.models import (
+    Project, Task, Person, Rate, Cost, RAG, Budget)
+from prototype.constants import COST_TYPES, RAG_TYPES
 
 
 task_time_ranges = [
@@ -77,16 +78,44 @@ def test_project_without_tasks():
     assert 'name' in profile
     assert 'description' in profile
     assert profile['financial'] == {}
+    assert project.team_size() == 0
+    assert project.time_spent() == 0
+    assert project.cost_to_date == 0
 
 
 @pytest.mark.django_db
-def test_project_profiles():
+def test_project_profiles_without_frequency():
     profile = make_project().profile()
-    financial = {'contractor': contractor_rate * man_days,
-                 'non-contractor': non_contractor_rate * man_days,
-                 'additional': Decimal('0'),
-                 'budget': Decimal('0')}
-    assert profile['financial'] == {'2016-01': financial}
+    financial = {
+        'contractor': contractor_rate * man_days,
+        'non-contractor': non_contractor_rate * man_days,
+        'additional': Decimal('0'),
+        'budget': Decimal('0')
+    }
+    key = '2016-01-01~2016-01-20'
+    assert profile['financial'] == {key: financial}
+
+
+@pytest.mark.django_db
+def test_project_profiles_with_frequency():
+    profile = make_project().profile(freq='W')  # weekly
+    financial = {
+        'contractor': contractor_rate * man_days,
+        'non-contractor': non_contractor_rate * man_days,
+        'additional': Decimal('0'),
+        'budget': Decimal('0')
+    }
+    keys = [
+        '2016-01-01~2016-01-02',
+        '2016-01-03~2016-01-09',
+        '2016-01-10~2016-01-16',
+        '2016-01-17~2016-01-20',
+    ]
+    assert sorted(list(profile['financial'].keys())) == keys
+
+    for key in ['contractor', 'non-contractor', 'additional']:
+        expected = financial[key]
+        assert sum(v[key] for v in profile['financial'].values()) == expected
 
 
 @pytest.mark.django_db
@@ -174,3 +203,92 @@ def test_project_visible():
     mommy.make(Project, visible=True)
 
     assert Project.objects.visible().count() == 1
+
+
+@pytest.mark.django_db
+def test_project_time_spent_for_project_with_tasks():
+    project = make_project()
+    assert project.time_spent() == 8  # no start_date nor end_date
+    assert project.time_spent(start_date=start_date) == 8  # no end_date
+    assert project.time_spent(end_date=end_date) == 8  # no end_date
+    assert project.time_spent(
+        start_date=start_date,
+        end_date=end_date) == 8  # with both start_date and end_date
+
+
+@pytest.mark.django_db
+def test_project_team_size():
+    project = make_project()
+    assert project.team_size() == 0  # no work has been done in the last week
+    time_spent = project.time_spent()
+    workdays = get_workdays(start_date, end_date)
+    assert project.team_size(start_date, end_date) == time_spent / workdays
+
+
+@pytest.mark.django_db
+def test_project_rag():
+    project = make_project()
+    assert project.rag() is None
+
+    today = date.today()
+    date_1 = today - timedelta(days=100)
+    date_2 = today - timedelta(days=50)
+    date_3 = today + timedelta(days=50)
+    rag1 = mommy.make(
+        RAG, project=project, rag=RAG_TYPES.GREEN, start_date=date_1)
+    rag2 = mommy.make(
+        RAG, project=project, rag=RAG_TYPES.AMBER, start_date=date_2)
+    rag3 = mommy.make(
+        RAG, project=project, rag=RAG_TYPES.RED, start_date=date_3)
+
+    assert project.rag(on=date_1) == rag1
+    assert project.rag(on=date_1 + timedelta(days=25)) == rag1
+    assert project.rag(on=date_2) == rag2
+    assert project.rag() == rag2
+    assert project.rag(on=today) == rag2
+    assert project.rag(on=today - timedelta(days=25)) == rag2
+    assert project.rag(on=today + timedelta(days=25)) == rag2
+    assert project.rag(on=today + timedelta(days=75)) == rag3
+
+
+@pytest.mark.django_db
+def test_project_budget():
+    project = make_project()
+    assert project.budget() == 0
+
+    today = date.today()
+    date_1 = today - timedelta(days=100)
+    date_2 = today - timedelta(days=50)
+    date_3 = today + timedelta(days=50)
+    budget1 = mommy.make(
+        Budget, project=project, budget=1000, start_date=date_1)
+    budget2 = mommy.make(
+        Budget, project=project, budget=1500, start_date=date_2)
+    budget3 = mommy.make(
+        Budget, project=project, budget=2000, start_date=date_3)
+
+    assert project.budget(on=date_1) == budget1.budget
+    assert project.budget(on=date_1 + timedelta(days=25)) == budget1.budget
+    assert project.budget(on=date_2) == budget2.budget
+    assert project.budget() == budget2.budget
+    assert project.budget(on=today) == budget2.budget
+    assert project.budget(on=today - timedelta(days=25)) == budget2.budget
+    assert project.budget(on=today + timedelta(days=25)) == budget2.budget
+    assert project.budget(on=today + timedelta(days=75)) == budget3.budget
+
+
+@pytest.mark.django_db
+def test_project_cost_to_date():
+    project = make_project()
+    cost = Decimal('50')
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=start_date + timedelta(days=1),
+        type=COST_TYPES.ONE_OFF,
+        cost=cost
+    )
+
+    expected = (
+        contractor_rate * man_days + non_contractor_rate * man_days + cost)
+    assert project.cost_to_date == expected

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta
+from datetime import timedelta, date
 from decimal import Decimal
 from dateutil.rrule import MONTHLY, YEARLY
 
@@ -145,15 +145,17 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
-    def profile(self, project_ids=None,
-                start_date=None, end_date=None, freq='MS'):
+    def profile(self, project_ids=None, start_date=None, end_date=None,
+                freq=None):
         """
-        get the profile of a service area in a time window with a frequency
+        get the profile of a service area in a time window.
         :param project_ids: a list of project_ids, if the value is not
         specified, get all projects.
         :param start_date: start date of time window, a date object
         :param end_date: end date of time window, a date object
-        :param freq: an offset aliases supported by pandas date_range
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
         projects = self.projects.filter(visible=True)
@@ -202,7 +204,18 @@ class Project(models.Model):
     def last_task(self):
         return self.tasks.order_by('-end_date').first()
 
-    def profile(self, start_date=None, end_date=None, freq='MS'):
+    def profile(self, start_date=None, end_date=None, freq=None):
+        """
+        get the profile of a project in a time window.
+        :param project_ids: a list of project_ids, if the value is not
+        specified, get all projects.
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :return: a dictionary representing the profile
+        """
         result = {
             'name': self.name,
             'description': self.description,
@@ -219,9 +232,16 @@ class Project(models.Model):
                 end_date = self.last_task.end_date
         except AttributeError:  # when there is no task in a project
             return result
-        time_windows = slice_time_window(start_date, end_date, freq)
+        if freq:
+            time_windows = slice_time_window(start_date, end_date, freq)
+        else:
+            time_windows = [(start_date, end_date)]
         for sdate, edate in time_windows:
-            key = sdate.strftime('%Y-%m')
+            # use '{sdate}~{edate}' as the dictionary key.
+            # this is perhaps not the best way to do it.
+            # leave it open to change when a better way emerges.
+            key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
+                                 edate.strftime('%Y-%m-%d'))
             contractor_cost = self.people_costs(
                 sdate, edate, contractor_only=True)
             non_contractor_cost = self.people_costs(
@@ -233,7 +253,6 @@ class Project(models.Model):
                 'additional': additional_costs,
                 'budget': self.budget(sdate),
             }
-
         return result
 
     def __str__(self):
@@ -273,10 +292,76 @@ class Project(models.Model):
             start_date__lte=end_date
         ))) or Decimal('0')
 
-    def budget(self, on):
+    @property
+    def cost_to_date(self):
+        """
+        cost of the project from the start to today
+        """
+        if not self.first_task:
+            return 0
+        profile = self.profile(self.first_task.start_date, date.today())
+        financial = list(profile['financial'].values())[0]
+        return sum(financial[item] for item in
+                   ['contractor', 'non-contractor', 'additional'])
+
+    def budget(self, on=None):
+        """
+        get the budget for the project on a date
+        :param on: optional date object. if empty use today's date
+        :return: a decimal for the budget
+        """
+        if not on:
+            on = date.today()
         budget = self.budgets.filter(start_date__lte=on)\
             .order_by('-start_date').first()
         return budget.budget if budget else Decimal('0')
+
+    def rag(self, on=None):
+        """
+        get the rag for the project on a date
+        :param on: optional date object. if empty use today's date
+        :return: a rag object
+        """
+        if not on:
+            on = date.today()
+        rag = self.rags.filter(start_date__lte=on)\
+            .order_by('-start_date').first()
+        return rag
+
+    def time_spent(self, start_date=None, end_date=None):
+        """
+        get the days spent on the project during a time window.
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: number of days, a decimal
+        """
+        try:
+            if not start_date:
+                start_date = self.first_task.start_date
+            if not end_date:
+                end_date = self.last_task.end_date
+        except AttributeError:  # when there is no task in a project
+            return 0
+
+        return sum(task.time_spent(start_date, end_date)
+                   for task in self.tasks.all())
+
+    def team_size(self, start_date=None, end_date=None):
+        """
+        team size measures the number of people working on the project.
+        it is the total man-days / num of workday from a start date to
+        an end date.
+        :param start_date: date object for the start date.
+        if not specified, use the date 8 days ago from today.
+        :param end_date: date object for the end date.
+        if not specified, use the date of yesterday.
+        """
+        if not end_date:
+            end_date = date.today() - timedelta(days=1)
+        if not start_date:
+            start_date = end_date - timedelta(days=7)
+        workdays = get_workdays(start_date, end_date)
+        return self.time_spent(start_date, end_date) / workdays
 
 
 class Cost(models.Model):

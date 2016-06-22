@@ -59,6 +59,8 @@ class ServiceGraph {
   }
 
   plot(projectIds) {
+    if (this.div === null)
+      return;
     const financial = getServiceFinancials(this.props, projectIds);
     const name = this.props.name;
     plotProject({financial, name}, this.div);
