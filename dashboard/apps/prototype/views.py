@@ -54,7 +54,8 @@ def project_json(request):
     except (ValueError, Project.DoesNotExist):
         error = 'cannot find project with id={}'.format(request_data['id'])
         return JsonResponse({'error': error}, status=404)
-    return JsonResponse(project.profile())
+    # get the profile of the project for each month throughout the life span
+    return JsonResponse(project.profile(freq='MS'))
 
 
 @login_required
@@ -66,8 +67,7 @@ def service_html(request, id):
         return HttpResponseNotFound(
             'cannot find service with id={}'.format(id))
     services = {c.id: c.name for c in Client.objects.all()}
-    projects = {p.id: p.name for p in service.projects.all()}
-    context = {'services': services, 'service': service, 'projects': projects}
+    context = {'services': services, 'service': service}
     return render(request, 'service.html', context=context)
 
 
@@ -80,4 +80,5 @@ def service_json(request):
         error = 'cannot find service area with id={}'.format(
             request_data['id'])
         return JsonResponse({'error': error}, status=404)
-    return JsonResponse(client.profile())
+    # get the profile of the service for each month
+    return JsonResponse(client.profile(freq='MS'))

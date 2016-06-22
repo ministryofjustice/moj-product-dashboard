@@ -1,6 +1,7 @@
 {% extends 'common.html' %}
 
 {% load staticfiles %}
+{% load humanize %}
 
 {% block main %}
     <div class="column-one-quarter">
@@ -19,20 +20,27 @@
     </div>
     <div class="panel">
       <h3 class="heading-medium">Projects</h3>
-      {% for id, name in projects.items %}
-      <ul id="projects">
-        <li>
-          <label class="label">
-            <input type="checkbox" id="{{ id }}" checked> {{ name }}
-          </label>
-        </li>
-      </ul>
-      {% endfor %}
-    </div>
-    <div class="panel">
-      <h3 class="heading-medium">Expenditure</h3>
-        <div class="grid-row">
-          <div id="fig-a"></div>
-        </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Project name</th>
+            <th>RAG</th>
+            <th>Team size</th>
+            <th>Cost to date</th>
+            <th>Budget</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in service.projects.all %}
+          <tr>
+            <td><a href="{% url 'project' project.id %}">{{ project.name }}</a></td>
+            <td>{{ project.rag.get_rag_display }}</td>
+            <td>{{ project.team_size|floatformat:"1" }}</td>
+            <td>£{{ project.cost_to_date|floatformat:"0"|intcomma }}</td>
+            <td>£{{ project.budget|floatformat:"0"|intcomma }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 {% endblock %}
