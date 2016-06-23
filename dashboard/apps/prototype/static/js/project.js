@@ -31,6 +31,8 @@ export function parseProjectFinancials(financial) {
   const mapFloat = key => costs.map(c => parseFloat(c[key]));
   const contractorCosts = mapFloat('contractor');
   const civilServantCosts = mapFloat('non-contractor');
+  const staffCosts = contractorCosts
+    .map((cost, index) => cost + civilServantCosts[index]);
   const additionalCosts = mapFloat('additional');
   const budget = mapFloat('budget');
 
@@ -48,6 +50,7 @@ export function parseProjectFinancials(financial) {
     budget,
     civilServantCosts,
     contractorCosts,
+    staffCosts,
     additionalCosts,
     totalCostsCumulative
   };
@@ -63,33 +66,23 @@ export function plotProject(project, elem) {
 
   // NOTE: those lines for ie9 is related to this issue
   // https://github.com/plotly/plotly.js/issues/166
-  const civilServiceTrace = {
+  const staffTrace = {
     x: months,
-    y: financial.civilServantCosts,
-    name: 'Civil Servant',
+    y: financial.staffCosts,
+    name: 'Staff',
     type: 'bar',
     marker: {
       color: '#c0c2dc',
       line: {width: 0}  // for ie9 only
     }
   };
-  const contractorTrace = {
-    x: months,
-    y: financial.contractorCosts,
-    name: 'Contractor',
-    type: 'bar',
-    marker: {
-      color: '#b5d8df',
-      line: {width: 0}  // for ie9 only
-    }
-  };
   const additionalTrace = {
     x: months,
     y: financial.additionalCosts,
-    name: 'additional',
+    name: 'Additional',
     type: 'bar',
     marker: {
-      color: '#E7DCD3',
+      color: '#b5d8df',
       line: {width: 0}  // for ie9 only
     }
   };
@@ -137,8 +130,7 @@ export function plotProject(project, elem) {
     }
   };
   const data = [
-    civilServiceTrace,
-    contractorTrace,
+    staffTrace,
     additionalTrace,
     totalCostTrace,
     budgetTrace
