@@ -90,7 +90,7 @@ class PayrollUploadForm(forms.Form, ConvertDateMixin):
 
         return payroll
 
-    def process_upload(self):
+    def save(self):
         for pay in self.cleaned_data['payroll_file']:
             created, rate = Rate.objects.get_or_create(
                 person=pay['person'],
@@ -100,4 +100,3 @@ class PayrollUploadForm(forms.Form, ConvertDateMixin):
             if not created:
                 rate.rate = pay['rate']
                 rate.save()
-

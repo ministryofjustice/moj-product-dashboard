@@ -133,15 +133,14 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         if request.method == 'POST':
             form = PayrollUploadForm(data=request.POST, files=request.FILES)
             if form.is_valid():
-                form.process_upload()
-                if form.errors:
-                    level = messages.ERROR
-                    message = 'Errors uploading %s payroll' % form.month
-                else:
-                    level = messages.INFO
-                    message = 'Successfully uploaded %s payroll' % form.month
+                form.save()
+                level = messages.INFO
+                message = 'Successfully uploaded %s payroll' % form.month
+            else:
+                level = messages.ERROR
+                message = 'Errors uploading %s payroll' % form.month
 
-                self.message_user(request, message, level=level)
+            self.message_user(request, message, level=level)
         else:
             form = PayrollUploadForm()
 
