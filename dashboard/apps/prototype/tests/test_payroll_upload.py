@@ -22,7 +22,9 @@ def test_upload_form():
     fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
     form = PayrollUploadForm(
         data={'date': datetime(2016, 1, 1)},
-        files=MultiValueDict({'payroll_file': [SimpleUploadedFile(fb.name, fb.read())]}),
+        files=MultiValueDict(
+            {'payroll_file': [SimpleUploadedFile(fb.name, fb.read())]}
+        ),
     )
 
     assert form.is_valid() is True
