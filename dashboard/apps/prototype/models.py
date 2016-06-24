@@ -12,6 +12,7 @@ from dashboard.libs.date_tools import (
     get_workdays, get_overlap, slice_time_window, dates_between)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
+from dashboard.libs.cache import method_cache
 
 from .constants import RAG_TYPES, COST_TYPES
 
@@ -204,6 +205,20 @@ class Project(models.Model):
     def last_task(self):
         return self.tasks.order_by('-end_date').first()
 
+    def spendings_between(self, start_date, end_date):
+        contractor_cost = self.people_costs(
+            start_date, end_date, contractor_only=True)
+        non_contractor_cost = self.people_costs(
+            start_date, end_date, non_contractor_only=True)
+        additional_costs = self.additional_costs(start_date, end_date)
+        value = {
+            'contractor': contractor_cost,
+            'non-contractor': non_contractor_cost,
+            'additional': additional_costs,
+            'budget': self.budget(start_date),
+        }
+        return value
+
     def profile(self, start_date=None, end_date=None, freq=None):
         """
         get the profile of a project in a time window.
@@ -242,22 +257,13 @@ class Project(models.Model):
             # leave it open to change when a better way emerges.
             key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
                                  edate.strftime('%Y-%m-%d'))
-            contractor_cost = self.people_costs(
-                sdate, edate, contractor_only=True)
-            non_contractor_cost = self.people_costs(
-                sdate, edate, non_contractor_only=True)
-            additional_costs = self.additional_costs(sdate, edate)
-            result['financial'][key] = {
-                'contractor': contractor_cost,
-                'non-contractor': non_contractor_cost,
-                'additional': additional_costs,
-                'budget': self.budget(sdate),
-            }
+            result['financial'][key] = self.spendings_between(sdate, edate)
         return result
 
     def __str__(self):
         return self.name
 
+    @method_cache(timeout=None)  # cache until manually dropped
     def people_costs(self, start_date, end_date, contractor_only=False,
                      non_contractor_only=False):
         """
@@ -272,13 +278,12 @@ class Project(models.Model):
         if contractor_only and non_contractor_only:
             raise ValueError('only one of contractor_only and'
                              ' non_contractor_only can be true')
-        tasks = self.tasks
         if contractor_only:
-            tasks = tasks.filter(person__is_contractor=True)
+            tasks = self.tasks.filter(person__is_contractor=True)
         elif non_contractor_only:
-            tasks = tasks.filter(person__is_contractor=False)
+            tasks = self.tasks.filter(person__is_contractor=False)
         else:
-            tasks = tasks.all()
+            tasks = self.tasks.all()
         spending_per_task = [task.people_costs(start_date, end_date)
                              for task in tasks]
         return sum(spending_per_task)
