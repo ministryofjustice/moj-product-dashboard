@@ -12,7 +12,7 @@ from dashboard.libs.date_tools import (
     get_workdays, get_overlap, slice_time_window, dates_between)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
-from dashboard.libs.cache import method_cache
+from dashboard.libs.cache_tools import method_cache
 
 from .constants import RAG_TYPES, COST_TYPES
 
