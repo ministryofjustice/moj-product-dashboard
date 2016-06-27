@@ -6,9 +6,9 @@ from django.test import TestCase, mock
 
 from model_mommy import mommy
 
-from ..admin import (RateAdmin, Person, RateInline, ClientAdmin, ProjectAdmin,
-                     TaskAdmin)
-from ..models import Rate, Client, Project, Task
+from ..admin import (RateAdmin, RateInline, ClientAdmin, ProjectAdmin,
+                     TaskAdmin, PersonAdmin)
+from ..models import Rate, Client, Project, Task, Person
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -87,3 +87,15 @@ class TaskTimeSpentTestCase(TestCase):
     def test_read_only_fields(self):
         self.assertFieldsReadOnly(self.finance_admin, ClientAdmin, Client)
         self.assertFieldsReadOnly(self.finance_admin, TaskAdmin, Task)
+
+    def test_upload_permission(self):
+        mock_request = mock.Mock(user=self.finance_admin)
+        model_admin = PersonAdmin(Person, admin.site)
+        can_upload = model_admin.has_upload_permission(mock_request)
+        self.assertTrue(can_upload)
+        self.assertDictEqual(model_admin.get_model_perms(mock_request), {
+            'add': False, 'change': True, 'delete': False, 'upload': True})
+
+        mock_request = mock.Mock(user=self.super_user)
+        can_upload = model_admin.has_upload_permission(mock_request)
+        self.assertFalse(can_upload)

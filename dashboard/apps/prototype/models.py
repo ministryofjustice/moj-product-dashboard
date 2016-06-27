@@ -38,6 +38,9 @@ class Person(models.Model):
 
     class Meta:
         verbose_name_plural = ugettext_lazy('People')
+        permissions = (
+            ('upload_person', 'Can upload monthly payroll'),
+        )
 
     def rate_between(self, start_date, end_date):
         """
@@ -367,6 +370,11 @@ class Project(models.Model):
             start_date = end_date - timedelta(days=7)
         workdays = get_workdays(start_date, end_date)
         return self.time_spent(start_date, end_date) / workdays
+
+    class Meta:
+        permissions = (
+            ('upload_project', 'Can upload monthly payroll'),
+        )
 
 
 class Cost(models.Model):
