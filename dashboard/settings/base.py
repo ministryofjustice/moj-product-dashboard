@@ -169,7 +169,15 @@ if 'SENTRY_DSN' in os.environ:
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/django_cache',
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000
+        }
+    }
+}
 # .local.py overrides all the common settings.
 try:
     from .local import *
