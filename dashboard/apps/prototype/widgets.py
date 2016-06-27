@@ -28,7 +28,7 @@ class MonthYearWidget(Widget):
         self.required = required
         if years:
             self.years = years
-        else:
+        else:  # pragma: no cover
             this_year = datetime.date.today().year
             self.years = range(this_year, this_year+10)
 
@@ -44,7 +44,7 @@ class MonthYearWidget(Widget):
 
         output = []
 
-        if 'id' in self.attrs:
+        if 'id' in self.attrs:  # pragma: no cover
             id_ = self.attrs['id']
         else:
             id_ = 'id_%s' % name
@@ -76,9 +76,9 @@ class MonthYearWidget(Widget):
     def value_from_datadict(self, data, files, name):
         y = data.get(self.year_field % name)
         m = data.get(self.month_field % name)
-        if y == m == "0":
+        if y == m == "0":  # pragma: no cover
             return None
-        if y and m:
+        if y and m:  # pragma: no cover
             return datetime.date(int(y), int(m), 1).strftime(
                 settings.DATE_INPUT_FORMATS[0])
         return data.get(name, None)
