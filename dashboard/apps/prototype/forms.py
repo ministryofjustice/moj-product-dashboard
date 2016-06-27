@@ -19,14 +19,7 @@ def year_range(backward=0, forward=10):
     return range(this_year-backward, this_year+forward)
 
 
-class ConvertDateMixin(object):
-    def _convert_date(self, d):
-        d = datetime.combine(d, time(hour=0, minute=0))
-        d = timezone.make_aware(d, timezone.get_current_timezone())
-        return d
-
-
-class PayrollUploadForm(forms.Form, ConvertDateMixin):
+class PayrollUploadForm(forms.Form):
     date = forms.DateField(required=True, widget=MonthYearWidget(
         years=year_range(backward=4, forward=3)
     ))
