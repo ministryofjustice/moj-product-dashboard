@@ -14,10 +14,11 @@ from ..models import Person
 
 
 @pytest.mark.django_db
-def test_upload_form():
-    p1 = mommy.make(Person, name='A Surname1', is_contractor=False)
+def test_valid_upload_form():
+    p1 = mommy.make(Person, name='X Surname1', is_contractor=False)
     p2 = mommy.make(Person, name='B Surname2', is_contractor=False)
     p3 = mommy.make(Person, name='C Surname3', is_contractor=False)
+    mommy.make(Person, name='C Surname3', is_contractor=True)
 
     fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
     form = PayrollUploadForm(
@@ -38,3 +39,7 @@ def test_upload_form():
                                                  {'person': p3,
                                                   'rate': Decimal('0.2'),
                                                   'start': date(2016, 1, 1)}]
+    assert form.errors == {}
+    assert form.month == '2016-01'
+    assert form.save() is None
+    assert form.save() is None
