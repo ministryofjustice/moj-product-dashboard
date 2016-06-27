@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime, time
+from datetime import date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
 from django import forms
-from django.utils import timezone
 
 import xlrd
 
