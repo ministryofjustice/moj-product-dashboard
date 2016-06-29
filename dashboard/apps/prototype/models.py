@@ -12,6 +12,7 @@ from dashboard.libs.date_tools import (
     get_workdays, get_overlap, slice_time_window, dates_between)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
+from dashboard.libs.cache_tools import method_cache
 
 from .constants import RAG_TYPES, COST_TYPES
 
@@ -37,6 +38,9 @@ class Person(models.Model):
 
     class Meta:
         verbose_name_plural = ugettext_lazy('People')
+        permissions = (
+            ('upload_person', 'Can upload monthly payroll'),
+        )
 
     def rate_between(self, start_date, end_date):
         """
@@ -162,6 +166,7 @@ class Client(models.Model):
         if project_ids is not None:
             projects = projects.filter(id__in=project_ids)
         result = {
+            'id': self.id,
             'name': self.name
         }
         result['projects'] = {
@@ -204,6 +209,20 @@ class Project(models.Model):
     def last_task(self):
         return self.tasks.order_by('-end_date').first()
 
+    def spendings_between(self, start_date, end_date):
+        contractor_cost = self.people_costs(
+            start_date, end_date, contractor_only=True)
+        non_contractor_cost = self.people_costs(
+            start_date, end_date, non_contractor_only=True)
+        additional_costs = self.additional_costs(start_date, end_date)
+        value = {
+            'contractor': contractor_cost,
+            'non-contractor': non_contractor_cost,
+            'additional': additional_costs,
+            'budget': self.budget(start_date),
+        }
+        return value
+
     def profile(self, start_date=None, end_date=None, freq=None):
         """
         get the profile of a project in a time window.
@@ -216,14 +235,21 @@ class Project(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
+        rag = self.rag()
+        rag = rag.get_rag_display() if rag else ''
         result = {
+            'id': self.id,
             'name': self.name,
             'description': self.description,
             'alpha_date': self.alpha_date,
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
-            'financial': {}
+            'rag': rag,
+            'budget': self.budget(),
+            'team_size': self.team_size(start_date, end_date),
+            'cost_to_date': self.cost_to_date,
+            'financial': {},
         }
         try:
             if not start_date:
@@ -242,22 +268,13 @@ class Project(models.Model):
             # leave it open to change when a better way emerges.
             key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
                                  edate.strftime('%Y-%m-%d'))
-            contractor_cost = self.people_costs(
-                sdate, edate, contractor_only=True)
-            non_contractor_cost = self.people_costs(
-                sdate, edate, non_contractor_only=True)
-            additional_costs = self.additional_costs(sdate, edate)
-            result['financial'][key] = {
-                'contractor': contractor_cost,
-                'non-contractor': non_contractor_cost,
-                'additional': additional_costs,
-                'budget': self.budget(sdate),
-            }
+            result['financial'][key] = self.spendings_between(sdate, edate)
         return result
 
     def __str__(self):
         return self.name
 
+    @method_cache(timeout=None)  # cache until manually dropped
     def people_costs(self, start_date, end_date, contractor_only=False,
                      non_contractor_only=False):
         """
@@ -272,13 +289,12 @@ class Project(models.Model):
         if contractor_only and non_contractor_only:
             raise ValueError('only one of contractor_only and'
                              ' non_contractor_only can be true')
-        tasks = self.tasks
         if contractor_only:
-            tasks = tasks.filter(person__is_contractor=True)
+            tasks = self.tasks.filter(person__is_contractor=True)
         elif non_contractor_only:
-            tasks = tasks.filter(person__is_contractor=False)
+            tasks = self.tasks.filter(person__is_contractor=False)
         else:
-            tasks = tasks.all()
+            tasks = self.tasks.all()
         spending_per_task = [task.people_costs(start_date, end_date)
                              for task in tasks]
         return sum(spending_per_task)
@@ -299,9 +315,9 @@ class Project(models.Model):
         """
         if not self.first_task:
             return 0
-        profile = self.profile(self.first_task.start_date, date.today())
-        financial = list(profile['financial'].values())[0]
-        return sum(financial[item] for item in
+        spendings = self.spendings_between(
+            self.first_task.start_date, date.today())
+        return sum(spendings[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
     def budget(self, on=None):
@@ -362,6 +378,11 @@ class Project(models.Model):
             start_date = end_date - timedelta(days=7)
         workdays = get_workdays(start_date, end_date)
         return self.time_spent(start_date, end_date) / workdays
+
+    class Meta:
+        permissions = (
+            ('upload_project', 'Can upload monthly payroll'),
+        )
 
 
 class Cost(models.Model):

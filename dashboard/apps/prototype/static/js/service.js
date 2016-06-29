@@ -1,4 +1,7 @@
 import 'whatwg-fetch';
+import React, { Component } from 'react';
+
+import { ProjectsTable } from './project';
 
 
 /**
@@ -43,4 +46,30 @@ export function getServiceFinancials(serviceData, projectIds) {
     };
   };
   return result;
+}
+
+/**
+ * React component for a service
+ */
+export class ServiceContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {projects: []};
+  }
+
+  componentDidMount() {
+    getServiceData(this.props.id, this.props.csrftoken)
+      .then(serviceData => {
+        const projects = Object
+          .keys(serviceData.projects)
+          .map(id => serviceData.projects[id]);
+        this.setState({projects: projects});
+      });
+  }
+
+  render() {
+    return (
+      <ProjectsTable projects={this.state.projects} />
+    );
+  }
 }

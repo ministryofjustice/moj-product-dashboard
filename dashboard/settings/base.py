@@ -59,7 +59,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'dashboard.apps.moj_admin.MIddleWareIntercept.InterCept'
+    
 ]
 
 ROOT_URLCONF = 'dashboard.urls'
@@ -169,7 +169,15 @@ if 'SENTRY_DSN' in os.environ:
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/django_cache',
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000
+        }
+    }
+}
 # .local.py overrides all the common settings.
 try:
     from .local import *

@@ -1,5 +1,15 @@
+from django.conf.urls import patterns, url
 from django.contrib import admin
+from django.contrib.auth.admin import csrf_protect_m
+from django.contrib.auth.decorators import permission_required
+from django.core.checks import messages
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.utils.decorators import method_decorator
 
+from .forms import PayrollUploadForm
 from .models import (Person, Rate, Client, Project, Task, Cost, Budget, RAG,
                      Note)
 from .permissions import ReadOnlyPermissions, FinancePermissions
@@ -70,7 +80,7 @@ class IsCurrentStaffFilter(admin.SimpleListFilter):
             return queryset
 
 
-class PersonAdmin(ReadOnlyAdmin):
+class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     inlines = [RateInline]
     ordering = ('name',)
     readonly_fields = ('avatar_tag', )
@@ -91,6 +101,57 @@ class PersonAdmin(ReadOnlyAdmin):
         else:
             return 'Civil Servant'
     contractor_civil_servant.short_description = 'Contractor | Civil Servant'
+
+    def get_urls(self):
+        urls = patterns(
+            '',
+            url(
+                r'^upload/$',
+                self.admin_site.admin_view(self.upoload_view),
+                name='person_upload_payroll'),
+        )
+        return urls + super(PersonAdmin, self).get_urls()
+
+    def has_upload_permission(self, request, obj=None):
+        return self.is_finance(request.user)
+
+    def get_model_perms(self, request):
+        perms = super(PersonAdmin, self).get_model_perms(request)
+        perms.update({
+            'upload': self.has_upload_permission(request),
+        })
+        return perms
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.upload_person',
+                                          raise_exception=True))
+    def upoload_view(self, request, *args, **kwargs):
+        if not self.has_upload_permission(request):
+            raise PermissionDenied
+
+        if request.method == 'POST':
+            form = PayrollUploadForm(data=request.POST, files=request.FILES)
+            if form.is_valid():
+                form.save()
+                level = messages.INFO
+                message = 'Successfully uploaded %s payroll' % form.month
+            else:
+                level = messages.ERROR
+                message = 'Errors uploading %s payroll' % form.month
+
+            self.message_user(request, message, level=level)
+        else:
+            form = PayrollUploadForm()
+
+        return render_to_response(
+            'admin/prototype/upload.html',
+            {
+                'opts': self.model._meta,
+                'has_permission': self.has_upload_permission(request),
+                'form': form,
+            },
+            context_instance=RequestContext(request))
 
 
 class RateAdmin(FinancePermissions, admin.ModelAdmin):
