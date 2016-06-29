@@ -166,6 +166,7 @@ class Client(models.Model):
         if project_ids is not None:
             projects = projects.filter(id__in=project_ids)
         result = {
+            'id': self.id,
             'name': self.name
         }
         result['projects'] = {
@@ -234,14 +235,21 @@ class Project(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
+        rag = self.rag()
+        rag = rag.get_rag_display() if rag else ''
         result = {
+            'id': self.id,
             'name': self.name,
             'description': self.description,
             'alpha_date': self.alpha_date,
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
-            'financial': {}
+            'rag': rag,
+            'budget': self.budget(),
+            'team_size': self.team_size(start_date, end_date),
+            'cost_to_date': self.cost_to_date,
+            'financial': {},
         }
         try:
             if not start_date:
@@ -307,9 +315,9 @@ class Project(models.Model):
         """
         if not self.first_task:
             return 0
-        profile = self.profile(self.first_task.start_date, date.today())
-        financial = list(profile['financial'].values())[0]
-        return sum(financial[item] for item in
+        spendings = self.spendings_between(
+            self.first_task.start_date, date.today())
+        return sum(spendings[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
     def budget(self, on=None):

@@ -18,29 +18,5 @@
         {% endfor %}
       </select>
     </div>
-    <div class="panel">
-      <h3 class="heading-medium">Projects</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Project name</th>
-            <th>RAG</th>
-            <th>Team size</th>
-            <th>Cost to date</th>
-            <th>Budget</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for project in service.projects.all %}
-          <tr>
-            <td><a href="{% url 'project' project.id %}">{{ project.name }}</a></td>
-            <td>{{ project.rag.get_rag_display }}</td>
-            <td>{{ project.team_size|floatformat:"1" }}</td>
-            <td>£{{ project.cost_to_date|floatformat:"0"|intcomma }}</td>
-            <td>£{{ project.budget|floatformat:"0"|intcomma }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <div class="panel" id="projects"/>
 {% endblock %}
