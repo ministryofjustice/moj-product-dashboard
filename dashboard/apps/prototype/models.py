@@ -237,9 +237,17 @@ class Project(models.Model):
         """
         rag = self.rag()
         rag = rag.get_rag_display() if rag else ''
+        if self.client:
+            service_area = {
+                'id': self.client.id,
+                'name': self.client.name,
+            }
+        else:
+            service_area = {}
         result = {
             'id': self.id,
             'name': self.name,
+            'service_area': service_area,
             'description': self.description,
             'alpha_date': self.alpha_date,
             'beta_date': self.beta_date,

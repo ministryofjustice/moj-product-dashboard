@@ -6,6 +6,7 @@ from django.http import (
     JsonResponse, HttpResponseNotFound, HttpResponseServerError)
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
 
 from .models import Project, Client
 
@@ -80,5 +81,17 @@ def service_json(request):
         error = 'cannot find service area with id={}'.format(
             request_data['id'])
         return JsonResponse({'error': error}, status=404)
-    # get the profile of the service for each month
-    return JsonResponse(client.profile(freq='MS'))
+    # get the profile of the service
+    return JsonResponse(client.profile())
+
+
+@login_required
+def portfolio_html(request):
+    return render(request, 'portfolio.html')
+
+
+@login_required
+@cache_page(60 * 15)
+def portfolio_json(request):
+    result = {client.id: client.profile() for client in Client.objects.all()}
+    return JsonResponse(result)
