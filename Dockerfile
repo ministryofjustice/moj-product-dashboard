@@ -21,6 +21,7 @@ RUN mkdir -p /app/static
 
 RUN pip3 install -U setuptools pip wheel virtualenv uwsgi
 RUN virtualenv -p python3 venv
+RUN venv/bin/pip install uwsgi
 
 # cache python packages, unless requirements change
 ADD ./requirements /app/requirements

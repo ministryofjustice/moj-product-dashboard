@@ -8,4 +8,4 @@ set -e
 /app/venv/bin/python manage.py loaddata auth_group_permissions
 
 # Run server
-/usr/local/bin/uwsgi --ini /app/conf/uwsgi.ini -H /app/venv
+/app/venv/bin/uwsgi --ini /app/conf/uwsgi.ini -H /app/venv
