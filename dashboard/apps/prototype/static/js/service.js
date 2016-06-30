@@ -2,6 +2,7 @@ import 'whatwg-fetch';
 import React, { Component } from 'react';
 
 import { ProjectsTable } from './project';
+import { values } from './utils';
 
 
 /**
@@ -60,9 +61,7 @@ export class ServiceContainer extends Component {
   componentDidMount() {
     getServiceData(this.props.id, this.props.csrftoken)
       .then(serviceData => {
-        const projects = Object
-          .keys(serviceData.projects)
-          .map(id => serviceData.projects[id]);
+        const projects = values(serviceData.projects);
         this.setState({projects: projects});
       });
   }

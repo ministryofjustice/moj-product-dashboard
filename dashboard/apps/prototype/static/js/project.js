@@ -145,7 +145,7 @@ export function plotProject(project, elem) {
 /**
  * React component for a table of projects
  */
-export const ProjectsTable = ({projects}) => {
+export const ProjectsTable = ({ projects, showService, showFilter }) => {
 
   const displayMoney = (props) => {
     const number = Number(Number(props.data).toFixed(0))
@@ -166,12 +166,12 @@ export const ProjectsTable = ({projects}) => {
     },
     {
       'columnName': 'rag',
-      'order': 2,
+      'order': 3,
       'displayName': 'RAG',
     },
     {
       'columnName': 'team_size',
-      'order': 3,
+      'order': 4,
       'displayName': 'Team size',
       'customCompareFn': Number,
       'customComponent': (props) => (
@@ -181,19 +181,33 @@ export const ProjectsTable = ({projects}) => {
     },
     {
       'columnName': 'cost_to_date',
-      'order': 4,
+      'order': 5,
       'displayName': 'Cost to date',
       'customCompareFn': Number,
       'customComponent': displayMoney,
     },
     {
       'columnName': 'budget',
-      'order': 5,
+      'order': 6,
       'displayName': 'Budget',
       'customCompareFn': Number,
       'customComponent': displayMoney,
     }
   ];
+
+  if (showService) {
+    columnMetadata.push({
+      'columnName': 'service_area',
+      'order': 2,
+      'displayName': 'Service area',
+      'customCompareFn': (serv) => serv.name,
+      'customComponent': (props) => (
+        <a href={`/services/${props.data.id}`}>
+          {props.data.name}
+        </a>
+      )
+    });
+  };
 
   return (
     <Griddle
@@ -203,6 +217,7 @@ export const ProjectsTable = ({projects}) => {
       useGriddleStyles={false}
       bodyHeight={800}
       resultsPerPage={100}
+      showFilter={showFilter}
     />
   );
 }

@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 
 import { getProjectData, plotProject } from './project';
 import { getServiceData, getServiceFinancials, ServiceContainer} from './service';
+import { PortfolioContainer } from './portfolio';
 
 
 require('select2/dist/css/select2.min.css');
@@ -95,15 +96,24 @@ function service(id) {
 }
 
 
+function portfolio() {
+  // project table
+  ReactDOM.render(
+    <PortfolioContainer csrftoken={Cookies.get('csrftoken')} />,
+    document.getElementById('projects')
+  );
+}
+
+
 function route(path) {
   // call different loading functions based on page url
-  const pattern = /(projects|services)\/(\d+)/;
+  const pattern = /(projects|services|portfolio)(\/(\d+))?/;
   const matches = pattern.exec(path);
 
   if (matches === null)
     return;
 
-  const [_, endpoint, id] = matches;
+  const [_0, endpoint, _1, id] = matches;
 
   switch (endpoint) {
     case 'projects':
@@ -111,6 +121,9 @@ function route(path) {
       break;
     case 'services':
       service(id);
+      break;
+    case 'portfolio':
+      portfolio();
       break;
   };
 }
