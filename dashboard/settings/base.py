@@ -180,6 +180,8 @@ CACHES = {
     }
 }
 
+CELERY_TIMEZONE = 'Europe/London'
+
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 BROKER_TRANSPORT_OPTIONS = {
