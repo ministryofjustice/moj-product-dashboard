@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
 from .models import Project, Client
+from .tasks import sync_float
 
 
 @login_required
@@ -95,3 +96,11 @@ def portfolio_html(request):
 def portfolio_json(request):
     result = {client.id: client.profile() for client in Client.objects.all()}
     return JsonResponse(result)
+
+
+@login_required
+def sync_from_float(request):
+    sync_float.delay()
+    return JsonResponse({
+        'status': 'STARTED'
+    })

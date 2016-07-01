@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import { getProjectData, plotProject } from './project';
 import { getServiceData, getServiceFinancials, ServiceContainer} from './service';
 import { PortfolioContainer } from './portfolio';
+import { initCommon } from './common';
 
 
 require('select2/dist/css/select2.min.css');
@@ -129,5 +130,6 @@ function route(path) {
 }
 
 
+initCommon();
 const location = createHistory().getCurrentLocation();
 route(location.pathname);

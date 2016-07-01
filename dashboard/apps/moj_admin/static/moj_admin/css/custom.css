@@ -232,4 +232,8 @@ table#result_list thead th {
     min-height: 40px;
 }
 
+.update-from-float {
+    cursor: pointer;
+}
+
 
