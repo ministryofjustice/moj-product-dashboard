@@ -1,7 +1,7 @@
 import 'whatwg-fetch';
 import moment from 'moment';
 import Griddle from 'griddle-react';
-import React from 'react';
+import React, { Component } from 'react';
 
 import Plotly from './plotly-custom';
 
@@ -47,7 +47,8 @@ export function parseProjectFinancials(financial) {
     cumulative += costs;
     totalCostsCumulative.push(cumulative);
   });
-
+  const remainings = budget
+    .map((val, index) => val - totalCostsCumulative[index]);
   return {
     months,
     budget,
@@ -55,15 +56,87 @@ export function parseProjectFinancials(financial) {
     contractorCosts,
     staffCosts,
     additionalCosts,
-    totalCostsCumulative
+    totalCostsCumulative,
+    remainings
   };
+}
+
+
+export class ProjectContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {showRemainings: false, project: {}};
+  }
+
+  componentDidMount() {
+    getProjectData(this.props.id, this.props.csrftoken)
+      .then(project => {
+        this.setState({project: project});
+      });
+  }
+
+  handleToggle() {
+    this.setState({showRemainings: !this.state.showRemainings});
+  }
+
+  render() {
+    return (
+      <div>
+        <label className="form-checkbox">
+          <input
+            id="show-remainings"
+            name="show-remaings"
+            type="checkbox"
+            onChange={() => this.handleToggle()}
+            value={this.state.showRemainings} />
+            Show remaining budget
+        </label>
+        <ProjectGraph
+          project={this.state.project}
+          showRemainings={this.state.showRemainings}
+        />
+      </div>
+    );
+  }
+}
+
+
+class ProjectGraph extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  plot() {
+    if (Object.keys(this.props.project).length === 0) {
+      return;
+    }
+    plotProject(
+      this.props.project,
+      this.props.showRemainings,
+      this.container
+    );
+  }
+
+  componentDidUpdate() {
+    this.plot();
+  }
+
+  componentDidMount() {
+    this.plot();
+  }
+
+  render() {
+    return (
+      <div ref={(elem) => this.container=elem} />
+    );
+  }
 }
 
 
 /**
  * plot the graphs for a project
  */
-export function plotProject(project, elem) {
+export function plotProject(project, showRemainings, elem) {
   const financial = parseProjectFinancials(project.financial);
   const months = financial.months;
 
@@ -103,11 +176,22 @@ export function plotProject(project, elem) {
   const budgetTrace = {
     x: months,
     y: financial.budget,
-    name: 'Budget',
+    name: 'Budget allocated',
     mode: 'lines',
     yaxis: 'y2',
     marker: {
       color: '#FFBF47',
+      line: {width: 0}  // for ie9 only
+    }
+  };
+  const remainingTrace = {
+    x: months,
+    y: financial.remainings,
+    name: 'Budget remaining',
+    mode: 'lines',
+    yaxis: 'y2',
+    marker: {
+      color: '#B29000',
       line: {width: 0}  // for ie9 only
     }
   };
@@ -135,9 +219,13 @@ export function plotProject(project, elem) {
   const data = [
     staffTrace,
     additionalTrace,
-    totalCostTrace,
-    budgetTrace
   ];
+  if (showRemainings) {
+    data.push(remainingTrace);
+  } else {
+    data.push(totalCostTrace);
+    data.push(budgetTrace);
+  };
   Plotly.newPlot(elem, data, layout);
 }
 
