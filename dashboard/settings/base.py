@@ -180,7 +180,9 @@ CACHES = {
     }
 }
 
-CELERY_ACCEPT_CONTENT = ['yaml', 'json', 'msgpack']
+CELERY_ACCEPT_CONTENT = ['yaml']
+CELERY_TASK_SERIALIZER = 'yaml'
+CELERY_RESULT_SERIALIZER = 'yaml'
 
 CELERY_TIMEZONE = 'Europe/London'
 
