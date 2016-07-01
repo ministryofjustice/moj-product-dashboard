@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
@@ -103,13 +103,12 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     contractor_civil_servant.short_description = 'Contractor | Civil Servant'
 
     def get_urls(self):
-        urls = patterns(
-            '',
+        urls = [
             url(
                 r'^upload/$',
                 self.admin_site.admin_view(self.upoload_view),
                 name='person_upload_payroll'),
-        )
+        ]
         return urls + super(PersonAdmin, self).get_urls()
 
     def has_upload_permission(self, request, obj=None):
