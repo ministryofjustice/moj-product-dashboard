@@ -180,6 +180,8 @@ CACHES = {
     }
 }
 
+CELERY_ACCEPT_CONTENT = ['yaml', 'json', 'msgpack']
+
 CELERY_TIMEZONE = 'Europe/London'
 
 CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
