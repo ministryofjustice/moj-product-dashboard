@@ -100,7 +100,7 @@ def portfolio_json(request):
 
 @login_required
 def sync_from_float(request):
-    sync_float.apply_async(serializer='yaml')
+    sync_float.delay()
     return JsonResponse({
         'status': 'STARTED'
     })
