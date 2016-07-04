@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
+from datetime import timedelta
 import os
 import sys
 
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django.contrib.humanize",
 
+    'djcelery',
     'moj_template',
 
     'dashboard.apps.prototype',
@@ -59,7 +61,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+
 ]
 
 ROOT_URLCONF = 'dashboard.urls'
@@ -178,6 +180,23 @@ CACHES = {
         }
     }
 }
+
+CELERY_ACCEPT_CONTENT = ['yaml']
+CELERY_TASK_SERIALIZER = 'yaml'
+CELERY_RESULT_SERIALIZER = 'yaml'
+
+CELERY_TIMEZONE = 'Europe/London'
+
+CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'region': 'eu-west-1',
+    'queue_name_prefix': os.environ.get("CELERY_QUEUE_PREFIX", "dev-"),
+    'polling_interval': 1,
+    'visibility_timeout': 3600}
+
+BROKER_URL = os.environ.get("CELERY_BROKER_URL", "sqs://")
+
 # .local.py overrides all the common settings.
 try:
     from .local import *
