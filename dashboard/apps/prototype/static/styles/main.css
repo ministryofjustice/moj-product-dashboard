@@ -11,3 +11,17 @@ strong {
 button.update-from-float {
     float: right;
 }
+
+.spinkit, .projects-spinkit, .graph-spinkit {
+  position: relative;
+  left: 45%;
+  z-index: 9999;
+}
+
+.projects-spinkit {
+  top: 200px;
+}
+
+.graph-spinkit {
+  top: 40px;
+}

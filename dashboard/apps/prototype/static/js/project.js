@@ -2,6 +2,7 @@ import 'whatwg-fetch';
 import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
+import Spinner from 'react-spinkit';
 
 import Plotly from './plotly-custom';
 
@@ -65,13 +66,13 @@ export function parseProjectFinancials(financial) {
 export class ProjectContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {showRemainings: false, project: {}};
+    this.state = {showRemainings: false, hasData: false, project: {}};
   }
 
   componentDidMount() {
     getProjectData(this.props.id, this.props.csrftoken)
       .then(project => {
-        this.setState({project: project});
+        this.setState({project: project, hasData: true});
       });
   }
 
@@ -80,6 +81,15 @@ export class ProjectContainer extends Component {
   }
 
   render() {
+    if (! this.state.hasData) {
+      return (
+        <div className="graph-spinkit">
+          <Spinner
+            spinnerName='three-bounce'
+          />
+        </div>
+      );
+    };
     return (
       <div>
         <label className="form-checkbox">

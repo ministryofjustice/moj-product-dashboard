@@ -11,9 +11,9 @@ import { PortfolioContainer } from './portfolio';
 import { initCommon } from './common';
 
 
-require('select2/dist/css/select2.min.css');
-require('../styles/gov-uk-elements.css');
-require('../styles/main.css');
+import 'select2/dist/css/select2.min.css';
+import '../styles/gov-uk-elements.css';
+import '../styles/main.css';
 
 
 function project(id) {
@@ -52,7 +52,7 @@ function portfolio() {
   // project table
   ReactDOM.render(
     <PortfolioContainer csrftoken={Cookies.get('csrftoken')} />,
-    document.getElementById('projects')
+    document.getElementById('container')
   );
 }
 
