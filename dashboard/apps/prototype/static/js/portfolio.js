@@ -1,8 +1,10 @@
 import 'whatwg-fetch';
 import React, { Component } from 'react';
+import Spinner from 'react-spinkit';
 
 import { ProjectsTable } from './project';
 import { values } from './utils';
+
 
 /**
  * send a POST request to the backend to retrieve projects profile
@@ -27,7 +29,7 @@ export function getPortfolioData(id, csrftoken) {
 export class PortfolioContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {projects: []};
+    this.state = {projects: [], hasData: false};
   }
 
   componentDidMount() {
@@ -36,17 +38,31 @@ export class PortfolioContainer extends Component {
         const projects = values(portfolioData)
           .map(service => values(service.projects))
           .reduce((prev, curr) => prev.concat(curr), []);
-        this.setState({projects: projects});
+        this.setState({projects: projects, hasData: true});
       });
   }
 
   render() {
+    if (! this.state.hasData) {
+      return (
+        <div className="projects-spinkit">
+          <Spinner
+            spinnerName='three-bounce'
+          />
+        </div>
+      );
+    };
     return (
-      <ProjectsTable
-        projects={this.state.projects}
-        showService={true}
-        showFilter={true}
-      />
+      <div>
+        <label className="heading-medium">
+          <strong>Portfolio</strong>
+        </label>
+        <ProjectsTable
+          projects={this.state.projects}
+          showService={true}
+          showFilter={true}
+        />
+      </div>
     );
   }
 }
