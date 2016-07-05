@@ -12,12 +12,7 @@ import { values } from './utils';
 export function getPortfolioData(id, csrftoken) {
   const init = {
     credentials: 'same-origin',
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': csrftoken,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
+    method: 'GET',
   };
   return fetch('/portfolio.json', init)
     .then(response => response.json());
