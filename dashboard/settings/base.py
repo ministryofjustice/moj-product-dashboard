@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "django.contrib.humanize",
+    'django.contrib.humanize',
 
     'djcelery',
     'moj_template',
@@ -194,11 +194,11 @@ CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 BROKER_TRANSPORT_OPTIONS = {
     'region': 'eu-west-1',
-    'queue_name_prefix': os.environ.get("CELERY_QUEUE_PREFIX", "dev-"),
+    'queue_name_prefix': os.environ.get('CELERY_QUEUE_PREFIX', 'dev-'),
     'polling_interval': 1,
     'visibility_timeout': 3600}
 
-BROKER_URL = os.environ.get("CELERY_BROKER_URL", "sqs://")
+BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'sqs://')
 
 # .local.py overrides all the common settings.
 try:
