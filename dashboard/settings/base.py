@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "django.contrib.humanize",
+    'django.contrib.humanize',
 
     'djcelery',
     'moj_template',
@@ -171,15 +171,18 @@ if 'SENTRY_DSN' in os.environ:
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/tmp/django_cache',
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL'),
         'OPTIONS': {
-            'MAX_ENTRIES': 10000
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'IGNORE_EXCEPTIONS': True,
         }
     }
 }
+DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
 
 CELERY_ACCEPT_CONTENT = ['yaml']
 CELERY_TASK_SERIALIZER = 'yaml'
@@ -191,11 +194,11 @@ CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend'
 
 BROKER_TRANSPORT_OPTIONS = {
     'region': 'eu-west-1',
-    'queue_name_prefix': os.environ.get("CELERY_QUEUE_PREFIX", "dev-"),
+    'queue_name_prefix': os.environ.get('CELERY_QUEUE_PREFIX', 'dev-'),
     'polling_interval': 1,
     'visibility_timeout': 3600}
 
-BROKER_URL = os.environ.get("CELERY_BROKER_URL", "sqs://")
+BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'sqs://')
 
 # .local.py overrides all the common settings.
 try:
