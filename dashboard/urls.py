@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.conf import settings
 from django.contrib import admin
+from dashboard.apps.moj_admin.admin import dashboard_admin
 from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.prototype.views import (

@@ -1,4 +1,4 @@
-{% extends 'moj_admin/moj_base.html' %}
+{% extends 'moj_template_custom/moj_base.html' %}
 
 {% load staticfiles %}
 
@@ -25,7 +25,7 @@
     {% block blockbots %}
         <meta name="robots" content="NONE,NOARCHIVE"/>
     {% endblock %}
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+{#    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>#}
     <script type="text/javascript" src="{% static 'moj_admin/js/dwp_admin.js' %}"></script>
     {% block extrahead %}
         <link rel="stylesheet" type="text/css" href="{% static "moj_admin/css/moj_template_overrides.css" %}"/>
@@ -74,37 +74,37 @@
                 {% endfor %}</ul>
             {% endif %}
         {% endblock messages %}
-        <div class="admin-sidebar-wrapper">
-                <div class="admin-sidebar-content">
-                    {% for app in available_apps %}
-                        {% if app.has_module_perms %}
-                            <ul>
-                            <p class="side-bar-heading"><a href="{{ app.url }}">{{ app.name | capfirst }}</a></p>
-                                {% for model in app.models %}
-                                    <li><a href="{{ model.admin_url }}">{{ model.object_name | capfirst }}</a></li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
+{#        <div class="admin-sidebar-wrapper">#}
+{#            <div class="admin-sidebar-content">#}
+{#                {% for app in available_apps %}#}
+{#                    {% if app.has_module_perms %}#}
+{#                        <ul>#}
+{#                        <p class="side-bar-heading"><a href="{{ app.url }}">{{ app.name | capfirst }}</a></p>#}
+{#                            {% for model in app.models %}#}
+{#                                <li><a href="{{ model.admin_url }}">{{ model.object_name | capfirst }}</a></li>#}
+{#                            {% endfor %}#}
+{#                        </ul>#}
+{#                    {% endif %}#}
+{##}
+{#                {% endfor %}#}
+{##}
+{#            </div>#}
+{#        </div>#}
 
-                    {% endfor %}
-
-                </div>
+        <div class="main-section">
+            <!-- Content -->
+            <div class="{% block coltype %}colM{% endblock %}">
+                {% block pretitle %}{% endblock %}
+                {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+                {% block content %}
+                    {% block object-tools %}{% endblock %}
+                    {{ content }}
+                {% endblock %}
+                {% block sidebar %}{% endblock %}
+                <br class="clear"/>
             </div>
 
-            <div class="right-section">
-                <!-- Content -->
-                <div class="{% block coltype %}colM{% endblock %}">
-                    {% block pretitle %}{% endblock %}
-                    {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
-                    {% block content %}
-                        {% block object-tools %}{% endblock %}
-                        {{ content }}
-                    {% endblock %}
-                    {% block sidebar %}{% endblock %}
-                    <br class="clear"/>
-                </div>
-
-            </div>
+        </div>
 
     </div>
 {% endblock %}
