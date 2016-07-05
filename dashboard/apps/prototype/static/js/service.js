@@ -1,7 +1,9 @@
 import 'whatwg-fetch';
 import React, { Component } from 'react';
+import Spinner from 'react-spinkit';
 
 import { ProjectsTable } from './project';
+import { values } from './utils';
 
 
 /**
@@ -54,20 +56,27 @@ export function getServiceFinancials(serviceData, projectIds) {
 export class ServiceContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {projects: []};
+    this.state = {projects: [], hasData: false};
   }
 
   componentDidMount() {
     getServiceData(this.props.id, this.props.csrftoken)
       .then(serviceData => {
-        const projects = Object
-          .keys(serviceData.projects)
-          .map(id => serviceData.projects[id]);
-        this.setState({projects: projects});
+        const projects = values(serviceData.projects);
+        this.setState({projects: projects, hasData: true});
       });
   }
 
   render() {
+    if (! this.state.hasData) {
+      return (
+        <div className="projects-spinkit">
+          <Spinner
+            spinnerName='three-bounce'
+          />
+        </div>
+      );
+    };
     return (
       <ProjectsTable projects={this.state.projects} />
     );

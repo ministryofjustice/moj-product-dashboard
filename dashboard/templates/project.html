@@ -7,59 +7,53 @@
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-    <div class="column-one-quarter">
-      <label class="heading-medium" for="project-name"><strong>Project</strong></label>
-    </div>
-    <div class="column-three-quarters">
-      <select id="projects">
-        {% for service_name, projects in services.items %}
-          <optgroup label="{{ service_name }}">
-          {% for id, name in projects.items %}
-            {% if id == project.id %}
-            <option value="{{ id }}" selected>{{ name }}</option>
-            {% else %}
-            <option value="{{ id }}">{{ name }}</option>
-            {% endif %}
+    <div class="grid-row">
+      <div class="column-one-quarter">
+        <label class="heading-medium" for="project-name"><strong>Project</strong></label>
+      </div>
+      <div class="column-three-quarters">
+        <select id="projects">
+          {% for service_name, projects in services.items %}
+            <optgroup label="{{ service_name }}">
+            {% for id, name in projects.items %}
+              {% if id == project.id %}
+              <option value="{{ id }}" selected>{{ name }}</option>
+              {% else %}
+              <option value="{{ id }}">{{ name }}</option>
+              {% endif %}
+            {% endfor %}
+            </optgroup>
           {% endfor %}
-          </optgroup>
-        {% endfor %}
-      </select>
+        </select>
+      </div>
     </div>
-    <div class="panel">
-      <table class="table table-hover">
-        <tr>
-          <th>Project Name</th>
-          <td>{{ project.name }}</td>
-        </tr>
-        <tr>
-          <th>Current Phase</th>
-          <td>???</td>
-        </tr>
-        <tr>
-          <th>Service Area</th>
-          <td>{{ project.client.name }}</td>
-        </tr>
-        <tr>
-          <th>Service Manager</th>
-          <td>???</td>
-        </tr>
-        <tr>
-          <th>Product Manager</th>
-          <td>???</td>
-        </tr>
-        <tr>
-          <th>Delivery Manager</th>
-          <td>{{ project.project_manager.name }}</td>
-        </tr>
-      </table>
-    </div>
+    <table class="table table-hover">
+      <tr>
+        <th>Project Name</th>
+        <td>{{ project.name }}</td>
+      </tr>
+      <tr>
+        <th>Current Phase</th>
+        <td>???</td>
+      </tr>
+      <tr>
+        <th>Service Area</th>
+        <td>{{ project.client.name }}</td>
+      </tr>
+      <tr>
+        <th>Service Manager</th>
+        <td>???</td>
+      </tr>
+      <tr>
+        <th>Product Manager</th>
+        <td>???</td>
+      </tr>
+      <tr>
+        <th>Delivery Manager</th>
+        <td>{{ project.project_manager.name }}</td>
+      </tr>
+    </table>
 
-    <div class="panel">
-      <h3 class="heading-medium">Expenditure</h3>
-        <div class="grid-row">
-          <div id="fig-a"></div>
-          <!-- <div class="column-one-half" id="fig-a"></div> -->
-          <!-- <div class="column-one-half" id="fig-b"></div> -->
-        </div>
-    </div>
+    <h3 class="heading-medium">Expenditure</h3>
+    <div id="fig-a"></div>
 {%  endblock %}

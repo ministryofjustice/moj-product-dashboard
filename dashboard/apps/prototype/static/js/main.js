@@ -5,21 +5,22 @@ import { createHistory } from 'history';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { getProjectData, plotProject } from './project';
-import { getServiceData, getServiceFinancials, ServiceContainer} from './service';
+import { ProjectContainer } from './project';
+import { ServiceContainer} from './service';
+import { PortfolioContainer } from './portfolio';
+import { initCommon } from './common';
 
 
-require('select2/dist/css/select2.min.css');
-require('../styles/gov-uk-elements.css');
-require('../styles/main.css');
+import 'select2/dist/css/select2.min.css';
+import '../styles/gov-uk-elements.css';
+import '../styles/main.css';
 
 
 function project(id) {
-  // get the DOM element for the graph
-  const elem = document.getElementById('fig-a');
-  // plot the project
-  getProjectData(id, Cookies.get('csrftoken'))
-    .then(projectData => plotProject(projectData, elem));
+  ReactDOM.render(
+    <ProjectContainer id={id} csrftoken={Cookies.get('csrftoken')} />,
+    document.getElementById('fig-a')
+  );
 
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
@@ -29,55 +30,7 @@ function project(id) {
 }
 
 
-class ProjectSelector {
-
-  constructor($checkboxes, onChange) {
-    this.$checkboxes = $checkboxes;
-    this.$checkboxes.change(() => onChange(this.projectIds));
-  }
-
-  get projectIds() {
-    const ids = this.$checkboxes.get()
-      .map(box => box.checked ? box.id : null)
-      .filter(Boolean);
-    return ids;
-  }
-}
-
-
-class ServiceGraph {
-
-  constructor(id, divId) {
-    this.id = id;
-    this.div = document.getElementById(divId);
-    this.props = {};
-    if (this.div !== null)
-      this.onInit();
-  }
-
-  onInit() {
-    getServiceData(this.id, Cookies.get('csrftoken'))
-      .then(serviceData => {
-        this.props = serviceData;
-        this.plot();
-      });
-  }
-
-  plot(projectIds) {
-    const financial = getServiceFinancials(this.props, projectIds);
-    const name = this.props.name;
-    plotProject({financial, name}, this.div);
-  }
-}
-
-
 function service(id) {
-  // get the DOM element for the graph
-  const serviceGraph = new ServiceGraph(id, 'fig-a');
-  const $checkboxes = $('ul#projects  li input');
-  const projectSelector = new ProjectSelector(
-    $checkboxes, projectIds => serviceGraph.plot(projectIds));
-
   // dropdown service selector
   $('#services').select2().on("select2:select", (e) => {
     const serviceId = e.params.data.id;
@@ -95,15 +48,24 @@ function service(id) {
 }
 
 
+function portfolio() {
+  // project table
+  ReactDOM.render(
+    <PortfolioContainer csrftoken={Cookies.get('csrftoken')} />,
+    document.getElementById('container')
+  );
+}
+
+
 function route(path) {
   // call different loading functions based on page url
-  const pattern = /(projects|services)\/(\d+)/;
+  const pattern = /(projects|services|portfolio)(\/(\d+))?/;
   const matches = pattern.exec(path);
 
   if (matches === null)
     return;
 
-  const [_, endpoint, id] = matches;
+  const [_0, endpoint, _1, id] = matches;
 
   switch (endpoint) {
     case 'projects':
@@ -112,9 +74,13 @@ function route(path) {
     case 'services':
       service(id);
       break;
+    case 'portfolio':
+      portfolio();
+      break;
   };
 }
 
 
+initCommon();
 const location = createHistory().getCurrentLocation();
 route(location.pathname);

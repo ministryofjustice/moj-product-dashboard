@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+
+
+BROKER_URL = "amqp://"
+BROKER_TRANSPORT_OPTIONS = {}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/django_cache',
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000
+        }
+    }
+}
+
+
+"""
+./manage.py reset_db
+./manage.py migrate --run-syncdb
+./manage.py sync
+./manage.py generate
+./manage.py loaddata auth_group_permissions
+./manage.py loaddata test_users
+"""

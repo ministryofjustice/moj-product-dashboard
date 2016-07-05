@@ -115,3 +115,28 @@ Watch and rerun JS unit tests when code changes detected:
 ::
 
     npm run test -- --watch
+
+
+Background Tasks
+================
+
+Background tasks on AWS are run using Celery and SQS. Locally you will need to install rabbitmq-server instead of SQS.
+
+::
+    brew install rabbitmq
+
+Copy BROCKER_URL in to your local.py
+
+::
+    BROKER_URL = "amqp://"
+    BROKER_TRANSPORT_OPTIONS = {}
+
+Then run rabbitmq-server it with
+
+::
+    rabbitmq-server
+
+and finally run cellery with
+
+::
+    celery -A dashboard worker -B -l info

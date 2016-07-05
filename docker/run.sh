@@ -2,10 +2,10 @@
 set -e
 
 # Run migrations if there are any
-/app/venv/bin/python manage.py migrate --run-syncdb --settings dashboard.settings.base --noinput
+/usr/bin/python manage.py migrate --run-syncdb --settings dashboard.settings.base --noinput
 
 # Load fixtures
-/app/venv/bin/python manage.py loaddata auth_group_permissions
+/usr/bin/python manage.py loaddata auth_group_permissions
 
 # Run server
-/usr/local/bin/uwsgi --ini /app/conf/uwsgi.ini -H /app/venv
+/usr/local/bin/uwsgi --ini /app/conf/uwsgi.ini
