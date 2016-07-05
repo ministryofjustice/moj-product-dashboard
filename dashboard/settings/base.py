@@ -171,15 +171,18 @@ if 'SENTRY_DSN' in os.environ:
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/tmp/django_cache',
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL'),
         'OPTIONS': {
-            'MAX_ENTRIES': 10000
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'IGNORE_EXCEPTIONS': True,
         }
     }
 }
+DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
 
 CELERY_ACCEPT_CONTENT = ['yaml']
 CELERY_TASK_SERIALIZER = 'yaml'
