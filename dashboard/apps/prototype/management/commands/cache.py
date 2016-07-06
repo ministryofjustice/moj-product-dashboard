@@ -52,11 +52,6 @@ class Command(BaseCommand):
                     non_contractor_only=True,
                     ignore_cache=True)
 
-            logger.info('  * spendings for entire project life span')
-            project.profile()
-            logger.info('  * spendings to date')
-            project.profile(end_date=date.today())
-
     def remove(self):
         """
         remove cache
