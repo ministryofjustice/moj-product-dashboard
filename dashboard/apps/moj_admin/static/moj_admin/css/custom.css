@@ -1,15 +1,3 @@
-#content {
-  margin: auto;
-  max-width: 1280px;
-  width: auto;
-  _width: 1280px;
-  min-height: 400px;
-}
-
-table {
-    width: 100%;
-}
-
 #global-header-bar .header-bar {
     height: auto;
     background-color: #005ea5;
@@ -38,9 +26,39 @@ table {
     float: right;
 }
 
+.breadcrumbs {
+    display: none;
+}
+
 .aligned label {
     font-family: "nta", Arial, sans-serif;
     font-size: 16px;
+}
+
+#changelist .actions {
+    padding-left: 0;
+}
+
+#changelist #toolbar {
+    padding-left: 0;
+}
+
+#changelist .actions .button {
+    padding: 4px 8px;
+}
+
+div#changelist-filter {
+    /*margin-top: 60px;*/
+}
+
+#changelist table thead th {
+    padding-left: 5px;
+}
+
+#changelist table {
+    width: 1020px;
+    margin-left: 0;
+    margin-right: 260px;
 }
 
 p {
@@ -58,35 +76,20 @@ li {
     list-style-type: none;
 }
 
-.admin-sidebar-content {
-    padding-left: 0;
-}
-
-
-.admin-sidebar-content li a {
-    padding: 0;
-    margin-right: 20px;
-}
-
-.side-bar-heading {
-    font-weight: bold;
-}
-
-.breadcrumbs {
-    display: none;
-}
-
 table {
     border: none;
     border-collapse: collapse;
     border-spacing: 0;
-    margin: 0;
+    /*margin: 0;*/
+    margin-right: 260px;
+    margin-left: auto;
     padding: 0;
     font-size: inherit;
     font-family: inherit;
     line-height: inherit;
     font-weight: normal;
     width: 100%;
+    margin-bottom: 30px;
 }
 
 table th,
@@ -124,16 +127,6 @@ div.actions {
     padding-left: 0;
 }
 
-#changelist .actions {
-    padding-left: 0;
-}
-
-#changelist #toolbar {
-    padding-left: 0;
-}
-
-
-
 input[type="submit"], #changelist #toolbar form input[type="submit"], ul.object-tools a, button.button, #changelist .actions .button {
     background-color:  #00823b;
     box-shadow: 0 2px 0 #003618;
@@ -143,6 +136,7 @@ input[type="submit"], #changelist #toolbar form input[type="submit"], ul.object-
     border-style: none;
     font-size: 16px;
     border-radius: 0;
+    /*z-index: 99;*/
 
 }
 
@@ -155,22 +149,20 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
 
 }
 
-#changelist .actions .button {
-    padding: 4px 8px;
-}
-
 .admin-wrapper {
 
     width: 100%;
-    overflow: hidden;
+    /*overflow: hidden;*/
 
 }
 
-.right-section {
-    float: left;
-    width: 80%;
-    margin-left: 5%;
+.main-section {
+    /*float: left;*/
+    /*width: 80%;*/
+    margin-left: auto;
+    margin-right: auto;
     margin-top: 36px;
+
 }
 
 .admin-wrapper .admin-sidebar-wrapper {
@@ -180,13 +172,12 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
     background-color: #F8F8F8;
 }
 
+
 .messagelist {
     display: none;
 }
 
-#changelist table thead th {
-    padding-left: 5px;
-}
+
 
 table th, table td {
     padding-left: 5px;
@@ -196,44 +187,45 @@ div#recent-actions-module {
     display: none;
 }
 
-.admin-sidebar-content ul {
-    padding-left: 30px;
-}
-
 ul.object-tools li {
     margin-right: 10px;
 }
 
 ul.object-tools {
-    float: right;
-    /*width: 100px;*/
-}
-
-div#changelist-filter {
-    margin-top: 60px;
-}
-
-#changelist table {
-    width: auto;
-}
-
-#changelist table thead th {
-    overflow: hidden;
+    padding-left: 0;
 
 }
 
 .filtered #toolbar {
+    width: 1020px;
     margin-right: 0;
 }
 
 table#result_list thead th {
-    /*margin-bottom: 40px;*/
-    /*line-height: 2em;*/
+
     min-height: 40px;
+}
+
+
+caption {
+    font-weight: bold;
 }
 
 .update-from-float {
     cursor: pointer;
 }
 
+
+.paginator {
+    width: 1020px;
+}
+
+img[alt="Search"] {
+    margin: 5px;
+}
+
+
+div.sortoptions {
+    visibility: hidden;
+}
 
