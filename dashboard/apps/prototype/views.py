@@ -1,6 +1,8 @@
 import json
+from datetime import date, timedelta
 from collections import OrderedDict
 
+import pandas
 from django.shortcuts import render, redirect
 from django.http import (
     JsonResponse, HttpResponseNotFound, HttpResponseServerError)
@@ -56,8 +58,39 @@ def project_json(request):
     except (ValueError, Project.DoesNotExist):
         error = 'cannot find project with id={}'.format(request_data['id'])
         return JsonResponse({'error': error}, status=404)
-    # get the profile of the project for each month throughout the life span
-    return JsonResponse(project.profile(freq='MS'))
+
+    timeframe = request_data.get('timeFrame')
+    today = date.today()
+    if timeframe == 'this-year':
+        period = pandas.Period(today, freq='A')
+    elif timeframe == 'this-quarter':
+        period = pandas.Period(today, freq='Q')
+    elif timeframe == 'this-financial-year':
+        period = pandas.Period(today, freq='A-MAR')
+    elif timeframe == 'last-year':
+        period = pandas.Period(today - timedelta(days=365), freq='A')
+    elif timeframe == 'last-financial-year':
+        period = pandas.Period(today - timedelta(days=365), freq='A-MAR')
+    elif timeframe == 'last-quarter':
+        first_day_of_this_quarter = (
+            pandas.Period(today, freq='Q').start_time.date())
+        period = pandas.Period(
+            first_day_of_this_quarter - timedelta(days=1), freq='Q')
+    else:
+        period = None
+
+    if period:
+        start_date = period.start_time.date()
+        end_date = period.end_time.date()
+    else:
+        start_date = None
+        end_date = None
+
+    # get the profile of the project for each month
+    return JsonResponse(project.profile(
+        start_date=start_date,
+        end_date=end_date,
+        freq='MS'))
 
 
 @login_required

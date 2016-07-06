@@ -12,6 +12,7 @@ import { initCommon } from './common';
 
 
 import 'select2/dist/css/select2.min.css';
+import 'react-select-plus/dist/react-select-plus.css';
 import '../styles/gov-uk-elements.css';
 import '../styles/main.css';
 

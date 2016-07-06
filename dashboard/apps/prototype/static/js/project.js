@@ -3,13 +3,14 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
+import Select from 'react-select-plus';
 
 import Plotly from './plotly-custom';
 
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(id, csrftoken) {
+export function getProjectData(id, timeFrame, csrftoken) {
   const init = {
     credentials: 'same-origin',
     method: 'POST',
@@ -18,7 +19,7 @@ export function getProjectData(id, csrftoken) {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({id: id})
+    body: JSON.stringify({id: id, timeFrame: timeFrame})
   };
   return fetch('/project.json', init)
     .then(response => response.json());
@@ -64,13 +65,31 @@ export function parseProjectFinancials(financial) {
 
 
 export class ProjectContainer extends Component {
+
   constructor(props) {
     super(props);
-    this.state = {showRemainings: false, hasData: false, project: {}};
+    this.state = {
+      showRemainings: false,
+      hasData: false,
+      project: {},
+      timeFrame: this.timeFrameOptions[0].value
+    };
+  }
+
+  get timeFrameOptions() {
+    return [
+      { value: 'entire-time-span', label: 'Entire project life time' },
+      { value: 'this-year', label: 'This calendar year' },
+      { value: 'this-financial-year', label: 'This financial year' },
+      { value: 'this-quarter', label: 'This quarter' },
+      { value: 'last-year', label: 'Last calendar year' },
+      { value: 'last-financial-year', label: 'Last financial year' },
+      { value: 'last-quarter', label: 'Last quarter' },
+    ];
   }
 
   componentDidMount() {
-    getProjectData(this.props.id, this.props.csrftoken)
+    getProjectData(this.props.id, this.state.timeFrame, this.props.csrftoken)
       .then(project => {
         this.setState({project: project, hasData: true});
       });
@@ -80,26 +99,55 @@ export class ProjectContainer extends Component {
     this.setState({showRemainings: !this.state.showRemainings});
   }
 
+  componentWillUpdate(nextProps, nextState) {
+    const timeFrame = nextState.timeFrame;
+    if (this.state.timeFrame != timeFrame) {
+      getProjectData(this.props.id, timeFrame, this.props.csrftoken)
+        .then(project => {
+          this.setState({project: project, hasData: true});
+        });
+    }
+  }
+
+  handleTimeFrameChange(selection) {
+    if (selection && this.state.timeFrame != selection.value) {
+      this.setState({
+        timeFrame: selection.value,
+        hasData: false
+      });
+    }
+  }
+
   render() {
+    const timeFrameSelector = (
+      <TimeFrameSelector
+        options={this.timeFrameOptions}
+        selected={this.state.timeFrame}
+        onChange={selection => this.handleTimeFrameChange(selection)}
+      />);
+
     if (! this.state.hasData) {
       return (
-        <div className="graph-spinkit">
-          <Spinner
-            spinnerName='three-bounce'
-          />
+        <div>
+          { timeFrameSelector }
+          <div className="graph-spinkit">
+            <Spinner spinnerName='three-bounce' />
+          </div>
         </div>
       );
     };
+
     return (
       <div>
+        { timeFrameSelector }
         <label className="form-checkbox">
           <input
             id="show-remainings"
             name="show-remaings"
             type="checkbox"
             onChange={() => this.handleToggle()}
-            value={this.state.showRemainings} />
-            Show remaining budget
+            checked={this.state.showRemainings} />
+          Show remaining budget
         </label>
         <ProjectGraph
           project={this.state.project}
@@ -111,10 +159,26 @@ export class ProjectContainer extends Component {
 }
 
 
+const TimeFrameSelector = ({options, selected, onChange}) => (
+  <div className="grid-row">
+    <div className="column-one-quarter">
+      <label>Time frame</label>
+    </div>
+    <div className="column-one-quarter">
+      <Select
+        clearable={false}
+        placeholder="Select time frame"
+        name="form-field-name"
+        value={selected}
+        options={options}
+        onChange={onChange}
+      />
+    </div>
+  </div>
+);
+
+
 class ProjectGraph extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   plot() {
     if (Object.keys(this.props.project).length === 0) {
