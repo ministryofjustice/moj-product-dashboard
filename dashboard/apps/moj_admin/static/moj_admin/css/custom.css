@@ -26,9 +26,39 @@
     float: right;
 }
 
+.breadcrumbs {
+    display: none;
+}
+
 .aligned label {
     font-family: "nta", Arial, sans-serif;
     font-size: 16px;
+}
+
+#changelist .actions {
+    padding-left: 0;
+}
+
+#changelist #toolbar {
+    padding-left: 0;
+}
+
+#changelist .actions .button {
+    padding: 4px 8px;
+}
+
+div#changelist-filter {
+    /*margin-top: 60px;*/
+}
+
+#changelist table thead th {
+    padding-left: 5px;
+}
+
+#changelist table {
+    width: 1020px;
+    margin-left: 0;
+    margin-right: 260px;
 }
 
 p {
@@ -44,10 +74,6 @@ ul {
 li {
     text-align: left;
     list-style-type: none;
-}
-
-.breadcrumbs {
-    display: none;
 }
 
 table {
@@ -101,16 +127,6 @@ div.actions {
     padding-left: 0;
 }
 
-#changelist .actions {
-    padding-left: 0;
-}
-
-#changelist #toolbar {
-    padding-left: 0;
-}
-
-
-
 input[type="submit"], #changelist #toolbar form input[type="submit"], ul.object-tools a, button.button, #changelist .actions .button {
     background-color:  #00823b;
     box-shadow: 0 2px 0 #003618;
@@ -131,10 +147,6 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
 
     background-color: #00752E; /* 5% darker than normal background colour */
 
-}
-
-#changelist .actions .button {
-    padding: 4px 8px;
 }
 
 .admin-wrapper {
@@ -165,9 +177,7 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
     display: none;
 }
 
-#changelist table thead th {
-    padding-left: 5px;
-}
+
 
 table th, table td {
     padding-left: 5px;
@@ -177,33 +187,12 @@ div#recent-actions-module {
     display: none;
 }
 
-/*.admin-sidebar-content ul {*/
-    /*padding-left: 30px;*/
-/*}*/
-
 ul.object-tools li {
     margin-right: 10px;
 }
 
 ul.object-tools {
     padding-left: 0;
-    /*float: right;*/
-    /*display: block;*/
-    /*width: 100px;*/
-}
-
-div#changelist-filter {
-    /*margin-top: 60px;*/
-}
-
-#changelist table {
-    width: 1020px;
-    margin-left: 0;
-    margin-right: 260px;
-}
-
-#changelist table thead th {
-    /*overflow: hidden;*/
 
 }
 
@@ -213,8 +202,7 @@ div#changelist-filter {
 }
 
 table#result_list thead th {
-    /*margin-bottom: 40px;*/
-    /*line-height: 2em;*/
+
     min-height: 40px;
 }
 
@@ -238,7 +226,6 @@ img[alt="Search"] {
 
 
 div.sortoptions {
-    /*display: none;*/
     visibility: hidden;
 }
 
