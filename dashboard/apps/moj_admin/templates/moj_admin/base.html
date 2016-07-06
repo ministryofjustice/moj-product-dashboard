@@ -30,11 +30,14 @@
     {% block extrahead %}
         <link rel="stylesheet" type="text/css" href="{% static "moj_admin/css/moj_template_overrides.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "moj_admin/css/custom.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "common/common.css" %}"/>
         {# Here to ensure loaded last #}
     {% endblock %}
 {% endblock %}
 
 {% load i18n %}
+
+{% block body_classes %}admin{% endblock %}
 
 {% block headerbar %}
     {% if has_permission %}
@@ -75,22 +78,7 @@
                 {% endfor %}</ul>
             {% endif %}
         {% endblock messages %}
-{#        <div class="admin-sidebar-wrapper">#}
-{#            <div class="admin-sidebar-content">#}
-{#                {% for app in available_apps %}#}
-{#                    {% if app.has_module_perms %}#}
-{#                        <ul>#}
-{#                        <p class="side-bar-heading"><a href="{{ app.url }}">{{ app.name | capfirst }}</a></p>#}
-{#                            {% for model in app.models %}#}
-{#                                <li><a href="{{ model.admin_url }}">{{ model.object_name | capfirst }}</a></li>#}
-{#                            {% endfor %}#}
-{#                        </ul>#}
-{#                    {% endif %}#}
-{##}
-{#                {% endfor %}#}
-{##}
-{#            </div>#}
-{#        </div>#}
+
 
         <div class="main-section">
             <!-- Content -->

@@ -1,4 +1,4 @@
-{% extends 'moj_template/base.html' %}
+{% extends 'moj_template_custom/moj_base.html' %}
 
 {% load staticfiles %}
 
@@ -11,6 +11,7 @@
 {% block stylesheets %}
 
     <link href="{% static 'dist/prototype.css' %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static 'common/common.css' %}" rel="stylesheet" type="text/css"/>
 
 {% endblock %}
 
