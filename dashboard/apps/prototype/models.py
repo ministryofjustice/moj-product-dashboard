@@ -282,7 +282,7 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
-    @method_cache(timeout=24*60*60)  # cache until manually dropped
+    @method_cache(timeout=24 * 60 * 60)
     def people_costs(self, start_date, end_date, contractor_only=False,
                      non_contractor_only=False):
         """

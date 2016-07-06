@@ -175,7 +175,7 @@ LOGIN_REDIRECT_URL = '/'
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL'),
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'IGNORE_EXCEPTIONS': True,

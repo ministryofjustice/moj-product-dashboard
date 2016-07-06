@@ -43,8 +43,9 @@ class method_cache:
         """
         @wraps(method)
         def wrapper(instance, *args, **kwargs):
+            ignore_cache = kwargs.pop('ignore_cache', False)
             key = self.cache_key(method, instance, *args, **kwargs)
-            if key in cache:
+            if not ignore_cache and key in cache:
                 logger.debug('cache found for key %s', key)
                 return cache.get(key)
 
