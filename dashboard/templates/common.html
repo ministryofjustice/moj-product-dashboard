@@ -26,7 +26,9 @@
 {% endblock %}
 
 {% block content %}
-  <button id="update-from-float" class="update-from-float button">Float sync</button>
+  {% if request.user.is_authenticated %}
+    <button id="update-from-float" class="update-from-float button">Float sync</button>
+  {% endif %}
   <!--TODO use main tag in moj template-->
   <main id="content" role="main">
     {% block main %}
