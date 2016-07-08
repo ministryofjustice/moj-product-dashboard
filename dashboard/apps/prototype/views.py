@@ -7,6 +7,7 @@ from django.http import (
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
+from django.views.decorators.http import require_http_methods
 
 from dashboard.libs.date_tools import parse_date
 from .models import Project, Client, ProjectGroup
@@ -210,6 +211,7 @@ def portfolio_json(request):
 
 
 @login_required
+@require_http_methods(['POST'])
 def sync_from_float(request):
     sync_float.delay()
     return JsonResponse({
