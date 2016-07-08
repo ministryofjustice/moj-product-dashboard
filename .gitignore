@@ -22,3 +22,5 @@ dashboard/apps/prototype/static/dist
 
 # Celery
 celerybeat-schedule
+
+*.DS_Store
