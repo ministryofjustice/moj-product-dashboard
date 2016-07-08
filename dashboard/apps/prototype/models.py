@@ -206,6 +206,16 @@ class Project(models.Model):
         return self.tasks.order_by('start_date').first()
 
     @property
+    def first_spending_date(self):
+        if self.first_task:
+            return self.first_task.start_date
+
+    @property
+    def last_spending_date(self):
+        if self.last_task:
+            return self.last_task.end_date
+
+    @property
     def last_task(self):
         return self.tasks.order_by('-end_date').first()
 
@@ -253,6 +263,8 @@ class Project(models.Model):
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
+            'first_spending_date': self.first_spending_date,
+            'last_spending_date': self.last_spending_date,
             'rag': rag,
             'budget': self.budget(),
             'team_size': self.team_size(start_date, end_date),
