@@ -3,14 +3,17 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
-import Select from 'react-select-plus';
+import { Select, config } from 'rebass';
 
 import Plotly from './plotly-custom';
-import { monthRange, stripOffDay, thisCalendarYear,
+import { monthRange, thisCalendarYear,
          thisFinancialYear, thisQuarter, lastCalendarYear,
          lastFinancialYear, lastQuarter,
          startOfMonth, endOfMonth,
          min, max, values } from './utils';
+
+// set the font size of label
+config.fontSizes[5] = 19;
 
 /**
  * send a POST request to the backend to retrieve project profile
@@ -78,8 +81,8 @@ export class ProjectContainer extends Component {
       hasData: false,
       project: {},
       timeFrame: 'entire-time-span',
-      startDate: null,
-      endDate: null,
+      startDate: '',
+      endDate: '',
       firstSpendingDate: null,
       lastSpendingDate: null,
       minStartDate: null,
@@ -137,7 +140,7 @@ export class ProjectContainer extends Component {
     return Object.keys(this.timeFrames)
       .map(key => ({
         value: key,
-        label: this.timeFrames[key].label
+        children: this.timeFrames[key].label
       }))
   }
 
@@ -198,16 +201,16 @@ export class ProjectContainer extends Component {
     return monthRange(this.state.minStartDate, this.state.maxEndDate, 'start')
       .map(m => ({
         value: m,
-        label: moment(m).format('MMM YY')
+        children: moment(m).format('MMM YY'),
       }));
   }
 
   get endDateOpts() {
     return monthRange(this.state.minStartDate, this.state.maxEndDate, 'end')
-      .filter(m => moment(m) >= moment(this.state.startDate))
+      .filter(m => moment(m) >= moment(this.state.startDate) || m == this.state.endDate)
       .map(m => ({
         value: m,
-        label: moment(m).format('MMM YY')
+        children: moment(m).format('MMM YY')
       }));
   }
 
@@ -226,7 +229,7 @@ export class ProjectContainer extends Component {
     const startDate = nextState.startDate;
     const endDate = nextState.endDate;
     // when first start
-    if (this.state.startDate === null || this.state.endDate === null) {
+    if (this.state.startDate === '' || this.state.endDate === '') {
       return;
     };
     // when picked up a start date greater than previous end date
@@ -243,16 +246,16 @@ export class ProjectContainer extends Component {
     };
   }
 
-  handleTimeFrameChange(selection) {
-    if (selection && this.state.timeFrame != selection.value) {
+  handleTimeFrameChange(evt) {
+    if (this.state.timeFrame != evt.target.value) {
       this.setState({
-        timeFrame: selection.value
+        timeFrame: evt.target.value
       });
     }
   }
 
-  handleStartDateChange(selection) {
-    const startDate = selection.value;
+  handleStartDateChange(evt) {
+    const startDate = evt.target.value;
     // do nothing if there is no change
     if (startDate == this.state.startDate) {
       return;
@@ -264,9 +267,9 @@ export class ProjectContainer extends Component {
     });
   }
 
-  handleEndDateChange(selection) {
+  handleEndDateChange(evt) {
     const startDate = this.state.startDate;
-    const endDate = selection.value;
+    const endDate = evt.target.value;
     // do nothing if there is no change
     if (endDate == this.state.endDate) {
       return;
@@ -282,14 +285,14 @@ export class ProjectContainer extends Component {
       <TimeFrameSelector
         rangeOptions={this.timeFrameOpts}
         selectedRange={this.state.timeFrame}
-        onRangeChange={selection => this.handleTimeFrameChange(selection)}
+        onRangeChange={evt => this.handleTimeFrameChange(evt)}
         selectedStartDate={this.state.startDate}
         selectedEndDate={this.state.endDate}
         minStartDate={this.state.minStartDate}
         startDateOpts={this.startDateOpts}
         endDateOpts={this.endDateOpts}
-        onSelectedStartDateChange={sel => this.handleStartDateChange(sel)}
-        onSelectedEndDateChange={sel => this.handleEndDateChange(sel)}
+        onSelectedStartDateChange={evt => this.handleStartDateChange(evt)}
+        onSelectedEndDateChange={evt => this.handleEndDateChange(evt)}
       />);
 
     if (! this.state.hasData) {
@@ -337,42 +340,32 @@ function TimeFrameSelector({
 
   return (
     <div className="grid-row">
-      <div className="column-one-half">
-        <div className="column-one-third">
-          <label>Show data for</label>
-        </div>
-        <div className="column-two-thirds">
-          <Select
-            placeholder="Select time frame"
-            name="form-field-name"
-            value={selectedRange}
-            options={rangeOptions}
-            onChange={onRangeChange}
-          />
-        </div>
+      <div className="column-one-quarter">
+        <Select
+          name="form-field-name"
+          value={selectedRange}
+          options={rangeOptions}
+          onChange={onRangeChange}
+          label="Show data for"
+        />
       </div>
       <div className="column-one-quarter">
-        <div className="column-one-quarter">from</div>
-        <div className="column-three-quarters">
-          <Select
-            placeholder="Start date"
-            options={startDateOpts}
-            value={selectedStartDate}
-            onChange={onSelectedStartDateChange}
-          />
-        </div>
+        <Select
+          name="start-date"
+          options={startDateOpts}
+          value={selectedStartDate}
+          onChange={onSelectedStartDateChange}
+          label="from"
+        />
       </div>
       <div className="column-one-quarter">
-        <div className="column-one-quarter">to</div>
-        <div className="column-three-quarters">
-          <Select
-            placeholder="End date"
-            options={endDateOpts}
-            value={selectedEndDate}
-            onChange={onSelectedEndDateChange}
-            className={"top-most"}
-          />
-        </div>
+        <Select
+          name="end-date"
+          options={endDateOpts}
+          value={selectedEndDate}
+          onChange={onSelectedEndDateChange}
+          label="to"
+        />
       </div>
     </div>
   );

@@ -25,8 +25,8 @@
     "moment": "^2.13.0",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
-    "react-select-plus": "^1.0.0-beta13.patch1",
     "react-spinkit": "^1.1.7",
+    "rebass": "^0.2.7",
     "style-loader": "^0.13.1",
     "webpack": "^1.13.0"
   },
