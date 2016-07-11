@@ -3,13 +3,22 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
+import { Select, config } from 'rebass';
 
 import Plotly from './plotly-custom';
+import { monthRange, thisCalendarYear,
+         thisFinancialYear, thisQuarter, lastCalendarYear,
+         lastFinancialYear, lastQuarter,
+         startOfMonth, endOfMonth,
+         min, max, values } from './utils';
+
+// set the font size of label
+config.fontSizes[5] = 19;
 
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(id, csrftoken) {
+export function getProjectData(id, startDate, endDate, csrftoken) {
   const init = {
     credentials: 'same-origin',
     method: 'POST',
@@ -18,7 +27,7 @@ export function getProjectData(id, csrftoken) {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({id: id})
+    body: JSON.stringify({id: id, startDate: startDate, endDate: endDate})
   };
   return fetch('/project.json', init)
     .then(response => response.json());
@@ -64,15 +73,123 @@ export function parseProjectFinancials(financial) {
 
 
 export class ProjectContainer extends Component {
+
   constructor(props) {
     super(props);
-    this.state = {showRemainings: false, hasData: false, project: {}};
+    this.state = {
+      showRemainings: false,
+      hasData: false,
+      project: {},
+      timeFrame: 'entire-time-span',
+      startDate: '',
+      endDate: '',
+      firstSpendingDate: null,
+      lastSpendingDate: null,
+      minStartDate: null,
+      maxEndDate: null
+    };
+  }
+
+  get timeFrames() {
+    const now = moment();
+    return {
+      'entire-time-span': {
+        label: 'Entire project life time',
+        startDate: this.state.firstSpendingDate,
+        endDate: this.state.lastSpendingDate
+      },
+      'this-year': {
+        label: 'This calendar year',
+        startDate: thisCalendarYear(now).startDate,
+        endDate: thisCalendarYear(now).endDate
+      },
+      'this-financial-year': {
+        label: 'This financial year',
+        startDate: thisFinancialYear(now).startDate,
+        endDate: thisFinancialYear(now).endDate
+      },
+      'this-quarter': {
+        label: 'This quarter',
+        startDate: thisQuarter(now).startDate,
+        endDate: thisQuarter(now).endDate
+      },
+      'last-year': {
+        label: 'Last calendar year',
+        startDate: lastCalendarYear(now).startDate,
+        endDate: lastCalendarYear(now).endDate
+      },
+      'last-financial-year': {
+        label: 'Last financial year',
+        startDate: lastFinancialYear(now).startDate,
+        endDate: lastFinancialYear(now).endDate
+      },
+      'last-quarter': {
+        label: 'Last quarter',
+        startDate: lastQuarter(now).startDate,
+        endDate: lastQuarter(now).endDate
+      },
+      'custom-range': {
+        label: 'Custom date range',
+        startDate: null,
+        endDate: null
+      },
+    }
+  }
+
+  get timeFrameOpts() {
+    return Object.keys(this.timeFrames)
+      .map(key => ({
+        value: key,
+        children: this.timeFrames[key].label
+      }))
+  }
+
+  getMinStartDate(firstSpendingDate) {
+    const candidates = values(this.timeFrames)
+      .map(tf => tf.startDate)
+      .filter(date => date != null);
+    candidates.push(startOfMonth(firstSpendingDate));
+    return min(candidates);
+  }
+
+  getMaxEndDate(lastSpendingDate) {
+    const candidates = values(this.timeFrames)
+      .map(tf => tf.endDate)
+      .filter(date => date != null);
+    candidates.push(startOfMonth(lastSpendingDate));
+    return max(candidates);
+  }
+
+  matchTimeFrame(startDate, endDate) {
+    const matched = Object.keys(this.timeFrames).filter(
+        key => {
+          const val = this.timeFrames[key];
+          return (val.startDate == startDate && val.endDate == endDate);
+        });
+    if (matched.length > 0) {
+      return matched[0];
+    }
+    return 'custom-range';
   }
 
   componentDidMount() {
-    getProjectData(this.props.id, this.props.csrftoken)
+    const timeFrame = this.timeFrames[this.state.timeFrame];
+    const startDate = timeFrame.startDate;
+    const endDate = timeFrame.endDate;
+    getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
       .then(project => {
-        this.setState({project: project, hasData: true});
+        const firstSpendingDate = project['first_spending_date'];
+        const lastSpendingDate = project['last_spending_date'];
+        this.setState({
+          project: project,
+          firstSpendingDate: startOfMonth(firstSpendingDate),
+          lastSpendingDate: endOfMonth(lastSpendingDate),
+          minStartDate: this.getMinStartDate(firstSpendingDate),
+          maxEndDate: this.getMaxEndDate(lastSpendingDate),
+          startDate: startOfMonth(firstSpendingDate),
+          endDate: endOfMonth(lastSpendingDate),
+          hasData: true
+        });
       });
   }
 
@@ -80,26 +197,126 @@ export class ProjectContainer extends Component {
     this.setState({showRemainings: !this.state.showRemainings});
   }
 
+  get startDateOpts() {
+    return monthRange(this.state.minStartDate, this.state.maxEndDate, 'start')
+      .map(m => ({
+        value: m,
+        children: moment(m).format('MMM YY'),
+      }));
+  }
+
+  get endDateOpts() {
+    return monthRange(this.state.minStartDate, this.state.maxEndDate, 'end')
+      .filter(m => moment(m) >= moment(this.state.startDate) || m == this.state.endDate)
+      .map(m => ({
+        value: m,
+        children: moment(m).format('MMM YY')
+      }));
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+
+    // when timeFrame changes
+    if (this.state.timeFrame != nextState.timeFrame) {
+      const timeFrame = this.timeFrames[nextState.timeFrame];
+      const startDate = timeFrame.startDate;
+      const endDate = timeFrame.endDate;
+      if (startDate && endDate) {
+        this.setState({startDate: startDate, endDate: endDate});
+      }
+    };
+
+    const startDate = nextState.startDate;
+    const endDate = nextState.endDate;
+    // when first start
+    if (this.state.startDate === '' || this.state.endDate === '') {
+      return;
+    };
+    // when picked up a start date greater than previous end date
+    if (startDate > endDate) {
+      return;
+    };
+    // when startDate or endDate changes
+    if (this.state.startDate != startDate || this.state.endDate != endDate) {
+      this.setState({hasData: false});
+      getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
+        .then(project => {
+          this.setState({project: project, hasData: true});
+        });
+    };
+  }
+
+  handleTimeFrameChange(evt) {
+    if (this.state.timeFrame != evt.target.value) {
+      this.setState({
+        timeFrame: evt.target.value
+      });
+    }
+  }
+
+  handleStartDateChange(evt) {
+    const startDate = evt.target.value;
+    // do nothing if there is no change
+    if (startDate == this.state.startDate) {
+      return;
+    }
+    const endDate = this.state.endDate;
+    this.setState({
+      startDate: startDate,
+      timeFrame: this.matchTimeFrame(startDate, endDate)
+    });
+  }
+
+  handleEndDateChange(evt) {
+    const startDate = this.state.startDate;
+    const endDate = evt.target.value;
+    // do nothing if there is no change
+    if (endDate == this.state.endDate) {
+      return;
+    }
+    this.setState({
+      endDate: endDate,
+      timeFrame: this.matchTimeFrame(startDate, endDate)
+    });
+  }
+
   render() {
+    const timeFrameSelector = (
+      <TimeFrameSelector
+        rangeOptions={this.timeFrameOpts}
+        selectedRange={this.state.timeFrame}
+        onRangeChange={evt => this.handleTimeFrameChange(evt)}
+        selectedStartDate={this.state.startDate}
+        selectedEndDate={this.state.endDate}
+        minStartDate={this.state.minStartDate}
+        startDateOpts={this.startDateOpts}
+        endDateOpts={this.endDateOpts}
+        onSelectedStartDateChange={evt => this.handleStartDateChange(evt)}
+        onSelectedEndDateChange={evt => this.handleEndDateChange(evt)}
+      />);
+
     if (! this.state.hasData) {
       return (
-        <div className="graph-spinkit">
-          <Spinner
-            spinnerName='three-bounce'
-          />
+        <div>
+          { timeFrameSelector }
+          <div className="graph-spinkit">
+            <Spinner spinnerName='three-bounce' />
+          </div>
         </div>
       );
     };
+
     return (
       <div>
+        { timeFrameSelector }
         <label className="form-checkbox">
           <input
             id="show-remainings"
             name="show-remaings"
             type="checkbox"
             onChange={() => this.handleToggle()}
-            value={this.state.showRemainings} />
-            Show remaining budget
+            checked={this.state.showRemainings} />
+          Show remaining budget
         </label>
         <ProjectGraph
           project={this.state.project}
@@ -110,11 +327,52 @@ export class ProjectContainer extends Component {
   }
 }
 
+function TimeFrameSelector({
+  rangeOptions,
+  selectedRange,
+  onRangeChange,
+  startDateOpts,
+  selectedStartDate,
+  onSelectedStartDateChange,
+  endDateOpts,
+  selectedEndDate,
+  onSelectedEndDateChange}) {
+
+  return (
+    <div className="grid-row">
+      <div className="column-one-quarter">
+        <Select
+          name="form-field-name"
+          value={selectedRange}
+          options={rangeOptions}
+          onChange={onRangeChange}
+          label="Show data for"
+        />
+      </div>
+      <div className="column-one-quarter">
+        <Select
+          name="start-date"
+          options={startDateOpts}
+          value={selectedStartDate}
+          onChange={onSelectedStartDateChange}
+          label="from"
+        />
+      </div>
+      <div className="column-one-quarter">
+        <Select
+          name="end-date"
+          options={endDateOpts}
+          value={selectedEndDate}
+          onChange={onSelectedEndDateChange}
+          label="to"
+        />
+      </div>
+    </div>
+  );
+}
+
 
 class ProjectGraph extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   plot() {
     if (Object.keys(this.props.project).length === 0) {

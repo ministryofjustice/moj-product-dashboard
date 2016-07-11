@@ -26,6 +26,7 @@
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
     "react-spinkit": "^1.1.7",
+    "rebass": "^0.2.7",
     "style-loader": "^0.13.1",
     "webpack": "^1.13.0"
   },

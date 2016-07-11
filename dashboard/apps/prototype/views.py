@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
+from dashboard.libs.date_tools import parse_date
 from .models import Project, Client
 from .tasks import sync_float
 
@@ -56,8 +57,18 @@ def project_json(request):
     except (ValueError, Project.DoesNotExist):
         error = 'cannot find project with id={}'.format(request_data['id'])
         return JsonResponse({'error': error}, status=404)
-    # get the profile of the project for each month throughout the life span
-    return JsonResponse(project.profile(freq='MS'))
+
+    start_date = request_data.get('startDate')
+    if start_date:
+        start_date = parse_date(start_date)
+    end_date = request_data.get('endDate')
+    if end_date:
+        end_date = parse_date(end_date)
+    # get the profile of the project for each month
+    return JsonResponse(project.profile(
+        start_date=start_date,
+        end_date=end_date,
+        freq='MS'))
 
 
 @login_required
