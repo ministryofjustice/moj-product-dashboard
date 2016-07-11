@@ -56,7 +56,7 @@ describe('getProjectData', () => {
     const data = {project: 'some data'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => resolve({json: () => data})));
-    return getProjectData('1', 'this-year', 'csrftoken')
+    return getProjectData()
       .then(projectData => {
         expect(window.fetch).toBeCalled();
         expect(projectData).toEqual(data);
@@ -70,7 +70,7 @@ describe('getProjectData', () => {
     const error = {message: 'something went wrong'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => reject(error)));
-    return getProjectData('2', 'this-year', 'csrftoken')
+    return getProjectData()
       .catch(err => {
         expect(window.fetch).toBeCalled();
         expect(err).toEqual(error);
