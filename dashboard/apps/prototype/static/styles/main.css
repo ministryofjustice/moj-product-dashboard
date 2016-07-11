@@ -25,21 +25,3 @@ button.update-from-float {
 .graph-spinkit {
   top: 40px;
 }
-
-.column-three-quarters {
-  padding: 0 15px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-@media (min-width: 641px) {
-  .column-three-quarters {
-    float: left;
-    width: 75%;
-  }
-}
-
-.top-most {
-  z-index: 9999;
-}
