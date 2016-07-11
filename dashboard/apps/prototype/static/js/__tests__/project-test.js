@@ -1,7 +1,7 @@
 jest.mock('../plotly-custom');
 import Plotly from '../plotly-custom';
 
-import {parseProjectFinancials, plotProject, getProjectData} from '../project';
+import {parseProjectFinancials, getProjectData} from '../project';
 
 const financial = {
   '2016-01': {
@@ -33,15 +33,6 @@ describe('parseProjectFinancials', () => {
     expect(parsed.civilServantCosts).toEqual([ 200.8, 100.2, 150.2 ]);
     expect(parsed.additionalCosts).toEqual([ 50.2, 70.4, 10.2 ]);
     expect(parsed.totalCostsCumulative).toEqual([ 351.5, 722.6, 1033.5 ]);
-  });
-});
-
-
-describe('plotProject', () => {
-  it(`calls the Plotly.newPlot function`, () => {
-    const elem = jest.fn();
-    plotProject({financial}, elem);
-    expect(Plotly.newPlot).toBeCalled();
   });
 });
 
