@@ -7,32 +7,39 @@ const financial = {
   '2016-01': {
     'contractor': '100.500',
     'non-contractor': '200.80',
-    'budget': '300.00',
+    'budget': '500.00',
     'additional': '50.2'
   },
   '2016-02': {
     'contractor': '200.500',
     'non-contractor': '100.20',
-    'budget': '300.00',
+    'budget': '800.00',
     'additional': '70.4'
   },
   '2016-03': {
     'contractor': '150.500',
     'non-contractor': '150.20',
-    'budget': '300.00',
+    'budget': '900.00',
     'additional': '10.2'
   }
 };
 
 describe('parseProjectFinancials', () => {
   it(`extracts and the converts the months and financial figures`, () => {
-    const parsed = parseProjectFinancials(financial);
-    expect(parsed.months).toEqual([ 'Jan 16', 'Feb 16', 'Mar 16' ]);
-    expect(parsed.budget).toEqual([ 300, 300, 300 ]);
-    expect(parsed.contractorCosts).toEqual([ 100.5, 200.5, 150.5 ]);
-    expect(parsed.civilServantCosts).toEqual([ 200.8, 100.2, 150.2 ]);
-    expect(parsed.additionalCosts).toEqual([ 50.2, 70.4, 10.2 ]);
-    expect(parsed.totalCostsCumulative).toEqual([ 351.5, 722.6, 1033.5 ]);
+    const parsed = parseProjectFinancials(financial, '2016-02-10');
+
+    expect(parsed.months).toEqual([ '2016-01', '2016-02', '2016-03' ]);
+    expect(parsed.budget).toEqual([ 500, 800, 900 ]);
+
+    expect(parsed.pastMonths).toEqual([ '2016-01' ]);
+    expect(parsed.pastTotalCosts).toEqual([ 351.5 ]);
+    expect(parsed.pastCumulative).toEqual([ 351.5 ]);
+    expect(parsed.pastRemainings).toEqual([ 148.5 ]);
+
+    expect(parsed.futureMonths).toEqual([ '2016-02', '2016-03' ]);
+    expect(parsed.futureTotalCosts).toEqual([ 371.1, 310.9 ]);
+    expect(parsed.futureCumulative).toEqual([ 722.6, 1033.5 ]);
+
   });
 });
 

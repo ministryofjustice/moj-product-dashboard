@@ -33,38 +33,60 @@ export function getProjectData(id, startDate, endDate, csrftoken) {
 /**
  * parse the financial infomation about the project
  */
-export function parseProjectFinancials(financial) {
+export function parseProjectFinancials(financial, thisMonth) {
   const _months = Object.keys(financial).sort();
+  const _pastMonths = _months
+    .filter(m => moment(m, 'YYYY-MM') < moment(thisMonth).startOf('month'));
+  const _futureMonths = _months
+    .filter(m => moment(m, 'YYYY-MM') >= moment(thisMonth).startOf('month'));
+
   const costs = _months.map(month => financial[month]);
-  const months = _months.map(m => moment(m, 'YYYY-MM').format('MMM YY'));
+  const budget = costs.map(c => parseFloat(c['budget']));
 
-  const mapFloat = key => costs.map(c => parseFloat(c[key]));
-  const contractorCosts = mapFloat('contractor');
-  const civilServantCosts = mapFloat('non-contractor');
-  const staffCosts = contractorCosts
-    .map((cost, index) => cost + civilServantCosts[index]);
-  const additionalCosts = mapFloat('additional');
-  const budget = mapFloat('budget');
-
-  const totalCosts = months.map(
-    (month, i) => contractorCosts[i] + civilServantCosts[i] + additionalCosts[i]);
-  const totalCostsCumulative = [];
+  const pastCosts = _pastMonths.map(month => financial[month]);
+  const pastTotalCosts = pastCosts.map(c =>
+     parseFloat(c['contractor']) +
+     parseFloat(c['non-contractor']) +
+     parseFloat(c['additional']));
+  const pastCumulative = [];
   let cumulative = 0;
-  totalCosts.map(costs => {
-    cumulative += costs;
-    totalCostsCumulative.push(cumulative);
+  pastTotalCosts.map(c => {
+    cumulative += c;
+    pastCumulative.push(cumulative);
   });
-  const remainings = budget
-    .map((val, index) => val - totalCostsCumulative[index]);
+  // TODO: this is wrong to calculate remainings!
+  const pastRemainings = pastCumulative
+    .map((val, index) => budget[index] - val);
+
+  const futureCosts = _futureMonths.map(month => financial[month]);
+  const futureTotalCosts = futureCosts.map(c =>
+     parseFloat(c['contractor']) +
+     parseFloat(c['non-contractor']) +
+     parseFloat(c['additional']));
+  const futureCumulative = [];
+  futureTotalCosts.map(c => {
+    cumulative += c;
+    futureCumulative.push(cumulative);
+  });
+  const futureRemainings = futureCumulative
+    .map((val, index) => budget[index + pastCumulative.length] - val)
+
+  const parseMonthLabel = m => moment(m, 'YYYY-MM').format('YYYY-MM')
+  const months = _months.map(parseMonthLabel);
+  const pastMonths = _pastMonths.map(parseMonthLabel);
+  const futureMonths = _futureMonths.map(parseMonthLabel);
+
   return {
     months,
     budget,
-    civilServantCosts,
-    contractorCosts,
-    staffCosts,
-    additionalCosts,
-    totalCostsCumulative,
-    remainings
+    pastMonths,
+    pastTotalCosts,
+    pastCumulative,
+    pastRemainings,
+    futureMonths,
+    futureTotalCosts,
+    futureCumulative,
+    futureRemainings
   };
 }
 
@@ -318,23 +340,34 @@ export class ProjectContainer extends Component {
 
 
 function plotCumulativeSpendings(project, showBurnDown, elem) {
-  const financial = parseProjectFinancials(project.financial);
-  const months = financial.months;
+  const { months,
+          budget,
+          pastMonths,
+          pastCumulative,
+          pastRemainings,
+          futureMonths,
+          futureCumulative,
+          futureRemainings } = parseProjectFinancials(project.financial);
 
-  const remainingTrace = {
-    x: months,
-    y: financial.remainings,
-    name: 'Budget remaining',
-    mode: 'lines',
-    yaxis: 'y',
-    marker: {
-      color: '#B29000',
-      line: {width: 0}  // for ie9 only
-    }
-  };
-  const totalCostTrace = {
-    x: months,
-    y: financial.totalCostsCumulative,
+  // use beginning + past months to see the very beginning of the 1st month
+  const oneMonthBeforeStart = moment(pastMonths[0], 'YYYY-MM')
+    .subtract(1, 'month').format('YYYY-MM');
+  const beginningPlusPastMonths = [ oneMonthBeforeStart ].concat(pastMonths);
+
+  // use current month + future months to ensure continuity
+  const index = pastMonths.length -1;
+  const currentPlusFutureMonths = [ pastMonths[ index ] ]
+    .concat(futureMonths);
+  const currentPlusFutureCumulative = [ pastCumulative[ index ] ]
+    .concat(futureCumulative);
+  const currentPlusFutureRemainings = [ pastRemainings[ index ] ]
+    .concat(futureRemainings);
+
+  const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
+
+  const actualCumulativeTrace = {
+    x: beginningPlusPastMonths.map(toLabel),
+    y: [ 0 ].concat(pastCumulative),
     name: 'Actual spend',
     mode: 'lines',
     yaxis: 'y',
@@ -343,9 +376,50 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
       line: {width: 0}  // for ie9 only
     }
   };
+  const actualRemainingTrace = {
+    x: beginningPlusPastMonths.map(toLabel),
+    y: [ budget[0] ].concat(pastRemainings),
+    name: 'Actual spend',
+    mode: 'lines',
+    yaxis: 'y',
+    marker: {
+      color: '#B29000',
+      line: {width: 0}  // for ie9 only
+    }
+  };
+
+  const forecastCumulativeTrace = {
+    x: currentPlusFutureMonths.map(toLabel),
+    y: currentPlusFutureCumulative,
+    name: 'Forecast spend',
+    mode: 'lines',
+    yaxis: 'y',
+    line: {
+      dash: 'dot'
+    },
+    marker: {
+      color: '#6F777B',
+      line: {width: 0}  // for ie9 only
+    }
+  };
+  const forecastRemainingTrace = {
+    x: currentPlusFutureMonths.map(toLabel),
+    y: currentPlusFutureRemainings,
+    name: 'Forecast spend',
+    mode: 'lines',
+    yaxis: 'y',
+    marker: {
+      color: '#B29000',
+      line: {width: 0}  // for ie9 only
+    },
+    line: {
+      dash: 'dot'
+    }
+  };
+
   const budgetTrace = {
-    x: months,
-    y: financial.budget,
+    x: months.map(toLabel),
+    y: budget,
     name: 'Budget',
     mode: 'lines',
     yaxis: 'y',
@@ -354,11 +428,15 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
       line: {width: 0}  // for ie9 only
     }
   };
+
   const data = [];
+
   if (showBurnDown) {
-    data.push(remainingTrace);
+    data.push(actualRemainingTrace);
+    data.push(forecastRemainingTrace);
   } else {
-    data.push(totalCostTrace);
+    data.push(actualCumulativeTrace);
+    data.push(forecastCumulativeTrace);
     data.push(budgetTrace);
   };
 
@@ -367,17 +445,60 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     font: {
       family: 'nta'
     },
+    xaxis: {
+      type: 'date',
+      // nticks: 12,
+      tickformat: '%b %y'
+    },
     yaxis: {
       rangemode: 'tozero',
       tickprefix: '\u00a3'
     },
     legend: {
       yanchor: 'bottom'
-    },
-    displayModeBar: false
+    }
   };
 
-  Plotly.newPlot(elem, data, layout, {displayModeBar: false});
+  // plot a line for today if within the time frame
+  const today = moment().format('YYYY-MM-DD');
+  if (today > months[0] && today < endOfMonth(months[ months.length -1 ])) {
+    let min, max;
+    if (showBurnDown) {
+      const minRemaining = Math.min.apply(null, pastRemainings.concat(futureRemainings));
+      const maxRemaining = Math.max.apply(null, pastRemainings.concat(futureRemainings));
+      min = minRemaining > 0 ? 0 : minRemaining;
+      max = maxRemaining < 0 ? 0 : maxRemaining;
+    } else {
+      min = 0;
+      max = Math.max.apply(null, budget.concat(futureCumulative));
+    }
+    const todayText = {
+      x: [ today, today ],
+      y: [ max / 2, max ],
+      text: [ 'Today', '' ],
+      mode: 'text',
+      textposition: 'top right',
+      showlegend: false,
+      hoverinfo: 'none'
+    };
+    data.push(todayText);
+    layout['shapes'] = [
+      {
+        type: 'line',
+        x0: today,
+        y0: min,
+        x1: today,
+        y1: max,
+        line: {
+          width: 0.3,
+          dash: 'dashdot'
+        }
+      }
+    ];
+  }
+
+
+  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }
 
 function TimeFrameSelector({
@@ -481,28 +602,31 @@ class ProjectGraph extends Component {
  * plot the graph for a project's monthly spendings
  */
 function plotMonthlySpendings(project, elem) {
-  const financial = parseProjectFinancials(project.financial);
-  const months = financial.months;
+  const { pastMonths,
+          pastTotalCosts,
+          futureMonths,
+          futureTotalCosts } = parseProjectFinancials(project.financial);
 
   // NOTE: those lines for ie9 is related to this issue
   // https://github.com/plotly/plotly.js/issues/166
-  const staffTrace = {
-    x: months,
-    y: financial.staffCosts,
-    name: 'Staff',
+  const toLabel = m => moment(m, 'YYYY-MM').format('MMM YY');
+  const actualTrace = {
+    x: pastMonths.map(toLabel),
+    y: pastTotalCosts,
+    name: 'Actual spend',
     type: 'bar',
     marker: {
       color: '#c0c2dc',
       line: {width: 0}  // for ie9 only
     }
   };
-  const additionalTrace = {
-    x: months,
-    y: financial.additionalCosts,
-    name: 'Additional',
+  const forecastTrace = {
+    x: futureMonths.map(toLabel),
+    y: futureTotalCosts,
+    name: 'Forecast spend',
     type: 'bar',
     marker: {
-      color: '#b5d8df',
+      color: '#add1d1',
       line: {width: 0}  // for ie9 only
     }
   };
@@ -519,11 +643,8 @@ function plotMonthlySpendings(project, elem) {
       yanchor: 'bottom'
     }
   };
-  const data = [
-    staffTrace,
-    additionalTrace,
-  ];
-  Plotly.newPlot(elem, data, layout, {displayModeBar: false});
+  const data = [ actualTrace, forecastTrace ];
+  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }
 
 
