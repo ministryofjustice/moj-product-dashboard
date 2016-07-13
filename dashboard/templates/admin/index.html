@@ -12,15 +12,27 @@
 {% block content %}
 <div id="content-main">
 
-{% if True %}
+{% if perms.prototype.upload_person %}
     <div class="module">
         <table width="100%">
             <caption>
-                <a href="{% url 'admin:person_upload_payroll' %}" class="section" title="Payroll features">Payroll</a>
+                <a href="{% url 'admin:person_upload_payroll' %}" class="section" title="Payroll features">Finance</a>
             </caption>
-            <tr class="model-">
-                <th scope="row"><a href="{% url 'admin:person_upload_payroll' %}">Upload payroll</a></th>
-            </tr>
+            {% if perms.prototype.upload_person %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:person_upload_payroll' %}">Upload payroll</a></th>
+                </tr>
+            {% endif %}
+            {% if perms.prototype.adjustmentexport_project %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:project_adjustment_export' %}">Adjustment Export</a></th>
+                </tr>
+            {% endif %}
+            {% if perms.prototype.intercompanyexport_project %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:project_intercompany_export' %}">Intercompany Export</a></th>
+                </tr>
+            {% endif %}
         </table>
     </div>
 {% endif %}
