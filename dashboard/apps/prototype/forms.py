@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+import os
 from datetime import date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
 from django import forms
 
-import xlrd
+from xlutils.copy import copy
+from xlrd import open_workbook
+from xlwt import easyxf
 
 from dashboard.libs.date_tools import get_workdays
 
-from .models import Person, Rate
+from .models import Person, Rate, Project
 from .widgets import MonthYearWidget
 
 
@@ -56,7 +59,7 @@ class PayrollUploadForm(forms.Form):
 
     def clean_payroll_file(self):
         start = self.cleaned_data['date']
-        workbook = xlrd.open_workbook(
+        workbook = open_workbook(
             file_contents=self.cleaned_data['payroll_file'].read())
 
         worksheet = workbook.sheet_by_index(0)
@@ -93,3 +96,40 @@ class PayrollUploadForm(forms.Form):
             if not created:
                 rate.rate = pay['rate']
                 rate.save()
+
+
+class ExportForm(forms.Form):
+    template = None
+
+    date = forms.DateField(required=True, widget=MonthYearWidget(
+        years=year_range(backward=4, forward=3)
+    ))
+    project = forms.ModelChoiceField(
+        queryset=Project.objects.all(),
+        required=True)
+
+    def export(self):
+        workbook = copy(open_workbook(self._get_template()))
+        self.write(workbook)
+        return workbook
+
+    def _get_template(self):
+        return os.path.join(
+            os.path.realpath(os.path.dirname(__file__)),
+            'templates',
+            self.template
+        )
+
+
+class AdjustmentExportForm(ExportForm):
+    template = 'xls/Adjustment_Journal_Template.xls'
+
+    def write(self, workbook):
+        pass
+
+
+class IntercompanyExportForm(ExportForm):
+    template = 'xls/Intercompany_Journal_Template.xls'
+
+    def write(self, workbook):
+        pass
