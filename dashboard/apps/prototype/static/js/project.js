@@ -3,7 +3,7 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
-import { Select, config } from 'rebass';
+import { Select, Radio, config } from 'rebass';
 
 import Plotly from './plotly-custom';
 import { monthRange, thisCalendarYear,
@@ -11,9 +11,6 @@ import { monthRange, thisCalendarYear,
          lastFinancialYear, lastQuarter,
          startOfMonth, endOfMonth,
          min, max, values } from './utils';
-
-// set the font size of label
-config.fontSizes[5] = 19;
 
 /**
  * send a POST request to the backend to retrieve project profile
@@ -77,7 +74,7 @@ export class ProjectContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showRemainings: false,
+      showBurnDown: false,
       hasData: false,
       project: {},
       timeFrame: 'entire-time-span',
@@ -193,8 +190,8 @@ export class ProjectContainer extends Component {
       });
   }
 
-  handleToggle() {
-    this.setState({showRemainings: !this.state.showRemainings});
+  handleBurnDownChange(e) {
+    this.setState({showBurnDown: e.target.value == 'burn-down'});
   }
 
   get startDateOpts() {
@@ -309,22 +306,78 @@ export class ProjectContainer extends Component {
     return (
       <div>
         { timeFrameSelector }
-        <label className="form-checkbox">
-          <input
-            id="show-remainings"
-            name="show-remaings"
-            type="checkbox"
-            onChange={() => this.handleToggle()}
-            checked={this.state.showRemainings} />
-          Show remaining budget
-        </label>
         <ProjectGraph
+          onChange={(e) => this.handleBurnDownChange(e)}
           project={this.state.project}
-          showRemainings={this.state.showRemainings}
+          showBurnDown={this.state.showBurnDown}
         />
       </div>
     );
   }
+}
+
+
+function plotCumulativeSpendings(project, showBurnDown, elem) {
+  const financial = parseProjectFinancials(project.financial);
+  const months = financial.months;
+
+  const remainingTrace = {
+    x: months,
+    y: financial.remainings,
+    name: 'Budget remaining',
+    mode: 'lines',
+    yaxis: 'y',
+    marker: {
+      color: '#B29000',
+      line: {width: 0}  // for ie9 only
+    }
+  };
+  const totalCostTrace = {
+    x: months,
+    y: financial.totalCostsCumulative,
+    name: 'Actual spend',
+    mode: 'lines',
+    yaxis: 'y',
+    marker: {
+      color: '#6F777B',
+      line: {width: 0}  // for ie9 only
+    }
+  };
+  const budgetTrace = {
+    x: months,
+    y: financial.budget,
+    name: 'Budget',
+    mode: 'lines',
+    yaxis: 'y',
+    marker: {
+      color: '#FFBF47',
+      line: {width: 0}  // for ie9 only
+    }
+  };
+  const data = [];
+  if (showBurnDown) {
+    data.push(remainingTrace);
+  } else {
+    data.push(totalCostTrace);
+    data.push(budgetTrace);
+  };
+
+  const layout = {
+    title: 'Total expenditure and budget',
+    font: {
+      family: 'nta'
+    },
+    yaxis: {
+      rangemode: 'tozero',
+      tickprefix: '\u00a3'
+    },
+    legend: {
+      yanchor: 'bottom'
+    },
+    displayModeBar: false
+  };
+
+  Plotly.newPlot(elem, data, layout, {displayModeBar: false});
 }
 
 function TimeFrameSelector({
@@ -378,10 +431,14 @@ class ProjectGraph extends Component {
     if (Object.keys(this.props.project).length === 0) {
       return;
     }
-    plotProject(
+    plotCumulativeSpendings(
       this.props.project,
-      this.props.showRemainings,
-      this.container
+      this.props.showBurnDown,
+      this.container1
+    );
+    plotMonthlySpendings(
+      this.props.project,
+      this.container2
     );
   }
 
@@ -395,16 +452,35 @@ class ProjectGraph extends Component {
 
   render() {
     return (
-      <div ref={(elem) => this.container=elem} />
+      <div>
+        <Radio
+          checked={!this.props.showBurnDown}
+          circle
+          label="Show burn up"
+          name="burn-up-burn-down"
+          value="burn-up"
+          onChange={this.props.onChange}
+        />
+        <Radio
+          checked={this.props.showBurnDown}
+          circle
+          label="Show burn down"
+          name="burn-up-burn-down"
+          value="burn-down"
+          onChange={this.props.onChange}
+        />
+        <div ref={(elem) => this.container1=elem} />
+        <div ref={(elem) => this.container2=elem} />
+      </div>
     );
   }
 }
 
 
 /**
- * plot the graphs for a project
+ * plot the graph for a project's monthly spendings
  */
-export function plotProject(project, showRemainings, elem) {
+function plotMonthlySpendings(project, elem) {
   const financial = parseProjectFinancials(project.financial);
   const months = financial.months;
 
@@ -430,54 +506,13 @@ export function plotProject(project, showRemainings, elem) {
       line: {width: 0}  // for ie9 only
     }
   };
-  const totalCostTrace = {
-    x: months,
-    y: financial.totalCostsCumulative,
-    name: 'Cumulative',
-    mode: 'lines',
-    yaxis: 'y2',
-    marker: {
-      color: '#6F777B',
-      line: {width: 0}  // for ie9 only
-    }
-  };
-  const budgetTrace = {
-    x: months,
-    y: financial.budget,
-    name: 'Budget allocated',
-    mode: 'lines',
-    yaxis: 'y2',
-    marker: {
-      color: '#FFBF47',
-      line: {width: 0}  // for ie9 only
-    }
-  };
-  const remainingTrace = {
-    x: months,
-    y: financial.remainings,
-    name: 'Budget remaining',
-    mode: 'lines',
-    yaxis: 'y2',
-    marker: {
-      color: '#B29000',
-      line: {width: 0}  // for ie9 only
-    }
-  };
   const layout = {
-    title: project.name,
+    title: 'Monthly expenditure',
     font: {
       family: 'nta'
     },
     barmode: 'stack',
     yaxis: {
-      title: 'monthly cost',
-      tickprefix: '\u00a3'
-    },
-    yaxis2: {
-      title: 'cumulative',
-      overlaying: 'y',
-      side: 'right',
-      rangemode: 'tozero',
       tickprefix: '\u00a3'
     },
     legend: {
@@ -488,13 +523,7 @@ export function plotProject(project, showRemainings, elem) {
     staffTrace,
     additionalTrace,
   ];
-  if (showRemainings) {
-    data.push(remainingTrace);
-  } else {
-    data.push(totalCostTrace);
-    data.push(budgetTrace);
-  };
-  Plotly.newPlot(elem, data, layout);
+  Plotly.newPlot(elem, data, layout, {displayModeBar: false});
 }
 
 
