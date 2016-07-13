@@ -17,6 +17,8 @@
       - ['change_person', 'prototype', 'person']
       - ['upload_person', 'prototype', 'person']
       - ['change_project', 'prototype', 'project']
+      - ['adjustmentexport_project', 'prototype', 'project']
+      - ['intercompanyexport_project', 'prototype', 'project']
       - ['change_task', 'prototype', 'task']
       - ['change_cost', 'prototype', 'cost']
       - ['add_cost', 'prototype', 'cost']

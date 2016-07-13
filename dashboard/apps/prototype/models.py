@@ -579,7 +579,8 @@ class Project(models.Model):
 
     class Meta:
         permissions = (
-            ('upload_project', 'Can upload monthly payroll'),
+            ('adjustmentexport_project', 'Can run Adjustment Export'),
+            ('intercompanyexport_project', 'Can run Intercompany Export'),
         )
 
 
