@@ -487,21 +487,12 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
       yanchor: 'bottom'
     },
     shapes: phaseRects(project, range),
+    annotations: []
   };
 
   // plot a line for today if within the time frame
   const today = moment().format('YYYY-MM-DD');
   if (today > months[0] && today < endOfMonth(months[ months.length -1 ])) {
-    const todayTextTrace = {
-      x: [ today ],
-      y: [ maxY / 3 ],  // TODO use annoation
-      text: [ 'Today' ],
-      mode: 'text',
-      textposition: 'top right',
-      showlegend: false,
-      hoverinfo: 'none'
-    };
-    data.push(todayTextTrace);
     layout['shapes'].push(
       {
         type: 'line',
@@ -517,6 +508,13 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
         }
       }
     );
+    layout['annotations'].push({
+      yref: 'paper',
+      x: today,
+      y: 0.3,
+      text: 'Today',
+      showarrow: false
+    });
   }
 
 
