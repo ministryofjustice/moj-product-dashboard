@@ -54,7 +54,6 @@ export function parseProjectFinancials(financial, thisMonth) {
     cumulative += c;
     pastCumulative.push(cumulative);
   });
-  // TODO: this is wrong to calculate remainings!
   const pastRemainings = pastCumulative
     .map((val, index) => budget[index] - val);
 
@@ -260,7 +259,6 @@ export class ProjectContainer extends Component {
       this.setState({hasData: false});
       getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
         .then(project => {
-          console.log(project);
           this.setState({project: project, hasData: true});
         });
     };
@@ -337,23 +335,6 @@ export class ProjectContainer extends Component {
       </div>
     );
   }
-}
-
-function getYRange(showBurnDown, remainings, cumulatives, budget) {
-  let minY, maxY;
-  if (showBurnDown) {
-    const minRemaining = min(remainings);
-    const maxRemaining = max(remainings);
-    minY = minRemaining > 0 ? 0 : minRemaining;
-    maxY = maxRemaining < 0 ? 0 : maxRemaining;
-  } else {
-    minY = 0;
-    maxY = max(budget.concat(cumulatives));
-  }
-  // make it slightly bigger;
-  minY = 1.1 * minY;
-  maxY = 1.1 * maxY;
-  return {minY, maxY};
 }
 
 
@@ -442,13 +423,6 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     }
   };
 
-  const {minY, maxY} = getYRange(
-    showBurnDown,
-    pastRemainings.concat(futureRemainings),
-    pastCumulative.concat(futureCumulative),
-    budget
-  );
-
   const data = [];
 
   if (showBurnDown) {
@@ -468,7 +442,7 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
   const tickformat = moment.duration(range[1] - range[0]).asMonths() > 11 ? '%b %y' : '%-d %b %y';
 
   const layout = Object.assign(
-    phaseRects(project, range),
+    phaseRects(project, range.map(m => m.format('YYYY-MM-DD'))),
     {
       title: 'Total expenditure and budget',
       font: {
@@ -645,7 +619,7 @@ function phaseRects(project, xRange) {
     },
     'live': {
       start: live,
-      end: xRange[1].format('YYYY-MM-DD'),
+      end: xRange[1],
       fillcolor: '#839951'
     }
   }
@@ -664,17 +638,23 @@ function phaseRects(project, xRange) {
         y0: 0,
         y1: 1,
         fillcolor: fillcolor,
-        opacity: 0.2,
+        opacity: 0.1,
         line: {
           width: 0
         }
       });
+      const l = start > xRange[0] ? start : xRange[0];
+      const h = end < xRange[1] ? end : xRange[1];
       annotations.push({
         yref: 'paper',
-        x: moment((moment(start) + moment(end)) / 2).format('YYYY-MM-DD'),
+        x: moment((moment(l) + moment(h)) / 2).format('YYYY-MM-DD'),
         y: -0.2,
         text: phase,
-        showarrow: false
+        showarrow: false,
+        bgcolor: fillcolor,
+        font: {
+          color: '#ffffff'
+        }
       });
     };
   });
