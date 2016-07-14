@@ -204,11 +204,11 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     def get_urls(self):
         urls = [
             url(
-                r'^upload/$',
+                r'^export/adjustment/$',
                 self.admin_site.admin_view(self.adjustment_export_view),
                 name='project_adjustment_export'),
             url(
-                r'^upload/$',
+                r'^export/intercompany/$',
                 self.admin_site.admin_view(self.intercompany_export_view),
                 name='project_intercompany_export'),
         ]
@@ -253,7 +253,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
 
     @csrf_protect_m
     @transaction.atomic
-    @method_decorator(permission_required('prototype.intercompannyexport_project',
+    @method_decorator(permission_required('prototype.intercompanyexport_project',
                                           raise_exception=True))
     def intercompany_export_view(self, request, *args, **kwargs):
         return self._export_view(request, IntercompanyExportForm,
