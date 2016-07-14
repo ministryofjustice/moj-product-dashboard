@@ -442,7 +442,7 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
   const tickformat = moment.duration(range[1] - range[0]).asMonths() > 11 ? '%b %y' : '%-d %b %y';
 
   const layout = Object.assign(
-    phaseRects(project, range.map(m => m.format('YYYY-MM-DD'))),
+    shapesAndAnnotations(project, range.map(m => m.format('YYYY-MM-DD'))),
     {
       title: 'Total expenditure and budget',
       font: {
@@ -464,35 +464,6 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
       }
     }
   );
-
-  // plot a line for today if within the time frame
-  const today = moment().format('YYYY-MM-DD');
-  if (today > months[0] && today < endOfMonth(months[ months.length -1 ])) {
-    layout['shapes'].push(
-      {
-        type: 'line',
-        xref: 'x',
-        yref: 'paper',
-        x0: today,
-        x1: today,
-        y0: 0,
-        y1: 1,
-        line: {
-          width: 0.3,
-          dash: 'dashdot'
-        }
-      }
-    );
-    layout['annotations'].push({
-      yref: 'paper',
-      x: today,
-      xanchor: 'left',
-      y: 0.3,
-      text: 'Today',
-      showarrow: false
-    });
-  }
-
 
   Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }
@@ -594,7 +565,7 @@ class ProjectGraph extends Component {
 }
 
 
-function phaseRects(project, xRange) {
+function shapesAndAnnotations(project, xRange) {
 
   const discovery = project['discovery_date'];
   const alpha = project['alpha_date'];
@@ -658,6 +629,34 @@ function phaseRects(project, xRange) {
       });
     };
   });
+
+  // plot a line for today if within the time frame
+  const today = moment().format('YYYY-MM-DD');
+  if (today > xRange[0] && today < xRange[1]) {
+    shapes.push(
+      {
+        type: 'line',
+        xref: 'x',
+        yref: 'paper',
+        x0: today,
+        x1: today,
+        y0: 0,
+        y1: 1,
+        line: {
+          width: 0.3,
+          dash: 'dashdot'
+        }
+      }
+    );
+    annotations.push({
+      yref: 'paper',
+      x: today,
+      xanchor: 'left',
+      y: 0.3,
+      text: 'Today',
+      showarrow: false
+    });
+  }
 
   return {shapes, annotations};
 }
