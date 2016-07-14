@@ -6,9 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 from django import forms
 
-from xlutils.copy import copy
+from openpyxl import load_workbook
 from xlrd import open_workbook
-from xlwt import easyxf
 
 from dashboard.libs.date_tools import get_workdays
 
@@ -99,7 +98,7 @@ class PayrollUploadForm(forms.Form):
 
 
 class ExportForm(forms.Form):
-    template = 'xls/Journal_Template.xls'
+    template = 'xls/Journal_Template.xltm'
 
     date = forms.DateField(required=True, widget=MonthYearWidget(
         years=year_range(backward=4, forward=3)
@@ -109,9 +108,9 @@ class ExportForm(forms.Form):
         required=True)
 
     def export(self):
-        workbook = copy(open_workbook(self._get_template()))
-        self.write(workbook)
-        return workbook
+        wb = load_workbook(self._get_template(), keep_vba=True)
+        self.write(wb)
+        return wb
 
     def _get_template(self):
         return os.path.join(
@@ -122,14 +121,12 @@ class ExportForm(forms.Form):
 
 
 class AdjustmentExportForm(ExportForm):
-    #template = 'xls/Adjustment_Journal_Template.xls'
 
     def write(self, workbook):
         pass
 
 
 class IntercompanyExportForm(ExportForm):
-    #template = 'xls/Intercompany_Journal_Template.xls'
 
     def write(self, workbook):
         pass
