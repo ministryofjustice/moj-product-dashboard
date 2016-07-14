@@ -467,28 +467,29 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
 
   const tickformat = moment.duration(range[1] - range[0]).asMonths() > 11 ? '%b %y' : '%-d %b %y';
 
-  const layout = {
-    title: 'Total expenditure and budget',
-    font: {
-      family: 'nta'
-    },
-    xaxis: {
-      type: 'date',
-      range: range.map(m => m.valueOf()),
-      nticks: 18,
-      tickformat: tickformat,
-      hoverformat: '%-d %b %y'
-    },
-    yaxis: {
-      rangemode: 'tozero',
-      tickprefix: '\u00a3'
-    },
-    legend: {
-      yanchor: 'bottom'
-    },
-    shapes: phaseRects(project, range),
-    annotations: []
-  };
+  const layout = Object.assign(
+    phaseRects(project, range),
+    {
+      title: 'Total expenditure and budget',
+      font: {
+        family: 'nta'
+      },
+      xaxis: {
+        type: 'date',
+        range: range.map(m => m.valueOf()),
+        nticks: 18,
+        tickformat: tickformat,
+        hoverformat: '%-d %b %y'
+      },
+      yaxis: {
+        rangemode: 'tozero',
+        tickprefix: '\u00a3'
+      },
+      legend: {
+        yanchor: 'bottom'
+      }
+    }
+  );
 
   // plot a line for today if within the time frame
   const today = moment().format('YYYY-MM-DD');
@@ -511,6 +512,7 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     layout['annotations'].push({
       yref: 'paper',
       x: today,
+      xanchor: 'left',
       y: 0.3,
       text: 'Today',
       showarrow: false
@@ -518,7 +520,7 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
   }
 
 
-  Plotly.newPlot(elem, data, layout, { displayModeBar: true });
+  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }
 
 function TimeFrameSelector({
@@ -647,12 +649,13 @@ function phaseRects(project, xRange) {
       fillcolor: '#839951'
     }
   }
-  const rects = [];
+  const shapes = [];
+  const annotations = [];
 
   Object.keys(phases).map( phase => {
     const {start, end, fillcolor} = phases[phase];
     if (start && end) {
-      rects.push({
+      shapes.push({
         type: 'rect',
         xref: 'x',
         yref: 'paper',
@@ -666,10 +669,17 @@ function phaseRects(project, xRange) {
           width: 0
         }
       });
+      annotations.push({
+        yref: 'paper',
+        x: moment((moment(start) + moment(end)) / 2).format('YYYY-MM-DD'),
+        y: -0.2,
+        text: phase,
+        showarrow: false
+      });
     };
   });
 
-  return rects;
+  return {shapes, annotations};
 }
 
 /**
