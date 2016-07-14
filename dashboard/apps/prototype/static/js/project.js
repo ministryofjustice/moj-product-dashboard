@@ -260,6 +260,7 @@ export class ProjectContainer extends Component {
       this.setState({hasData: false});
       getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
         .then(project => {
+          console.log(project);
           this.setState({project: project, hasData: true});
         });
     };
@@ -338,6 +339,23 @@ export class ProjectContainer extends Component {
   }
 }
 
+function getYRange(showBurnDown, remainings, cumulatives, budget) {
+  let minY, maxY;
+  if (showBurnDown) {
+    const minRemaining = min(remainings);
+    const maxRemaining = max(remainings);
+    minY = minRemaining > 0 ? 0 : minRemaining;
+    maxY = maxRemaining < 0 ? 0 : maxRemaining;
+  } else {
+    minY = 0;
+    maxY = max(budget.concat(cumulatives));
+  }
+  // make it slightly bigger;
+  minY = 1.1 * minY;
+  maxY = 1.1 * maxY;
+  return {minY, maxY};
+}
+
 
 function plotCumulativeSpendings(project, showBurnDown, elem) {
   const { months,
@@ -348,11 +366,6 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
           futureMonths,
           futureCumulative,
           futureRemainings } = parseProjectFinancials(project.financial);
-
-  // use beginning + past months to see the very beginning of the 1st month
-  const oneMonthBeforeStart = moment(pastMonths[0], 'YYYY-MM')
-    .subtract(1, 'month').format('YYYY-MM');
-  const beginningPlusPastMonths = [ oneMonthBeforeStart ].concat(pastMonths);
 
   // use current month + future months to ensure continuity
   const index = pastMonths.length -1;
@@ -366,10 +379,10 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
   const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
 
   const actualCumulativeTrace = {
-    x: beginningPlusPastMonths.map(toLabel),
-    y: [ 0 ].concat(pastCumulative),
+    x: months.map(toLabel),
+    y: pastCumulative,
     name: 'Actual spend',
-    mode: 'lines',
+    type: 'scatter',
     yaxis: 'y',
     marker: {
       color: '#6F777B',
@@ -377,10 +390,10 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     }
   };
   const actualRemainingTrace = {
-    x: beginningPlusPastMonths.map(toLabel),
-    y: [ budget[0] ].concat(pastRemainings),
+    x: months.map(toLabel),
+    y: pastRemainings,
     name: 'Actual spend',
-    mode: 'lines',
+    type: 'scatter',
     yaxis: 'y',
     marker: {
       color: '#B29000',
@@ -392,7 +405,7 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     x: currentPlusFutureMonths.map(toLabel),
     y: currentPlusFutureCumulative,
     name: 'Forecast spend',
-    mode: 'lines',
+    type: 'scatter',
     yaxis: 'y',
     line: {
       dash: 'dot'
@@ -406,7 +419,7 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     x: currentPlusFutureMonths.map(toLabel),
     y: currentPlusFutureRemainings,
     name: 'Forecast spend',
-    mode: 'lines',
+    type: 'scatter',
     yaxis: 'y',
     marker: {
       color: '#B29000',
@@ -421,13 +434,20 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     x: months.map(toLabel),
     y: budget,
     name: 'Budget',
-    mode: 'lines',
+    type: 'scatter',
     yaxis: 'y',
     marker: {
       color: '#FFBF47',
       line: {width: 0}  // for ie9 only
     }
   };
+
+  const {minY, maxY} = getYRange(
+    showBurnDown,
+    pastRemainings.concat(futureRemainings),
+    pastCumulative.concat(futureCumulative),
+    budget
+  );
 
   const data = [];
 
@@ -440,6 +460,13 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     data.push(budgetTrace);
   };
 
+  const range =  [
+    moment(startOfMonth(months[ 0 ])),
+    moment(months.slice(-1)[0]).endOf('month')
+  ];
+
+  const tickformat = moment.duration(range[1] - range[0]).asMonths() > 11 ? '%b %y' : '%-d %b %y';
+
   const layout = {
     title: 'Total expenditure and budget',
     font: {
@@ -447,8 +474,10 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     },
     xaxis: {
       type: 'date',
-      // nticks: 12,
-      tickformat: '%b %y'
+      range: range.map(m => m.valueOf()),
+      nticks: 18,
+      tickformat: tickformat,
+      hoverformat: '%-d %b %y'
     },
     yaxis: {
       rangemode: 'tozero',
@@ -456,49 +485,42 @@ function plotCumulativeSpendings(project, showBurnDown, elem) {
     },
     legend: {
       yanchor: 'bottom'
-    }
+    },
+    shapes: phaseRects(project, range),
   };
 
   // plot a line for today if within the time frame
   const today = moment().format('YYYY-MM-DD');
   if (today > months[0] && today < endOfMonth(months[ months.length -1 ])) {
-    let min, max;
-    if (showBurnDown) {
-      const minRemaining = Math.min.apply(null, pastRemainings.concat(futureRemainings));
-      const maxRemaining = Math.max.apply(null, pastRemainings.concat(futureRemainings));
-      min = minRemaining > 0 ? 0 : minRemaining;
-      max = maxRemaining < 0 ? 0 : maxRemaining;
-    } else {
-      min = 0;
-      max = Math.max.apply(null, budget.concat(futureCumulative));
-    }
-    const todayText = {
-      x: [ today, today ],
-      y: [ max / 2, max ],
-      text: [ 'Today', '' ],
+    const todayTextTrace = {
+      x: [ today ],
+      y: [ maxY / 3 ],  // TODO use annoation
+      text: [ 'Today' ],
       mode: 'text',
       textposition: 'top right',
       showlegend: false,
       hoverinfo: 'none'
     };
-    data.push(todayText);
-    layout['shapes'] = [
+    data.push(todayTextTrace);
+    layout['shapes'].push(
       {
         type: 'line',
+        xref: 'x',
+        yref: 'paper',
         x0: today,
-        y0: min,
         x1: today,
-        y1: max,
+        y0: 0,
+        y1: 1,
         line: {
           width: 0.3,
           dash: 'dashdot'
         }
       }
-    ];
+    );
   }
 
 
-  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
+  Plotly.newPlot(elem, data, layout, { displayModeBar: true });
 }
 
 function TimeFrameSelector({
@@ -597,6 +619,60 @@ class ProjectGraph extends Component {
   }
 }
 
+
+function phaseRects(project, xRange) {
+
+  const discovery = project['discovery_date'];
+  const alpha = project['alpha_date'];
+  const beta = project['beta_date'];
+  const live = project['live_date'];
+
+  const phases = {
+    'discovery': {
+      start: discovery,
+      end: alpha,
+      fillcolor: '#972c86'
+    },
+    'alpha': {
+      start: alpha,
+      end: beta,
+      fillcolor: '#de397f'
+    },
+    'beta': {
+      start: beta,
+      end: live,
+      fillcolor: '#fd7743'
+    },
+    'live': {
+      start: live,
+      end: xRange[1].format('YYYY-MM-DD'),
+      fillcolor: '#839951'
+    }
+  }
+  const rects = [];
+
+  Object.keys(phases).map( phase => {
+    const {start, end, fillcolor} = phases[phase];
+    if (start && end) {
+      rects.push({
+        type: 'rect',
+        xref: 'x',
+        yref: 'paper',
+        x0: start,
+        x1: end,
+        y0: 0,
+        y1: 1,
+        fillcolor: fillcolor,
+        opacity: 0.2,
+        line: {
+          width: 0
+        }
+      });
+    };
+  });
+
+  return rects;
+}
 
 /**
  * plot the graph for a project's monthly spendings
