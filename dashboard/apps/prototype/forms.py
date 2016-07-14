@@ -99,7 +99,7 @@ class PayrollUploadForm(forms.Form):
 
 
 class ExportForm(forms.Form):
-    template = None
+    template = 'xls/Journal_Template.xls'
 
     date = forms.DateField(required=True, widget=MonthYearWidget(
         years=year_range(backward=4, forward=3)
@@ -122,14 +122,14 @@ class ExportForm(forms.Form):
 
 
 class AdjustmentExportForm(ExportForm):
-    template = 'xls/Adjustment_Journal_Template.xls'
+    #template = 'xls/Adjustment_Journal_Template.xls'
 
     def write(self, workbook):
         pass
 
 
 class IntercompanyExportForm(ExportForm):
-    template = 'xls/Intercompany_Journal_Template.xls'
+    #template = 'xls/Intercompany_Journal_Template.xls'
 
     def write(self, workbook):
         pass
