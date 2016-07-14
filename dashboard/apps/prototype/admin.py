@@ -12,6 +12,8 @@ from django.utils.decorators import method_decorator
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup)
+from .forms import PayrollUploadForm, AdjustmentExportForm, \
+    IntercompanyExportForm
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -212,25 +214,25 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
         ]
         return urls + super(ProjectAdmin, self).get_urls()
 
-    @csrf_protect_m
-    @transaction.atomic
-    @method_decorator(permission_required('prototype.adjustmentexport_project',
-                                          raise_exception=True))
-    def adjustment_export_view(self, request, *args, **kwargs):
+    def _export_view(self, request, form_class, file_name):
         if not self.is_finance(request.user):
             raise PermissionDenied
 
         if request.method == 'POST':
-            form = AdjustmentExportForm(data=request.POST, files=request.FILES)
+            form = form_class(data=request.POST, files=request.FILES)
             if form.is_valid():
-                fname = 'Adjustment.xls'
+                fname = '%s_%s-%s.xlsm' % (file_name,
+                                           form.cleaned_data['date'].year,
+                                           form.cleaned_data['date'].month)
                 workbook = form.export()
-                response = HttpResponse(content_type="application/vnd.ms-excel")
-                response['Content-Disposition'] = 'attachment; filename=%s' % fname
+                response = HttpResponse(
+                    content_type="application/vnd.ms-excel")
+                response['Content-Disposition'] = 'attachment; filename=%s' \
+                                                  % fname
                 workbook.save(response)
                 return response
         else:
-            form = AdjustmentExportForm()
+            form = form_class()
 
         return render_to_response(
             'admin/prototype/export.html',
@@ -240,35 +242,22 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
                 'form': form,
             },
             context_instance=RequestContext(request))
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.adjustmentexport_project',
+                                          raise_exception=True))
+    def adjustment_export_view(self, request, *args, **kwargs):
+        return self._export_view(request, AdjustmentExportForm,
+                                 'Adjustment_Journal')
 
     @csrf_protect_m
     @transaction.atomic
     @method_decorator(permission_required('prototype.intercompannyexport_project',
                                           raise_exception=True))
     def intercompany_export_view(self, request, *args, **kwargs):
-        if not self.is_finance(request.user):
-            raise PermissionDenied
-
-        if request.method == 'POST':
-            form = AdjustmentExportForm(data=request.POST, files=request.FILES)
-            if form.is_valid():
-                fname = 'Adjustment.xls'
-                workbook = form.export()
-                response = HttpResponse(content_type="application/vnd.ms-excel")
-                response['Content-Disposition'] = 'attachment; filename=%s' % fname
-                workbook.save(response)
-                return response
-        else:
-            form = AdjustmentExportForm()
-
-        return render_to_response(
-            'admin/prototype/export.html',
-            {
-                'opts': self.model._meta,
-                'has_permission': self.is_finance(request.user),
-                'form': form,
-            },
-            context_instance=RequestContext(request))
+        return self._export_view(request, IntercompanyExportForm,
+                                 'Intercompany_Journal')
 
 
 class TaskAdmin(ReadOnlyAdmin):
