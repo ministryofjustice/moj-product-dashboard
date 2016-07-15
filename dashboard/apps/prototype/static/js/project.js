@@ -34,60 +34,24 @@ export function getProjectData(id, startDate, endDate, csrftoken) {
 /**
  * parse the financial infomation about the project
  */
-export function parseProjectFinancials(financial, thisMonth) {
-  const _months = Object.keys(financial).sort();
-  const _pastMonths = _months
-    .filter(m => moment(m, 'YYYY-MM') < moment(thisMonth).startOf('month'));
-  const _futureMonths = _months
-    .filter(m => moment(m, 'YYYY-MM') >= moment(thisMonth).startOf('month'));
-
-  const costs = _months.map(month => financial[month]);
-  const budget = costs.map(c => parseFloat(c['budget']));
-
-  const pastCosts = _pastMonths.map(month => financial[month]);
-  const pastTotalCosts = pastCosts.map(c =>
-     parseFloat(c['contractor']) +
-     parseFloat(c['non-contractor']) +
-     parseFloat(c['additional']));
-  const pastCumulative = [];
+export function parseProjectFinancials(financial) {
+  const result = {};
   let cumulative = 0;
-  pastTotalCosts.map(c => {
-    cumulative += c;
-    pastCumulative.push(cumulative);
+
+  Object.keys(financial).sort().map(month => {
+    const mf = financial[month];
+    const budget = parseFloat(mf['budget']);
+    const total = parseFloat(mf['contractor']) +
+                  parseFloat(mf['non-contractor']) +
+                  parseFloat(mf['additional']);
+
+    cumulative += total;
+    const remaining = budget - cumulative;
+    const ms = moment(month, 'YYYY-MM').format('YYYY-MM');
+    result[ms] = { total, cumulative, budget, remaining };
   });
-  const pastRemainings = pastCumulative
-    .map((val, index) => budget[index] - val);
 
-  const futureCosts = _futureMonths.map(month => financial[month]);
-  const futureTotalCosts = futureCosts.map(c =>
-     parseFloat(c['contractor']) +
-     parseFloat(c['non-contractor']) +
-     parseFloat(c['additional']));
-  const futureCumulative = [];
-  futureTotalCosts.map(c => {
-    cumulative += c;
-    futureCumulative.push(cumulative);
-  });
-  const futureRemainings = futureCumulative
-    .map((val, index) => budget[index + pastCumulative.length] - val)
-
-  const parseMonthLabel = m => moment(m, 'YYYY-MM').format('YYYY-MM')
-  const months = _months.map(parseMonthLabel);
-  const pastMonths = _pastMonths.map(parseMonthLabel);
-  const futureMonths = _futureMonths.map(parseMonthLabel);
-
-  return {
-    months,
-    budget,
-    pastMonths,
-    pastTotalCosts,
-    pastCumulative,
-    pastRemainings,
-    futureMonths,
-    futureTotalCosts,
-    futureCumulative,
-    futureRemainings
-  };
+  return result;
 }
 
 
@@ -192,9 +156,7 @@ export class ProjectContainer extends Component {
   }
 
   componentDidMount() {
-    const timeFrame = this.timeFrames[this.state.timeFrame];
-    const startDate = timeFrame.startDate;
-    const endDate = timeFrame.endDate;
+    const { startDate, endDate } = this.timeFrames[this.state.timeFrame];
     getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
       .then(project => {
         const firstDate = project['first_date'];
@@ -237,9 +199,7 @@ export class ProjectContainer extends Component {
 
     // when timeFrame changes
     if (this.state.timeFrame != nextState.timeFrame) {
-      const timeFrame = this.timeFrames[nextState.timeFrame];
-      const startDate = timeFrame.startDate;
-      const endDate = timeFrame.endDate;
+      const { startDate, endDate } = this.timeFrames[nextState.timeFrame];
       if (startDate && endDate) {
         this.setState({startDate: startDate, endDate: endDate});
       }
@@ -301,13 +261,11 @@ export class ProjectContainer extends Component {
 
   render() {
     const timeFrameSelector = (
-      <TimeFrameSelector
-        rangeOptions={this.timeFrameOpts}
+      <TimeFrameSelector rangeOptions={this.timeFrameOpts}
         selectedRange={this.state.timeFrame}
         onRangeChange={evt => this.handleTimeFrameChange(evt)}
         selectedStartDate={this.state.startDate}
         selectedEndDate={this.state.endDate}
-        minStartDate={this.state.minStartDate}
         startDateOpts={this.startDateOpts}
         endDateOpts={this.endDateOpts}
         onSelectedStartDateChange={evt => this.handleStartDateChange(evt)}
@@ -440,10 +398,20 @@ class ProjectGraph extends Component {
  * plot the graph for a project's monthly spendings
  */
 function plotMonthlySpendings(project, elem) {
-  const { pastMonths,
-          pastTotalCosts,
-          futureMonths,
-          futureTotalCosts } = parseProjectFinancials(project.financial);
+  const monthly = parseProjectFinancials(
+      project.financial);
+
+  const currentMonth = moment().format('YYYY-MM');
+  const pastMonths = Object.keys(monthly)
+    .filter(m => m < currentMonth)
+    .sort();
+  const futureMonths = Object.keys(monthly)
+    .filter(m => m >= currentMonth)
+    .sort();
+  const pastTotalCosts = pastMonths.map(
+      m => monthly[m].total);
+  const futureTotalCosts = futureMonths.map(
+      m => monthly[m].total);
 
   // NOTE: those lines for ie9 is related to this issue
   // https://github.com/plotly/plotly.js/issues/166
