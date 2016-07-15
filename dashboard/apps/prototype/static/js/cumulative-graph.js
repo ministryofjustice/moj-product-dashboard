@@ -211,6 +211,9 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
     marker: {
       color: '#FFBF47',
       line: {width: 0}  // for ie9 only
+    },
+    line: {
+      dash: 'dot'
     }
   };
 
