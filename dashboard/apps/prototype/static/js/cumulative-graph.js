@@ -5,11 +5,26 @@ import { parseProjectFinancials } from './project';
 import { startOfMonth, endOfMonth } from './utils';
 
 /**
+ * work out the date labels for the xaxis
+ * depending on the length of the time frame.
+ * if the duration is less than 11 months
+ * show the day month and year otherwise
+ * just show the month and year
+ **/
+function tickFormat(range) {
+  const duration = moment.duration(range[1] - range[0]).asMonths();
+  if (duration > 11) {
+    return '%b %y';
+  };
+  return '%-d %b %y';
+}
+
+/**
  * work out the shapes and annotations for
  * shapes and annotations representing product
  * phases
  * */
-function backgroundForPhases(project, xRange) {
+function backgroundForPhases(project, range) {
 
   const discovery = project['discovery_date'];
   const alpha = project['alpha_date'];
@@ -34,7 +49,7 @@ function backgroundForPhases(project, xRange) {
     },
     'live': {
       start: live,
-      end: xRange[1],
+      end: range[1].format('YYYY-MM-DD'),
       fillcolor: '#839951'
     }
   }
@@ -58,11 +73,11 @@ function backgroundForPhases(project, xRange) {
           width: 0
         }
       });
-      const l = start > xRange[0] ? start : xRange[0];
-      const h = end < xRange[1] ? end : xRange[1];
+      const l = moment(start) > range[0] ? moment(start ): range[0];
+      const h = moment(end) < range[1] ? moment(end) : range[1];
       annotations.push({
         yref: 'paper',
-        x: moment((moment(l) + moment(h)) / 2).format('YYYY-MM-DD'),
+        x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
         text: phase,
         showarrow: false,
@@ -71,7 +86,7 @@ function backgroundForPhases(project, xRange) {
           color: '#ffffff',
           size: 16
         },
-        borderpad: 6
+        borderpad: 4
       });
     };
   });
@@ -82,18 +97,19 @@ function backgroundForPhases(project, xRange) {
 /**
  * line and annotation to indicate today on the graph
  **/
-function markingsForToday(xRange) {
+function markingsForToday(range) {
   // plot a line for today if within the time frame
-  const today = moment().format('YYYY-MM-DD');
-  if (today < xRange[0] || today > xRange[1]) {
+  const today = moment();
+  if (today < range[0] || today > range[1]) {
     return null;
   }
+  const x = today.format('YYYY-MM-DD');
   const shape = {
     type: 'line',
     xref: 'x',
     yref: 'paper',
-    x0: today,
-    x1: today,
+    x0: x,
+    x1: x,
     y0: 0,
     y1: 1,
     line: {
@@ -103,7 +119,7 @@ function markingsForToday(xRange) {
   };
   const annotation = {
     yref: 'paper',
-    x: today,
+    x: x,
     xanchor: 'left',
     y: 0.3,
     text: 'Today',
@@ -214,11 +230,8 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
     moment(months.slice(-1)[0]).endOf('month')
   ];
 
-  const tickformat = moment.duration(range[1] - range[0]).asMonths() > 11 ? '%b %y' : '%-d %b %y';
-
-  const xRange = range.map(m => m.format('YYYY-MM-DD'));
-  const {shapes, annotations} = backgroundForPhases(project, xRange);
-  const todayMarkings = markingsForToday(xRange);
+  const {shapes, annotations} = backgroundForPhases(project, range);
+  const todayMarkings = markingsForToday(range);
   if (todayMarkings) {
     shapes.push(todayMarkings.shape);
     annotations.push(todayMarkings.annotation);
@@ -232,7 +245,7 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
       type: 'date',
       range: range.map(m => m.valueOf()),
       nticks: 18,
-      tickformat: tickformat,
+      tickformat: tickFormat(range),
       hoverformat: '%-d %b %y'
     },
     yaxis: {
