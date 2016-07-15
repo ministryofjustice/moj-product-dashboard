@@ -206,14 +206,30 @@ class Project(models.Model):
         return self.tasks.order_by('start_date').first()
 
     @property
-    def first_spending_date(self):
+    def first_date(self):
+        """
+        first day in the project lifetime. it's the lesser of
+        the discovery date and start date of the first task.
+        """
+        if self.first_task and self.discovery_date:
+            return min(self.first_task.start_date, self.discovery_date)
         if self.first_task:
             return self.first_task.start_date
+        if self.discovery_date:
+            return self.discovery_date
 
     @property
-    def last_spending_date(self):
+    def last_date(self):
+        """
+        last day in the project lifetime. it's the greater of
+        the project end date and end date of the last task.
+        """
+        if self.last_task and self.end_date:
+            return max(self.last_task.end_date, self.end_date)
         if self.last_task:
             return self.last_task.end_date
+        if self.end_date:
+            return self.end_date
 
     @property
     def last_task(self):
@@ -264,8 +280,8 @@ class Project(models.Model):
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
-            'first_spending_date': self.first_spending_date,
-            'last_spending_date': self.last_spending_date,
+            'first_date': self.first_date,
+            'last_date': self.last_date,
             'rag': rag,
             'budget': self.budget(),
             'team_size': self.team_size(start_date, end_date),

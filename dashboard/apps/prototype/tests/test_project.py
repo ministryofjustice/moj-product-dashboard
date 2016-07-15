@@ -292,3 +292,59 @@ def test_project_cost_to_date():
     expected = (
         contractor_rate * man_days + non_contractor_rate * man_days + cost)
     assert project.cost_to_date == expected
+
+
+@pytest.mark.django_db
+def test_project_first_date():
+    project = make_project()
+
+    first_task_start_date = parse_date(task_time_ranges[0][0])
+    # without discover date,
+    # first date is the start date of the first task
+    assert project.first_date == first_task_start_date
+
+    # with discover date before first task,
+    # first date is the discovery date
+    discovery_date = first_task_start_date - timedelta(days=1)
+    project.discovery_date = discovery_date
+    assert project.first_date == discovery_date
+
+    # with discover date before first task,
+    # first date is the start date of the first task
+    discovery_date = first_task_start_date + timedelta(days=1)
+    project.discovery_date = discovery_date
+    assert project.first_date == first_task_start_date
+
+    # without tasks,
+    # first date is the discovery date
+    project2 = mommy.make(Project)
+    project2.discovery_date = date.today()
+    assert project2.first_date == project2.discovery_date
+
+
+@pytest.mark.django_db
+def test_project_last_date():
+    project = make_project()
+    last_task_end_date = parse_date(task_time_ranges[-1][-1])
+
+    # without project end date,
+    # last date is the end date of the first task
+    assert project.last_date == last_task_end_date
+
+    # with project end date after end date of last task,
+    # first date is the discovery date
+    end_date = last_task_end_date + timedelta(days=1)
+    project.end_date = end_date
+    assert project.last_date == end_date
+
+    # with project end date before end date of last task,
+    # first date is the discovery date
+    end_date = last_task_end_date - timedelta(days=1)
+    project.end_date = end_date
+    assert project.last_date == last_task_end_date
+
+    # without tasks,
+    # first date is the end date
+    project2 = mommy.make(Project)
+    project2.end_date = date.today()
+    assert project2.last_date == project2.end_date
