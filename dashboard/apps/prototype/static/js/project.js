@@ -102,8 +102,8 @@ export class ProjectContainer extends Component {
       timeFrame: 'entire-time-span',
       startDate: '',
       endDate: '',
-      firstSpendingDate: null,
-      lastSpendingDate: null,
+      firstDate: null,
+      lastDate: null,
       minStartDate: null,
       maxEndDate: null
     };
@@ -114,8 +114,8 @@ export class ProjectContainer extends Component {
     return {
       'entire-time-span': {
         label: 'Entire project life time',
-        startDate: this.state.firstSpendingDate,
-        endDate: this.state.lastSpendingDate
+        startDate: this.state.firstDate,
+        endDate: this.state.lastDate
       },
       'this-year': {
         label: 'This calendar year',
@@ -163,19 +163,19 @@ export class ProjectContainer extends Component {
       }))
   }
 
-  getMinStartDate(firstSpendingDate) {
+  getMinStartDate(firstDate) {
     const candidates = values(this.timeFrames)
       .map(tf => tf.startDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(firstSpendingDate));
+    candidates.push(startOfMonth(firstDate));
     return min(candidates);
   }
 
-  getMaxEndDate(lastSpendingDate) {
+  getMaxEndDate(lastDate) {
     const candidates = values(this.timeFrames)
       .map(tf => tf.endDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(lastSpendingDate));
+    candidates.push(startOfMonth(lastDate));
     return max(candidates);
   }
 
@@ -197,16 +197,16 @@ export class ProjectContainer extends Component {
     const endDate = timeFrame.endDate;
     getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
       .then(project => {
-        const firstSpendingDate = project['first_spending_date'];
-        const lastSpendingDate = project['last_spending_date'];
+        const firstDate = project['first_date'];
+        const lastDate = project['last_date'];
         this.setState({
           project: project,
-          firstSpendingDate: startOfMonth(firstSpendingDate),
-          lastSpendingDate: endOfMonth(lastSpendingDate),
-          minStartDate: this.getMinStartDate(firstSpendingDate),
-          maxEndDate: this.getMaxEndDate(lastSpendingDate),
-          startDate: startOfMonth(firstSpendingDate),
-          endDate: endOfMonth(lastSpendingDate),
+          firstDate: startOfMonth(firstDate),
+          lastDate: endOfMonth(lastDate),
+          minStartDate: this.getMinStartDate(firstDate),
+          maxEndDate: this.getMaxEndDate(lastDate),
+          startDate: startOfMonth(firstDate),
+          endDate: endOfMonth(lastDate),
           hasData: true
         });
       });
