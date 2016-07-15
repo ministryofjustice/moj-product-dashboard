@@ -1,3 +1,5 @@
+import re
+
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import csrf_protect_m
@@ -221,9 +223,14 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
         if request.method == 'POST':
             form = form_class(data=request.POST, files=request.FILES)
             if form.is_valid():
-                fname = '%s_%s-%s.xlsm' % (file_name,
-                                           form.cleaned_data['date'].year,
-                                           form.cleaned_data['date'].month)
+                fname = '%s_%s_%s-%s.xlsm' % (
+                    file_name,
+                    re.sub(
+                        '[^0-9a-zA-Z]+',
+                        '-',
+                        form.cleaned_data['project'].name),
+                    form.cleaned_data['date'].year,
+                    form.cleaned_data['date'].month)
                 workbook = form.export()
                 response = HttpResponse(
                     content_type="application/vnd.ms-excel")
