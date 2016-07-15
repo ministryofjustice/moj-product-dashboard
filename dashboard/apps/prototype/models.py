@@ -259,6 +259,7 @@ class Project(models.Model):
             'name': self.name,
             'service_area': service_area,
             'description': self.description,
+            'discovery_date': self.discovery_date,
             'alpha_date': self.alpha_date,
             'beta_date': self.beta_date,
             'live_date': self.live_date,
