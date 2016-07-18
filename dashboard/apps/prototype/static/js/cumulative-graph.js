@@ -129,15 +129,13 @@ function markingsForToday(range) {
 }
 
 
-export function plotCumulativeSpendings(project, showBurnDown, elem) {
+export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem) {
   const currentMonth = moment().format('YYYY-MM');
   const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
   const monthly = parseProjectFinancials(project.financial);
   const months = Object.keys(monthly).sort();
-  const pastMonths = months
-    .filter(m => m < currentMonth);
-  const lastPlusFutureMonths = months
-    .filter(m => m >= lastMonth);
+  const pastMonths = months.filter(m => m < currentMonth);
+  const lastPlusFutureMonths = months.filter(m => m >= lastMonth);
 
   const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
 
@@ -219,10 +217,7 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
     data.push(budgetTrace);
   };
 
-  const range =  [
-    moment(startOfMonth(months[ 0 ])),
-    moment(months.slice(-1)[0]).endOf('month')
-  ];
+  const range =  [ moment(startDate), moment(endDate) ];
 
   const {shapes, annotations} = backgroundForPhases(project, range);
   const todayMarkings = markingsForToday(range);

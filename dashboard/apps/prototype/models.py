@@ -202,10 +202,6 @@ class Project(models.Model):
     objects = ProjectManager()
 
     @property
-    def first_task(self):
-        return self.tasks.order_by('start_date').first()
-
-    @property
     def first_date(self):
         """
         first day in the project lifetime. it's the lesser of
@@ -232,8 +228,34 @@ class Project(models.Model):
             return self.end_date
 
     @property
+    def first_task(self):
+        return self.tasks.order_by('start_date').first()
+
+    @property
     def last_task(self):
         return self.tasks.order_by('-end_date').first()
+
+    @property
+    def first_budget(self):
+        return self.budgets.order_by('start_date').first()
+
+    @property
+    def last_budget(self):
+        return self.budgets.order_by('-start_date').first()
+
+    @property
+    def first_cost(self):
+        return self.costs.order_by('start_date').first()
+
+    @property
+    def last_cost(self):
+        # end_date is optional
+        by_end_date = self.costs.exclude(
+            end_date__isnull=True).order_by('-end_date').first()
+        by_start_date = self.costs.order_by('-start_date').first()
+        if by_end_date and by_end_date.end_date > by_start_date.start_date:
+            return by_end_date
+        return by_start_date
 
     def spendings_between(self, start_date, end_date):
         contractor_cost = self.people_costs(
@@ -248,6 +270,50 @@ class Project(models.Model):
             'budget': self.budget(start_date),
         }
         return value
+
+    @property
+    def default_start_date(self):
+        """
+        default start date is the date when the first spend occurs or
+        the first budget allocated to the project.
+        it is the smallest of these three start dates:
+        first task, first budget, first cost.
+        :return: a date object
+        :raises: ValueError when none of the three dates
+        are present.
+        """
+        candidates = []
+        if self.first_task:
+            candidates.append(self.first_task.start_date)
+        if self.first_budget:
+            candidates.append(self.first_budget.start_date)
+        if self.first_cost:
+            candidates.append(self.first_cost.start_date)
+        return min(candidates)
+
+    @property
+    def default_end_date(self):
+        """
+        default end date is the date when the last spend occurs or
+        the last budget allocated to the project.
+        it is the smallest of these dates in the project:
+        end date of the last task, start date of the last budget,
+        the start date and end date of the last cost.
+        :return: a date object
+        :raises: ValueError when none of the three dates
+        are present.
+        """
+        candidates = []
+        if self.last_task:
+            candidates.append(self.last_task.end_date)
+        if self.last_budget:
+            candidates.append(self.last_budget.start_date)
+        if self.last_cost:
+            if self.last_cost.end_date:
+                candidates.append(self.last_cost.end_date)
+            else:
+                candidates.append(self.last_cost.start_date)
+        return max(candidates)
 
     def profile(self, start_date=None, end_date=None, freq=None):
         """
@@ -288,13 +354,16 @@ class Project(models.Model):
             'cost_to_date': self.cost_to_date,
             'financial': {},
         }
-        try:
-            if not start_date:
-                start_date = self.first_task.start_date
-            if not end_date:
-                end_date = self.last_task.end_date
-        except AttributeError:  # when there is no task in a project
-            return result
+        if not start_date:
+            try:
+                start_date = self.default_start_date
+            except ValueError:
+                return result
+        if not end_date:
+            try:
+                end_date = self.default_end_date
+            except ValueError:
+                return result
         if freq:
             time_windows = slice_time_window(start_date, end_date, freq)
         else:
@@ -414,6 +483,8 @@ class Project(models.Model):
         if not start_date:
             start_date = end_date - timedelta(days=7)
         workdays = get_workdays(start_date, end_date)
+        if workdays == 0:  # avoid zero division
+            return 0
         return self.time_spent(start_date, end_date) / workdays
 
     class Meta:
