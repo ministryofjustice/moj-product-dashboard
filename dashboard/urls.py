@@ -27,9 +27,9 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     url(r'^$', index, name='index'),
     url(r'^sync.json$', sync_from_float, name='sync'),
-    url(r'^services/(?P<id>[0-9]+)$', service_html, name='service'),
+    url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
     url(r'^service.json', service_json, name='service_json'),
-    url(r'^projects/(?P<id>[0-9]+)$', project_html, name='project'),
+    url(r'^projects/(?P<id>[0-9]+)?$', project_html, name='project'),
     url(r'^project.json', project_json, name='project_json'),
     url(r'^portfolio.json', portfolio_json, name='portfolio_json'),
     url(r'^portfolio', portfolio_html, name='portfolio_html'),
