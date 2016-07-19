@@ -130,22 +130,11 @@ class ExportForm(forms.Form):
             self.template
         )
 
-    def write(self):
-        pass
-
-
-class AdjustmentExportForm(ExportForm):
-
-    def write(self, workbook):
-        pass
-
-
-class IntercompanyExportForm(ExportForm):
-
-    def write(self, workbook):
+    def write(self, workbook, ws=None):
+        if ws is None:
+            ws = workbook.get_active_sheet()
         project = self.cleaned_data['project']
         date = self.cleaned_data['date']
-        ws = workbook.get_active_sheet()
         month = date.strftime('%B \'%y')
         period_start = date if date.month < 4 else \
             date.replace(year=date.year + 1)
@@ -153,7 +142,10 @@ class IntercompanyExportForm(ExportForm):
         period = '%s-%s' % (period_start.strftime('%y'),
                             period_end.strftime('%y'))
 
-        last_business_day = monthrange(date.year, date.month)
+        last_business_day = monthrange(date.year, date.month)[1]
+
+        start_date = date
+        end_date = date.replace(day=last_business_day)
 
         ws.cell(row=161, column=7).value = project.hr_id
         ws.cell(row=162, column=7).value = project.hr_id
@@ -168,9 +160,7 @@ class IntercompanyExportForm(ExportForm):
         ws.cell(row=165, column=10).value = '%s - %s Share of DS ASLC Costs %s' % (project.name, project.client.name, month)
         ws.cell(row=166, column=10).value = '%s - %s Share of DS Resource Costs %s' % (project.name, project.client.name, month)
 
-        ws.cell(row=8, column=9).value = 'Intercompany Transfer'
-
-        ws.cell(row=11, column=9).value = '%s%s' % (last_business_day[1],
+        ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
                                                     date.strftime('/%m/%Y'))
         ws.cell(row=12, column=9).value = '%s%s' % (date.strftime('%B'),
                                                     period)
@@ -180,5 +170,30 @@ class IntercompanyExportForm(ExportForm):
         ws.cell(row=14, column=9).value = '%s - %s Share of DS Costs %s' % \
                                           (project.name, project.client.name,
                                            month)
+
+        ws.cell(row=161, column=9).value = project.people_costs(start_date, end_date, contractor_only=True)
+        ws.cell(row=162, column=9).value = project.people_costs(start_date, end_date, non_contractor_only=True)
+        ws.cell(row=163, column=9).value = 10
+        ws.cell(row=164, column=9).value = 10
+        ws.cell(row=165, column=9).value = 10
+        ws.cell(row=166, column=9).value = 10
+
+
+
+class AdjustmentExportForm(ExportForm):
+
+    def write(self, workbook, ws=None):
+        ws = workbook.get_active_sheet()
+        super(AdjustmentExportForm, self).write(workbook, ws=ws)
+        ws.cell(row=8, column=9).value = 'Intercompany Transfer'
+
+
+class IntercompanyExportForm(ExportForm):
+
+    def write(self, workbook, ws=None):
+        ws = workbook.get_active_sheet()
+        super(IntercompanyExportForm, self).write(workbook, ws=ws)
+        ws.cell(row=8, column=9).value = 'Intercompany Transfer'
+
 
 
