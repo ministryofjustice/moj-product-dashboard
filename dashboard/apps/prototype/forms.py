@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-from datetime import date
+from calendar import monthrange
+from datetime import date, timedelta
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
@@ -114,7 +115,7 @@ class ExportForm(forms.Form):
         years=year_range(backward=4, forward=3)
     ))
     project = forms.ModelChoiceField(
-        queryset=Project.objects.all(),
+        queryset=Project.objects.visible(),
         required=True)
 
     def export(self):
@@ -129,6 +130,9 @@ class ExportForm(forms.Form):
             self.template
         )
 
+    def write(self):
+        pass
+
 
 class AdjustmentExportForm(ExportForm):
 
@@ -139,4 +143,42 @@ class AdjustmentExportForm(ExportForm):
 class IntercompanyExportForm(ExportForm):
 
     def write(self, workbook):
-        pass
+        project = self.cleaned_data['project']
+        date = self.cleaned_data['date']
+        ws = workbook.get_active_sheet()
+        month = date.strftime('%B \'%y')
+        period_start = date if date.month < 4 else \
+            date.replace(year=date.year + 1)
+        period_end = period_start.replace(year=date.year + 1)
+        period = '%s-%s' % (period_start.strftime('%y'),
+                            period_end.strftime('%y'))
+
+        last_business_day = monthrange(date.year, date.month)
+
+        ws.cell(row=161, column=7).value = project.hr_id
+        ws.cell(row=162, column=7).value = project.hr_id
+        ws.cell(row=163, column=7).value = project.hr_id
+        ws.cell(row=164, column=7).value = project.hr_id
+        ws.cell(row=165, column=7).value = project.hr_id
+
+        ws.cell(row=161, column=10).value = '%s - %s Share of DS Agency Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=162, column=10).value = '%s - %s Share of DS Salary Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=163, column=10).value = '%s - %s Share of DS Allce Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=164, column=10).value = '%s - %s Share of DS ERNIC Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=165, column=10).value = '%s - %s Share of DS ASLC Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=166, column=10).value = '%s - %s Share of DS Resource Costs %s' % (project.name, project.client.name, month)
+
+        ws.cell(row=8, column=9).value = 'Intercompany Transfer'
+
+        ws.cell(row=11, column=9).value = '%s%s' % (last_business_day[1],
+                                                    date.strftime('/%m/%Y'))
+        ws.cell(row=12, column=9).value = '%s%s' % (date.strftime('%B'),
+                                                    period)
+        ws.cell(row=13, column=9).value = 'MA100_LW_%s_13' % \
+                                          date.strftime('%d%m%y')
+
+        ws.cell(row=14, column=9).value = '%s - %s Share of DS Costs %s' % \
+                                          (project.name, project.client.name,
+                                           month)
+
+
