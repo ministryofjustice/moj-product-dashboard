@@ -129,30 +129,19 @@ function markingsForToday(range) {
 }
 
 
-export function plotCumulativeSpendings(project, showBurnDown, elem) {
-  const { months,
-          budget,
-          pastMonths,
-          pastCumulative,
-          pastRemainings,
-          futureMonths,
-          futureCumulative,
-          futureRemainings } = parseProjectFinancials(project.financial);
-
-  // use current month + future months to ensure continuity
-  const index = pastMonths.length -1;
-  const currentPlusFutureMonths = [ pastMonths[ index ] ]
-    .concat(futureMonths);
-  const currentPlusFutureCumulative = [ pastCumulative[ index ] ]
-    .concat(futureCumulative);
-  const currentPlusFutureRemainings = [ pastRemainings[ index ] ]
-    .concat(futureRemainings);
+export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem) {
+  const currentMonth = moment().format('YYYY-MM');
+  const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
+  const monthly = parseProjectFinancials(project.financial);
+  const months = Object.keys(monthly).sort();
+  const pastMonths = months.filter(m => m < currentMonth);
+  const lastPlusFutureMonths = months.filter(m => m >= lastMonth);
 
   const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
 
   const actualCumulativeTrace = {
-    x: months.map(toLabel),
-    y: pastCumulative,
+    x: pastMonths.map(toLabel),
+    y: pastMonths.map(m => monthly[m].cumulative),
     name: 'Actual spend',
     type: 'scatter',
     yaxis: 'y',
@@ -162,8 +151,8 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
     }
   };
   const actualRemainingTrace = {
-    x: months.map(toLabel),
-    y: pastRemainings,
+    x: pastMonths.map(toLabel),
+    y: pastMonths.map(m => monthly[m].remaining),
     name: 'Actual spend',
     type: 'scatter',
     yaxis: 'y',
@@ -174,8 +163,8 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
   };
 
   const forecastCumulativeTrace = {
-    x: currentPlusFutureMonths.map(toLabel),
-    y: currentPlusFutureCumulative,
+    x: lastPlusFutureMonths.map(toLabel),
+    y: lastPlusFutureMonths.map(m => monthly[m].cumulative),
     name: 'Forecast spend',
     type: 'scatter',
     yaxis: 'y',
@@ -188,8 +177,8 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
     }
   };
   const forecastRemainingTrace = {
-    x: currentPlusFutureMonths.map(toLabel),
-    y: currentPlusFutureRemainings,
+    x: lastPlusFutureMonths.map(toLabel),
+    y: lastPlusFutureMonths.map(m => monthly[m].remaining),
     name: 'Forecast spend',
     type: 'scatter',
     yaxis: 'y',
@@ -204,13 +193,16 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
 
   const budgetTrace = {
     x: months.map(toLabel),
-    y: budget,
+    y: months.map(m => monthly[m].budget),
     name: 'Budget',
     type: 'scatter',
     yaxis: 'y',
     marker: {
       color: '#FFBF47',
       line: {width: 0}  // for ie9 only
+    },
+    line: {
+      dash: 'dot'
     }
   };
 
@@ -225,10 +217,7 @@ export function plotCumulativeSpendings(project, showBurnDown, elem) {
     data.push(budgetTrace);
   };
 
-  const range =  [
-    moment(startOfMonth(months[ 0 ])),
-    moment(months.slice(-1)[0]).endOf('month')
-  ];
+  const range =  [ moment(startDate), moment(endDate) ];
 
   const {shapes, annotations} = backgroundForPhases(project, range);
   const todayMarkings = markingsForToday(range);

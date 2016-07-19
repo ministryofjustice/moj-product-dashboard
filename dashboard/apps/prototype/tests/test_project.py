@@ -348,3 +348,139 @@ def test_project_last_date():
     project2 = mommy.make(Project)
     project2.end_date = date.today()
     assert project2.last_date == project2.end_date
+
+
+@pytest.mark.django_db
+def test_default_start_date():
+    project = make_project()
+
+    first_task_start_date = parse_date(task_time_ranges[0][0])
+
+    # without budget or cost, the first task start date
+    # is the default start date.
+    assert project.default_start_date == first_task_start_date
+
+    # with a cost after the first task, the first task start date
+    # is still the default start date.
+    first_cost_start_date = first_task_start_date + timedelta(days=2)
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=first_cost_start_date,
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    assert project.default_start_date == first_task_start_date
+
+    # with a cost before the first task, the first cost start date
+    # is the default start date.
+    first_cost_start_date = first_task_start_date - timedelta(days=2)
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=first_cost_start_date,
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    assert project.default_start_date == first_cost_start_date
+
+    # with a budget allocated after the first cost, the first cost
+    # start date is the default start date
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=project.default_start_date + timedelta(days=2))
+    assert project.default_start_date == first_cost_start_date
+
+    # with a budget allocated before the first cost, the budget
+    # start date is the default start date
+    first_budget_start_date = project.default_start_date - timedelta(days=2)
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=first_budget_start_date)
+    assert project.default_start_date == first_budget_start_date
+
+
+@pytest.mark.django_db
+def test_default_end_date():
+    project = make_project()
+
+    last_task_end_date = parse_date(task_time_ranges[-1][-1])
+
+    # without budget or cost, the last task end date
+    # is the default start date.
+    assert project.default_end_date == last_task_end_date
+
+    # with a cost before the last task, the last task end date
+    # is still the default start date.
+    first_cost_start_date = last_task_end_date - timedelta(days=2)
+    last_cost_start_date = last_task_end_date - timedelta(days=1)
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=first_cost_start_date,
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=last_cost_start_date,
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    assert project.default_end_date == last_task_end_date
+
+    # with a cost after the last task, the last cost start date
+    # is the default end date.
+    last_cost_start_date = last_task_end_date + timedelta(days=1)
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=last_cost_start_date,
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    assert project.default_end_date == last_cost_start_date
+
+    # with an end date for the last cost, the end date of the
+    # last cost is the default end date.
+    last_cost_end_date = last_cost_start_date + timedelta(days=2)
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=last_cost_start_date - timedelta(days=1),
+        end_date=last_cost_end_date,
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('50')
+    )
+    assert project.default_end_date == last_cost_end_date
+
+    # with a budget allocated before the last cost, the cost
+    # start date is the default end date
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=last_cost_start_date - timedelta(days=2))
+    assert project.default_end_date == last_cost_end_date
+
+    # with a budget allocated after the last cost, the budget
+    # start date is the default end date
+    last_budget_start_date = project.default_end_date + timedelta(days=2)
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=last_budget_start_date)
+    assert project.default_end_date == last_budget_start_date
+
+
+@pytest.mark.django_db
+def test_default_end_date_no_dates():
+    project = mommy.make(Project)
+    with pytest.raises(ValueError):
+        project.default_end_date
