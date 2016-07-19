@@ -10,7 +10,7 @@ import { monthRange, thisCalendarYear,
          thisFinancialYear, thisQuarter, lastCalendarYear,
          lastFinancialYear, lastQuarter,
          startOfMonth, endOfMonth,
-         min, max, values } from './utils';
+         min, max, values, round } from './utils';
 import { plotCumulativeSpendings } from './cumulative-graph';
 
 /**
@@ -417,7 +417,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
   const toLabel = m => moment(m, 'YYYY-MM').format('MMM YY');
   const actualTrace = {
     x: pastMonths.map(toLabel),
-    y: pastTotalCosts,
+    y: pastTotalCosts.map(round),
     name: 'Actual spend',
     type: 'bar',
     marker: {
@@ -427,7 +427,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
   };
   const forecastTrace = {
     x: futureMonths.map(toLabel),
-    y: futureTotalCosts,
+    y: futureTotalCosts.map(round),
     name: 'Forecast spend',
     type: 'bar',
     marker: {

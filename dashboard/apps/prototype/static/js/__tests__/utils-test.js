@@ -5,9 +5,10 @@ import {
   thisCalendarYear,
   lastCalendarYear,
   thisFinancialYear,
-  lastFinancialYear, 
+  lastFinancialYear,
   thisQuarter,
-  lastQuarter
+  lastQuarter,
+  round
 } from '../utils';
 
 describe('monthRange', () => {
@@ -117,5 +118,31 @@ describe('lastQuarter', () => {
     const q4 = lastQuarter(moment('2016-10-01'));
     expect(q4.startDate).toEqual('2016-07-01');
     expect(q4.endDate).toEqual('2016-09-30');
+  });
+});
+
+describe('round', () => {
+  it(`rounds the numbers and keeps the most significant parts`, () => {
+    const pairs = [
+      [1.23         , 1],         //  1
+      [12.34        , 12],        //  12
+      [123.45       , 123],       //  123
+      [1234.56      , 1235],      //  1235
+      [12345.67     , 12300],     //  12.3k
+      [123456.78    , 123000],    //  123k
+      [1234567.89   , 1230000],   //  1.23m
+      [12345678.91  , 12350000],  //  12.35m
+      [-12345678.91 , -12350000], // -12.35m
+      [-1234567.89  , -1230000],  // -1.35m
+      [-123456.78   , -123000],   // -123k
+      [-12345.67    , -12300],    // -12.3k
+      [-1234.56     , -1235],     // -1235
+      [-123.45      , -123],      // -123
+      [-12.34       , -12],       // -12
+      [-1.23        , -1]         // -1
+    ];
+    pairs.map(([original, rounded])=> {
+      expect(round(original)).toEqual(rounded);
+    });
   });
 });

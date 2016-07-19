@@ -2,7 +2,7 @@ import Plotly from './plotly-custom';
 import moment from 'moment';
 
 import { parseProjectFinancials } from './project';
-import { startOfMonth, endOfMonth } from './utils';
+import { endOfMonth, round } from './utils';
 
 /**
  * work out the date labels for the xaxis
@@ -141,7 +141,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
 
   const actualCumulativeTrace = {
     x: pastMonths.map(toLabel),
-    y: pastMonths.map(m => monthly[m].cumulative),
+    y: pastMonths.map(m => round(monthly[m].cumulative)),
     name: 'Actual spend',
     type: 'scatter',
     yaxis: 'y',
@@ -152,7 +152,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   };
   const actualRemainingTrace = {
     x: pastMonths.map(toLabel),
-    y: pastMonths.map(m => monthly[m].remaining),
+    y: pastMonths.map(m => round(monthly[m].remaining)),
     name: 'Actual spend',
     type: 'scatter',
     yaxis: 'y',
@@ -164,7 +164,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
 
   const forecastCumulativeTrace = {
     x: lastPlusFutureMonths.map(toLabel),
-    y: lastPlusFutureMonths.map(m => monthly[m].cumulative),
+    y: lastPlusFutureMonths.map(m => round(monthly[m].cumulative)),
     name: 'Forecast spend',
     type: 'scatter',
     yaxis: 'y',
@@ -178,7 +178,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   };
   const forecastRemainingTrace = {
     x: lastPlusFutureMonths.map(toLabel),
-    y: lastPlusFutureMonths.map(m => monthly[m].remaining),
+    y: lastPlusFutureMonths.map(m => round(monthly[m].remaining)),
     name: 'Forecast spend',
     type: 'scatter',
     yaxis: 'y',
@@ -193,7 +193,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
 
   const budgetTrace = {
     x: months.map(toLabel),
-    y: months.map(m => monthly[m].budget),
+    y: months.map(m => round(monthly[m].budget)),
     name: 'Budget',
     type: 'scatter',
     yaxis: 'y',
