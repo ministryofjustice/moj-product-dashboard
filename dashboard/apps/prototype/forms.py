@@ -33,6 +33,13 @@ class PayrollUploadForm(forms.Form):
     def get_person(self, row, data):
         try:
             return Person.objects.get(
+                staff_number=data['Staff'],
+            )
+        except Person.DoesNotExist:
+            pass
+
+        try:
+            return Person.objects.get(
                 name__icontains=data.get('Surname'),
                 name__startswith=data.get('Init')[0],
                 is_contractor=False,
@@ -75,11 +82,14 @@ class PayrollUploadForm(forms.Form):
                 if person:
                     day_rate = Decimal(data['Total']) / get_workdays(
                         start, start + relativedelta(day=31))
+                    staff_number = int(data['Staff'])
+
 
                     payroll.append({
                         'person': person,
                         'rate': day_rate,
                         'start': start,
+                        'staff_number': staff_number,
                     })
 
         return payroll
