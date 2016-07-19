@@ -30,6 +30,9 @@ def index(request):
 
 @login_required
 def project_html(request, id):
+    if not id:
+        id = Project.objects.visible().first().id
+        return redirect(reverse(project_html, kwargs={'id': id}))
     try:
         project = Project.objects.visible().get(id=id)
     except (ValueError, Project.DoesNotExist):
@@ -73,6 +76,9 @@ def project_json(request):
 
 @login_required
 def service_html(request, id):
+    if not id:
+        id = Client.objects.first().id
+        return redirect(reverse(service_html, kwargs={'id': id}))
     try:
         service = Client.objects.get(id=id)
     except (ValueError, Client.DoesNotExist):
