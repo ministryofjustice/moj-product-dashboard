@@ -21,6 +21,7 @@ from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
 
 class Person(models.Model):
     float_id = models.CharField(max_length=128, unique=True)
+    staff_number = models.PositiveSmallIntegerField(null=True, unique=True)
     name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
@@ -201,6 +202,7 @@ class ProjectManager(models.Manager):
 
 class Project(models.Model):
     name = models.CharField(max_length=128)
+    hr_id = models.CharField(max_length=12, unique=True, null=True)
     description = models.TextField()
     float_id = models.CharField(max_length=128, unique=True)
     is_billable = models.BooleanField(default=True)
