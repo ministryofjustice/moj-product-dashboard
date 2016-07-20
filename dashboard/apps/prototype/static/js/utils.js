@@ -180,3 +180,23 @@ export function min(items) {
 export function max(items) {
   return items.reduce((x, y) => x > y ? x : y)
 }
+
+export function round(num) {
+  const isNegative = num < 0;
+  const K = 1000;
+  num = Math.abs(num);
+  if ( num < 10 * K ) {
+    // 1234-> 1234
+    num = Math.round(num);
+  } else if ( num < 100 * K ) {
+    // 12345 -> 12.3k
+    num = Math.round(num / 100) * 100;
+  } else if ( num < 1000 * K ) {
+    // 123456 -> 123k
+    num = Math.round(num / 1000) * 1000;
+  } else {
+    // 1234567 -> 1.23m
+    num = Math.round(num / 10000) * 10000;
+  };
+  return isNegative ? -num : num;
+}
