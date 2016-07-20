@@ -10,6 +10,7 @@ module.exports = {
   ],
   output: {
     path: path.resolve(directory, 'dist'),
+    publicPath: '/static/dist/',
     filename: "prototype.js"
   },
 
@@ -26,6 +27,10 @@ module.exports = {
       {
         test: /\.css$/,
         loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+      },
+      {
+        test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$/,
+        loader: "file-loader"
       }
     ],
     resolve: {

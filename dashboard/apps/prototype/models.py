@@ -321,6 +321,26 @@ class Project(models.Model):
                 candidates.append(self.last_cost.start_date)
         return max(candidates)
 
+    @property
+    def financial_rag(self):
+        """
+        financial rag is one of 'RED', 'AMBER' and 'GREEN'.
+        A measure of how well the product is keeping to budget.
+        RED: total_cost >= 110% * budget
+        AMBER: budget < total_cost < 110% * budget
+        GREEN: total_cost <= budget
+        """
+        try:
+            budget = self.budget(on=self.default_end_date)
+        except ValueError:
+            budget = 0
+        total_cost = self.total_cost
+        if budget >= total_cost:
+            return 'GREEN'
+        if budget * Decimal('1.1') >= total_cost:
+            return 'AMBER'
+        return 'RED'
+
     def profile(self, start_date=None, end_date=None, freq=None):
         """
         get the profile of a project in a time window.
@@ -355,6 +375,7 @@ class Project(models.Model):
             'first_date': self.first_date,
             'last_date': self.last_date,
             'rag': rag,
+            'financial_rag': self.financial_rag,
             'budget': self.budget(),
             'team_size': self.team_size(start_date, end_date),
             'cost_to_date': self.cost_to_date,

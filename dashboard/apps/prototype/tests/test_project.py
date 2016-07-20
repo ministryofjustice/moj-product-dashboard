@@ -88,6 +88,7 @@ def test_project_without_tasks():
     assert project.time_spent() == 0
     assert project.cost_to_date == 0
     assert project.total_cost == 0
+    assert project.financial_rag == 'GREEN'
 
 
 @pytest.mark.django_db
@@ -518,3 +519,53 @@ def test_default_end_date_no_dates():
     project = mommy.make(Project)
     with pytest.raises(ValueError):
         project.default_end_date
+
+
+@pytest.mark.django_db
+def test_project_financial_rag():
+    project = mommy.make(Project)
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=date.today()
+    )
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() - timedelta(days=2),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('500')
+    )
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=2),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('500')
+    )
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=4),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('100')
+    )
+    assert project.financial_rag == 'AMBER'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=5),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('1')
+    )
+    assert project.financial_rag == 'RED'

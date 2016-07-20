@@ -13,6 +13,10 @@ import { monthRange, thisCalendarYear,
          min, max, values, round } from './utils';
 import { plotCumulativeSpendings } from './cumulative-graph';
 
+import RedImg from '../img/red.png';
+import AmberImg from '../img/amber.png';
+import GreenImg from '../img/green.png';
+
 /**
  * send a POST request to the backend to retrieve project profile
  */
@@ -476,9 +480,14 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       ),
     },
     {
-      'columnName': 'rag',
+      'columnName': 'financial_rag',
       'order': 3,
-      'displayName': 'RAG',
+      'displayName': 'Financial RAG',
+      'customComponent': (props) => {
+        const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
+        return (
+            <img src={ mapping[props.data] } alt={props.data} />
+          )}
     },
     {
       'columnName': 'team_size',
