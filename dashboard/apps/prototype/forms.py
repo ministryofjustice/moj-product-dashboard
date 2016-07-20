@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from calendar import monthrange
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
@@ -12,8 +12,22 @@ from xlrd import open_workbook
 
 from dashboard.libs.date_tools import get_workdays
 
-from .models import Person, Rate, Project
+from .models import Person, Rate, Project, PersonCost
 from .widgets import MonthYearWidget
+
+
+PAYROLL_COSTS = [
+    'ASLC',
+    'A/L Sacrifice',
+    'Special Bonus',
+    'Temp.Promo.',
+    'Misc.Allow.',
+    'FTE',
+    'Bike Sal',
+    'T & S paid with Sal',
+    'O/time',
+    'ERNIC',
+]
 
 
 def year_range(backward=0, forward=10):
@@ -81,24 +95,33 @@ class PayrollUploadForm(forms.Form):
                 data = dict(zip(headers, row_data))
                 person = self.get_person(row, data)
                 if person:
-                    day_rate = Decimal(data['Total']) / get_workdays(
+                    day_rate = Decimal(data['Salary']) / get_workdays(
                         start, start + relativedelta(day=31))
                     staff_number = int(data['Staff'])
 
+                    additional = {}
+                    for header in PAYROLL_COSTS:
+                        if Decimal(data[header]) != 0:
+                            additional[header] = Decimal(data[header])
+
+                    if Decimal('Write Offs') != 0:
+                        additional['Write Offs'] = -Decimal(data['Write Offs'])
 
                     payroll.append({
                         'person': person,
                         'rate': day_rate,
                         'start': start,
                         'staff_number': staff_number,
+                        'additional': additional
                     })
 
         return payroll
 
     def save(self):
         for pay in self.cleaned_data['payroll_file']:
+            person = pay['person']
             rate, created = Rate.objects.get_or_create(
-                person=pay['person'],
+                person=person,
                 start_date=pay['start'],
                 defaults=dict(rate=pay['rate'],)
             )
@@ -106,6 +129,13 @@ class PayrollUploadForm(forms.Form):
             if not created:
                 rate.rate = pay['rate']
                 rate.save()
+
+            if not person.staff_number:
+                person.staff_number = pay['staff_number']
+                person.save()
+
+            for additional in pay['additional']:
+                PersonCost.objects.get_or_create()
 
 
 class ExportForm(forms.Form):
@@ -185,7 +215,6 @@ class ExportForm(forms.Form):
         ws.cell(row=166, column=9).value = 10
 
 
-
 class AdjustmentExportForm(ExportForm):
 
     def write(self, workbook, ws=None):
@@ -200,6 +229,3 @@ class IntercompanyExportForm(ExportForm):
         ws = workbook.get_active_sheet()
         super(IntercompanyExportForm, self).write(workbook, ws=ws)
         ws.cell(row=8, column=9).value = 'Intercompany Transfer'
-
-
-
