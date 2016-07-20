@@ -19,7 +19,62 @@ from dashboard.libs.cache_tools import method_cache
 from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
 
 
-class Person(models.Model):
+class BaseCost(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    name = models.CharField(max_length=128, null=True)
+    note = models.TextField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    type = models.PositiveSmallIntegerField(
+        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
+
+    def cost_between(self, start_date, end_date):
+        start_date = max(start_date, self.start_date)
+        end_date = min(end_date, self.end_date or end_date)
+        if self.type == COST_TYPES.ONE_OFF:
+            if start_date <= self.start_date <= end_date:
+                return self.cost
+            return Decimal('0')
+
+        dates = dates_between(start_date, end_date, self.freq,
+                              bymonthday=self.bymonthday,
+                              byyearday=self.byyearday)
+
+        return len(dates) * self.cost
+
+    @property
+    def byyearday(self):
+        if self.type == COST_TYPES.ANNUALLY:
+            return self.start_date.timetuple().tm_yday
+
+    @property
+    def bymonthday(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return self.start_date.day
+
+    @property
+    def freq(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return MONTHLY
+        elif self.type == COST_TYPES.ANNUALLY:
+            return YEARLY
+
+    class Meta:
+        abstract = True
+
+
+class AditionalCostsMixin():
+    def additional_costs(self, start_date, end_date):
+        def cost_of_cost(cost):
+            return cost.cost_between(start_date, end_date)
+
+        return sum(map(cost_of_cost, self.costs.filter(
+            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+            start_date__lte=end_date
+        ))) or Decimal('0')
+
+
+class Person(models.Model, AditionalCostsMixin):
     float_id = models.CharField(max_length=128, unique=True)
     staff_number = models.PositiveSmallIntegerField(null=True, unique=True)
     name = models.CharField(max_length=128)
@@ -66,7 +121,13 @@ class Person(models.Model):
 
         total_workdays = dec_workdays(start_date, end_date)
 
-        return average_rate_from_segments(segments, total_workdays)
+        average_rate = average_rate_from_segments(segments, total_workdays)
+
+        additional_costs = self.additional_costs(start_date, end_date)
+        if additional_costs:
+            additional_costs_rate = additional_costs / total_workdays
+            return average_rate + additional_costs_rate
+        return average_rate
 
     def rate_on(self, on=None):
         """
@@ -76,6 +137,10 @@ class Person(models.Model):
         """
         rate = self.rates.on(on=on)
         return rate.rate_on(on) if rate else None
+
+
+class PersonCost(BaseCost):
+    person = models.ForeignKey('Person', related_name='costs')
 
 
 class RatesManager(models.Manager):
@@ -200,7 +265,7 @@ class ProjectManager(models.Manager):
         return self.get_queryset().filter(visible=True)
 
 
-class Project(models.Model):
+class Project(models.Model, AditionalCostsMixin):
     name = models.CharField(max_length=128)
     hr_id = models.CharField(max_length=12, unique=True, null=True)
     description = models.TextField()
@@ -472,15 +537,6 @@ class Project(models.Model):
                              for task in tasks]
         return sum(spending_per_task)
 
-    def additional_costs(self, start_date, end_date):
-        def cost_of_cost(cost):
-            return cost.cost_between(start_date, end_date)
-
-        return sum(map(cost_of_cost, self.costs.filter(
-            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
-            start_date__lte=end_date
-        ))) or Decimal('0')
-
     @property
     def cost_to_date(self):
         """
@@ -586,46 +642,8 @@ class Project(models.Model):
         )
 
 
-class Cost(models.Model):
+class Cost(BaseCost):
     project = models.ForeignKey('Project', related_name='costs')
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    name = models.CharField(max_length=128, null=True)
-    note = models.TextField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
-    type = models.PositiveSmallIntegerField(
-        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
-
-    def cost_between(self, start_date, end_date):
-        start_date = max(start_date, self.start_date)
-        end_date = min(end_date, self.end_date or end_date)
-        if self.type == COST_TYPES.ONE_OFF:
-            if start_date <= self.start_date <= end_date:
-                return self.cost
-            return Decimal('0')
-
-        dates = dates_between(start_date, end_date, self.freq,
-                              bymonthday=self.bymonthday,
-                              byyearday=self.byyearday)
-        # print(self, start_date, end_date, dates)
-        return len(dates) * self.cost
-
-    @property
-    def byyearday(self):
-        if self.type == COST_TYPES.ANNUALLY:
-            return self.start_date.timetuple().tm_yday
-
-    @property
-    def bymonthday(self):
-        if self.type == COST_TYPES.MONTHLY:
-            return self.start_date.day
-
-    @property
-    def freq(self):
-        if self.type == COST_TYPES.MONTHLY:
-            return MONTHLY
-        elif self.type == COST_TYPES.ANNUALLY:
-            return YEARLY
 
 
 class Budget(models.Model):
