@@ -153,12 +153,18 @@ class ExportForm(forms.Form):
         ws.cell(row=164, column=7).value = project.hr_id
         ws.cell(row=165, column=7).value = project.hr_id
 
-        ws.cell(row=161, column=10).value = '%s - %s Share of DS Agency Costs %s' % (project.name, project.client.name, month)
-        ws.cell(row=162, column=10).value = '%s - %s Share of DS Salary Costs %s' % (project.name, project.client.name, month)
-        ws.cell(row=163, column=10).value = '%s - %s Share of DS Allce Costs %s' % (project.name, project.client.name, month)
-        ws.cell(row=164, column=10).value = '%s - %s Share of DS ERNIC Costs %s' % (project.name, project.client.name, month)
-        ws.cell(row=165, column=10).value = '%s - %s Share of DS ASLC Costs %s' % (project.name, project.client.name, month)
-        ws.cell(row=166, column=10).value = '%s - %s Share of DS Resource Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=161, column=10).value = \
+            '%s - %s Share of DS Agency Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=162, column=10).value = \
+            '%s - %s Share of DS Salary Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=163, column=10).value = \
+            '%s - %s Share of DS Allce Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=164, column=10).value = \
+            '%s - %s Share of DS ERNIC Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=165, column=10).value = \
+            '%s - %s Share of DS ASLC Costs %s' % (project.name, project.client.name, month)
+        ws.cell(row=166, column=10).value = \
+            '%s - %s Share of DS Resource Costs %s' % (project.name, project.client.name, month)
 
         ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
                                                     date.strftime('/%m/%Y'))
