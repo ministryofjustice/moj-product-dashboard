@@ -33,12 +33,15 @@ def test_valid_upload_form():
     assert form.cleaned_data['date'] == date(2016, 1, 1)
     assert form.cleaned_data['payroll_file'] == [{'person': p1,
                                                   'rate': Decimal('0.2'),
+                                                  'staff_number': 123470,
                                                   'start': date(2016, 1, 1)},
                                                  {'person': p2,
                                                   'rate': Decimal('0.2'),
+                                                  'staff_number': 123504,
                                                   'start': date(2016, 1, 1)},
                                                  {'person': p3,
                                                   'rate': Decimal('0.2'),
+                                                  'staff_number': 123507,
                                                   'start': date(2016, 1, 1)}]
     assert form.errors == {}
     assert form.month == '2016-01'
