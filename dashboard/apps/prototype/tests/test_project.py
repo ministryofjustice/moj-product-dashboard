@@ -70,6 +70,12 @@ def test_project_first_last_task_dates():
 @pytest.mark.django_db
 def test_project_without_tasks():
     project = mommy.make(Project)
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=date.today()
+    )
     assert project.first_task is None
     assert project.last_task is None
 
@@ -81,6 +87,7 @@ def test_project_without_tasks():
     assert project.team_size() == 0
     assert project.time_spent() == 0
     assert project.cost_to_date == 0
+    assert project.total_cost == 0
 
 
 @pytest.mark.django_db
@@ -278,7 +285,7 @@ def test_project_budget():
 
 
 @pytest.mark.django_db
-def test_project_cost_to_date():
+def test_project_cost():
     project = make_project()
     cost = Decimal('50')
     mommy.make(
@@ -288,10 +295,37 @@ def test_project_cost_to_date():
         type=COST_TYPES.ONE_OFF,
         cost=cost
     )
-
     expected = (
         contractor_rate * man_days + non_contractor_rate * man_days + cost)
     assert project.cost_to_date == expected
+    assert project.total_cost == expected
+
+    # add a future task and cost. it shoudn't change
+    # cost_to_date but total_cost
+    contractor = mommy.make(Person, is_contractor=True)
+    mommy.make(
+        Rate,
+        start_date=start_date,
+        rate=contractor_rate,
+        person=contractor
+    )
+    mommy.make(
+        Task,
+        person=contractor,
+        project=project,
+        start_date=date.today() + timedelta(days=1),
+        end_date=date.today() + timedelta(days=3),
+        days=2
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=100),
+        type=COST_TYPES.ONE_OFF,
+        cost=cost
+    )
+    assert project.cost_to_date == expected
+    assert project.total_cost == expected + contractor_rate * 2 + cost
 
 
 @pytest.mark.django_db
