@@ -32,17 +32,32 @@ def test_valid_upload_form():
     assert form.is_valid() is True
     assert form.cleaned_data['date'] == date(2016, 1, 1)
     assert form.cleaned_data['payroll_file'] == [{'person': p1,
-                                                  'rate': Decimal('0.2'),
+                                                  'rate': Decimal('0.05'),
                                                   'staff_number': 123470,
-                                                  'start': date(2016, 1, 1)},
+                                                  'start': date(2016, 1, 1),
+                                                  'end': date(2016, 1, 31),
+                                                  'additional': {'ASLC': Decimal('1'),
+                                                                 'ERNIC': Decimal('1'),
+                                                                 'FTE': Decimal('1'),
+                                                                 'Misc.Allow.': Decimal('1')}},
                                                  {'person': p2,
-                                                  'rate': Decimal('0.2'),
+                                                  'rate': Decimal('0.05'),
                                                   'staff_number': 123504,
-                                                  'start': date(2016, 1, 1)},
+                                                  'start': date(2016, 1, 1),
+                                                  'end': date(2016, 1, 31),
+                                                  'additional': {'ASLC': Decimal('1'),
+                                                                 'ERNIC': Decimal('1'),
+                                                                 'FTE': Decimal('1'),
+                                                                 'Misc.Allow.': Decimal('1')}},
                                                  {'person': p3,
-                                                  'rate': Decimal('0.2'),
+                                                  'rate': Decimal('0.05'),
                                                   'staff_number': 123507,
-                                                  'start': date(2016, 1, 1)}]
+                                                  'start': date(2016, 1, 1),
+                                                  'end': date(2016, 1, 31),
+                                                  'additional': {'ASLC': Decimal('1'),
+                                                                 'ERNIC': Decimal('1'),
+                                                                 'FTE': Decimal('1'),
+                                                                 'Misc.Allow.': Decimal('1')}}]
     assert form.errors == {}
     assert form.month == '2016-01'
     assert form.save() is None
