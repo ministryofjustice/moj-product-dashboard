@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, date
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY
 
 from django.db import models
@@ -42,6 +43,30 @@ class BaseCost(models.Model):
 
         return len(dates) * self.cost
 
+    def rate_between(self, start_date, end_date):
+        if not self.end_date:
+            if self.type == COST_TYPES.MONTHLY:
+                cost_end_date = self.start_date + relativedelta(months=1)
+            elif self.type == COST_TYPES.ANNUALLY:
+                cost_end_date = self.start_date + relativedelta(years=1)
+            else:
+                raise Exception('Cant get rate on one off cost')
+        else:
+            cost_end_date = self.end_date
+
+        cost_working_days = dec_workdays(self.start_date, cost_end_date)
+
+        overlap = get_overlap(
+            (self.start_date, cost_end_date),
+            (start_date, end_date))
+
+        if not overlap:
+            return Decimal('0')
+
+        overlap_working_days = dec_workdays(*overlap)
+
+        return self.cost * overlap_working_days / cost_working_days
+
     @property
     def byyearday(self):
         if self.type == COST_TYPES.ANNUALLY:
@@ -64,14 +89,24 @@ class BaseCost(models.Model):
 
 
 class AditionalCostsMixin():
-    def additional_costs(self, start_date, end_date):
+    def get_costs_between(self, start_date, end_date, name=None):
+        costs = self.costs.filter(
+            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+            start_date__lte=end_date
+        )
+
+        if name:
+            costs = costs.filter(name=name)
+
+        return costs
+
+    def additional_costs(self, start_date, end_date, name=None):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
-        return sum(map(cost_of_cost, self.costs.filter(
-            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
-            start_date__lte=end_date
-        ))) or Decimal('0')
+        costs = self.get_costs_between(start_date, end_date, name=None)
+
+        return sum(map(cost_of_cost, costs)) or Decimal('0')
 
 
 class Person(models.Model, AditionalCostsMixin):
@@ -100,12 +135,13 @@ class Person(models.Model, AditionalCostsMixin):
             ('upload_person', 'Can upload monthly payroll'),
         )
 
-    def additional_rate(self, start_date, end_date):
-        total_workdays = dec_workdays(start_date, end_date)
-        additional_costs = self.additional_costs(start_date, end_date)
-        if additional_costs:
-            return additional_costs / total_workdays
-        return Decimal('0')
+    def additional_rate(self, start_date, end_date, name=None):
+        costs = self.get_costs_between(start_date, end_date, name=name)
+
+        if not costs:
+            return Decimal('0')
+
+        return sum([c.rate_between() for c in costs])
 
     def rate_between(self, start_date, end_date):
         """
@@ -542,6 +578,19 @@ class Project(models.Model, AditionalCostsMixin):
                              for task in tasks]
         return sum(spending_per_task)
 
+    def people_additional_costs(self, start_date, end_date, name=None):
+        """
+        get the additional non salary people costs for a project
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param name: only get the additional people costs of this name
+        :return: a decimal for total spending
+        """
+        tasks = self.tasks.all()
+        additinal_task_costs = [task.people_costs(start_date, end_date, name)
+                                for task in tasks]
+        return sum(additinal_task_costs)
+
     @property
     def cost_to_date(self):
         """
@@ -917,11 +966,13 @@ class Task(models.Model):
 
         return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
 
-    def people_costs(self, start_date=None, end_date=None):
+    def people_costs(self, start_date=None, end_date=None,
+                     additional_cost_name=None):
         """
         get the money spent on the task during a time window.
         :param start_date: start date of the time window, a date object
         :param end_date: end date of the time window, a date object
+        :param additional_cost_name: name of specific additional cost to total
         :return: cost in pound, a decimal
         """
         start_date = start_date or self.start_date
@@ -933,7 +984,10 @@ class Task(models.Model):
         if not timewindow:
             return Decimal('0')
 
-        rate = self.person.rate_between(*timewindow)
+        if additional_cost_name:
+            rate = self.person.additional_rate(*timewindow)
+        else:
+            rate = self.person.rate_between(*timewindow)
         if not rate:
             return Decimal('0')
         timewindow_workdays = get_workdays(*timewindow)

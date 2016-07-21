@@ -221,10 +221,10 @@ class ExportForm(forms.Form):
 
         ws.cell(row=161, column=9).value = project.people_costs(start_date, end_date, contractor_only=True)
         ws.cell(row=162, column=9).value = project.people_costs(start_date, end_date, non_contractor_only=True)
-        ws.cell(row=163, column=9).value = 10
-        ws.cell(row=164, column=9).value = 10
-        ws.cell(row=165, column=9).value = 10
-        ws.cell(row=166, column=9).value = 10
+        ws.cell(row=163, column=9).value = project.people_additional_costs(start_date, end_date, name='Misc.Allow.')
+        ws.cell(row=164, column=9).value = project.people_additional_costs(start_date, end_date, name='ERNIC')
+        ws.cell(row=165, column=9).value = project.people_additional_costs(start_date, end_date, name='ASLC')
+        ws.cell(row=166, column=9).value = project.people_costs(start_date, end_date)
 
 
 class AdjustmentExportForm(ExportForm):
