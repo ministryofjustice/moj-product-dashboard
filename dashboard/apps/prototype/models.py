@@ -100,6 +100,13 @@ class Person(models.Model, AditionalCostsMixin):
             ('upload_person', 'Can upload monthly payroll'),
         )
 
+    def additional_rate(self, start_date, end_date):
+        total_workdays = dec_workdays(start_date, end_date)
+        additional_costs = self.additional_costs(start_date, end_date)
+        if additional_costs:
+            return additional_costs / total_workdays
+        return Decimal('0')
+
     def rate_between(self, start_date, end_date):
         """
         average day rate in range
@@ -123,20 +130,17 @@ class Person(models.Model, AditionalCostsMixin):
 
         average_rate = average_rate_from_segments(segments, total_workdays)
 
-        additional_costs = self.additional_costs(start_date, end_date)
-        if additional_costs:
-            additional_costs_rate = additional_costs / total_workdays
-            return average_rate + additional_costs_rate
-        return average_rate
+        return average_rate + self.additional_rate(start_date, end_date)
 
-    def rate_on(self, on=None):
+    def rate_on(self, on):
         """
         rate at time of date
         param: on: date object - if no start or end then rate on specific date
         return: Decimal object - rate on date
         """
         rate = self.rates.on(on=on)
-        return rate.rate_on(on) if rate else None
+        if rate:
+            return rate.rate_on(on) + self.additional_rate(on, on)
 
 
 class PersonCost(BaseCost):
