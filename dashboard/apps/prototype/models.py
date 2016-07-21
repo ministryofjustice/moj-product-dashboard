@@ -76,7 +76,7 @@ class AditionalCostsMixin():
 
 class Person(models.Model, AditionalCostsMixin):
     float_id = models.CharField(max_length=128, unique=True)
-    staff_number = models.PositiveSmallIntegerField(null=True, unique=True)
+    staff_number = models.PositiveIntegerField(null=True, unique=True)
     name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
@@ -130,7 +130,8 @@ class Person(models.Model, AditionalCostsMixin):
 
         average_rate = average_rate_from_segments(segments, total_workdays)
 
-        return average_rate + self.additional_rate(start_date, end_date)
+        if average_rate:
+            return average_rate + self.additional_rate(start_date, end_date)
 
     def rate_on(self, on):
         """
