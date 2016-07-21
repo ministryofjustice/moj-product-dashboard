@@ -2,7 +2,12 @@
 from .base import *
 
 
-INSTALLED_APPS += ['django_extensions', 'dashboard.apps.testing']
+if 'dashboard.apps.testing' not in INSTALLED_APPS:
+    INSTALLED_APPS += ['dashboard.apps.testing']
+
+if 'django_extensions' not in INSTALLED_APPS:
+    INSTALLED_APPS += ['django_extensions']
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
