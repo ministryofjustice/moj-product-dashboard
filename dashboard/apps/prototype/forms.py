@@ -103,10 +103,10 @@ class PayrollUploadForm(forms.Form):
 
                     additional = {}
                     for header in PAYROLL_COSTS:
-                        if Decimal(data[header]) != 0:
+                        if data[header] and Decimal(data[header]) != 0:
                             additional[header] = Decimal(data[header])
 
-                    if Decimal('Write Offs') != 0:
+                    if data['Write Offs'] and Decimal(data['Write Offs']) != 0:
                         additional['Write Offs'] = -Decimal(data['Write Offs'])
 
                     payroll.append({
@@ -143,7 +143,8 @@ class PayrollUploadForm(forms.Form):
                     start_date=pay['start'],
                     end_date=pay['end'],
                     type=COST_TYPES.MONTHLY,
-                    name=name
+                    name=name,
+                    defaults=dict(cost=cost),
                 )
                 additional.cost = cost
                 additional.save()
