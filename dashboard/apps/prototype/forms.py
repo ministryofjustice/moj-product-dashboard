@@ -11,7 +11,9 @@ from openpyxl import load_workbook
 from xlrd import open_workbook
 
 from dashboard.libs.date_tools import get_workdays
+from dashboard.libs.rate_converter import last_date_in_month
 
+from .constants import COST_TYPES
 from .models import Person, Rate, Project, PersonCost
 from .widgets import MonthYearWidget
 
@@ -111,6 +113,7 @@ class PayrollUploadForm(forms.Form):
                         'person': person,
                         'rate': day_rate,
                         'start': start,
+                        'end': last_date_in_month(start),
                         'staff_number': staff_number,
                         'additional': additional
                     })
@@ -134,8 +137,16 @@ class PayrollUploadForm(forms.Form):
                 person.staff_number = pay['staff_number']
                 person.save()
 
-            for additional in pay['additional']:
-                PersonCost.objects.get_or_create()
+            for name, cost in pay['additional'].items():
+                additional, created = PersonCost.objects.get_or_create(
+                    person=person,
+                    start_date=pay['start'],
+                    end_date=pay['end'],
+                    type=COST_TYPES.MONTHLY,
+                    name=name
+                )
+                additional.cost = cost
+                additional.save()
 
 
 class ExportForm(forms.Form):
