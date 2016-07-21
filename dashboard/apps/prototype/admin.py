@@ -15,7 +15,7 @@ from django.utils.decorators import method_decorator
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup)
 from .forms import PayrollUploadForm, AdjustmentExportForm, \
-    IntercompanyExportForm
+    IntercompanyExportForm, ProjectDetailExportForm
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -213,6 +213,10 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
                 r'^export/intercompany/$',
                 self.admin_site.admin_view(self.intercompany_export_view),
                 name='project_intercompany_export'),
+            url(
+                r'^export/projectdetail/$',
+                self.admin_site.admin_view(self.project_detail_export_view),
+                name='project_projectdetail_export'),
         ]
         return urls + super(ProjectAdmin, self).get_urls()
 
@@ -265,6 +269,14 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     def intercompany_export_view(self, request, *args, **kwargs):
         return self._export_view(request, IntercompanyExportForm,
                                  'Intercompany_Journal')
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.projectdetailexport_project',
+                                          raise_exception=True))
+    def project_detail_export_view(self, request, *args, **kwargs):
+        return self._export_view(request, ProjectDetailExportForm,
+                                 'Project_Detail')
 
 
 class TaskAdmin(ReadOnlyAdmin):

@@ -241,3 +241,10 @@ class IntercompanyExportForm(ExportForm):
         ws = workbook.get_active_sheet()
         super(IntercompanyExportForm, self).write(workbook, ws=ws)
         ws.cell(row=8, column=9).value = 'Intercompany Transfer'
+
+
+class ProjectDetailExportForm(ExportForm):
+    template = 'xls/ProjectDetail.xlsx'
+
+    def write(self, workbook, ws=None):
+        ws = workbook.get_active_sheet()

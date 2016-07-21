@@ -19,6 +19,7 @@
       - ['change_project', 'prototype', 'project']
       - ['adjustmentexport_project', 'prototype', 'project']
       - ['intercompanyexport_project', 'prototype', 'project']
+      - ['projectdetailexport_project', 'prototype', 'project']
       - ['change_task', 'prototype', 'task']
       - ['change_cost', 'prototype', 'cost']
       - ['add_cost', 'prototype', 'cost']

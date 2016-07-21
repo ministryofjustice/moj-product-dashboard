@@ -693,6 +693,7 @@ class Project(models.Model, AditionalCostsMixin):
         permissions = (
             ('adjustmentexport_project', 'Can run Adjustment Export'),
             ('intercompanyexport_project', 'Can run Intercompany Export'),
+            ('projectdetailexport_project', 'Can run Intercompany Export'),
         )
 
 
