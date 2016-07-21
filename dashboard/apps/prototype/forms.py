@@ -247,4 +247,4 @@ class ProjectDetailExportForm(ExportForm):
     template = 'xls/ProjectDetail.xlsx'
 
     def write(self, workbook, ws=None):
-        ws = workbook.get_active_sheet()
+        pass
