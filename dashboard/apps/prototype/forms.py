@@ -255,21 +255,22 @@ class ProjectDetailExportForm(ExportForm):
 
 
 def insert_rows(ws, row_idx, cnt, above=False, copy_style=True,
-                fill_formulae=True):
+                fill_formulae=True):  # flake8: noqa
     """Inserts new (empty) rows into worksheet at specified row index.
 
     :param row_idx: Row index specifying where to insert new rows.
     :param cnt: Number of rows to insert.
     :param above: Set True to insert rows above specified row index.
-    :param copy_style: Set True if new rows should copy style of immediately above row.
-    :param fill_formulae: Set True if new rows should take on formula from immediately above row, filled with references new to rows.
+    :param copy_style: Set True if new rows should copy style of immediately
+    above row.
+    :param fill_formulae: Set True if new rows should take on formula from
+    immediately above row, filled with references new to rows.
 
     Usage:
 
     * insert_rows(2, 10, above=True, copy_style=False)
 
     """
-    RE_CELL = re.compile("(?P<col>[A-Z]+)(?P<row>\d+)")
     RE_RANGE = re.compile(
         "(?P<s_col>[A-Z]+)(?P<s_row>\d+):(?P<e_col>[A-Z]+)(?P<e_row>\d+)")
 
