@@ -141,7 +141,7 @@ class Person(models.Model, AditionalCostsMixin):
         if not costs:
             return Decimal('0')
 
-        return sum([c.rate_between() for c in costs])
+        return sum([c.rate_between(start_date, end_date) for c in costs])
 
     def rate_between(self, start_date, end_date):
         """
