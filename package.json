@@ -19,6 +19,7 @@
     "babel-preset-react": "^6.11.0",
     "css-loader": "^0.23.1",
     "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
     "griddle-react": "^0.6.0",
     "history": "^3.0.0",
     "jest-cli": "^12.1.1",
@@ -37,7 +38,10 @@
     ]
   },
   "jest": {
-    "automock": false
+    "automock": false,
+    "moduleNameMapper": {
+      "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS)$": "<rootDir>/dashboard/apps/prototype/static/js/EmptyModule.js"
+}
   },
   "scripts": {
     "test": "jest",
