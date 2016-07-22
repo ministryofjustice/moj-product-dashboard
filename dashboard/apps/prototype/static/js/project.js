@@ -472,7 +472,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
     {
       'columnName': 'name',
       'order': 1,
-      'displayName': 'Project name',
+      'displayName': 'Product',
       'customComponent': (props) => (
         <a href={`/projects/${props.rowData.id}`}>
           {props.data}
@@ -490,9 +490,9 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
           )}
     },
     {
-      'columnName': 'team_size',
+      'columnName': 'current_fte',
       'order': 4,
-      'displayName': 'Team size',
+      'displayName': 'Current FTE',
       'customCompareFn': Number,
       'customComponent': (props) => (
         <span>

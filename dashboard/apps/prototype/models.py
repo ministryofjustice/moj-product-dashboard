@@ -377,7 +377,7 @@ class Project(models.Model):
             'rag': rag,
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
-            'team_size': self.team_size(start_date, end_date),
+            'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'financial': {},
         }
@@ -510,9 +510,9 @@ class Project(models.Model):
         return sum(task.time_spent(start_date, end_date)
                    for task in self.tasks.all())
 
-    def team_size(self, start_date=None, end_date=None):
+    def current_fte(self, start_date=None, end_date=None):
         """
-        team size measures the number of people working on the project.
+        current FTE measures the number of people working on the project.
         it is the total man-days / num of workday from a start date to
         an end date.
         :param start_date: date object for the start date.
