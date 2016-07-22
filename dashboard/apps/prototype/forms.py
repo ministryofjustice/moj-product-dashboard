@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import copy
+from openpyxl.cell import Cell
+from openpyxl.utils import get_column_letter
 import os
 from calendar import monthrange
 from datetime import date
@@ -8,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 
 from openpyxl import load_workbook
+import re
 from xlrd import open_workbook
 
 from dashboard.libs.date_tools import get_workdays
@@ -85,14 +89,14 @@ class PayrollUploadForm(forms.Form):
         workbook = open_workbook(
             file_contents=self.cleaned_data['payroll_file'].read())
 
-        worksheet = workbook.sheet_by_index(0)
+        ws = workbook.sheet_by_index(0)
 
-        headers = worksheet.row_values(6)
+        headers = ws.row_values(6)
 
         payroll = []
 
-        for row in range(7, worksheet.nrows):
-            row_data = worksheet.row_values(row)
+        for row in range(7, ws.nrows):
+            row_data = ws.row_values(row)
             if row_data[0]:
                 data = dict(zip(headers, row_data))
                 person = self.get_person(row, data)
@@ -232,7 +236,7 @@ class AdjustmentExportForm(ExportForm):
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
         super(AdjustmentExportForm, self).write(workbook, ws=ws)
-        ws.cell(row=8, column=9).value = 'Intercompany Transfer'
+        ws.cell(row=8, column=9).value = 'Adjustment'
 
 
 class IntercompanyExportForm(ExportForm):
@@ -248,3 +252,114 @@ class ProjectDetailExportForm(ExportForm):
 
     def write(self, workbook, ws=None):
         pass
+
+
+def insert_rows(ws, row_idx, cnt, above=False, copy_style=True,
+                fill_formulae=True):
+    """Inserts new (empty) rows into worksheet at specified row index.
+
+    :param row_idx: Row index specifying where to insert new rows.
+    :param cnt: Number of rows to insert.
+    :param above: Set True to insert rows above specified row index.
+    :param copy_style: Set True if new rows should copy style of immediately above row.
+    :param fill_formulae: Set True if new rows should take on formula from immediately above row, filled with references new to rows.
+
+    Usage:
+
+    * insert_rows(2, 10, above=True, copy_style=False)
+
+    """
+    RE_CELL = re.compile("(?P<col>[A-Z]+)(?P<row>\d+)")
+    RE_RANGE = re.compile(
+        "(?P<s_col>[A-Z]+)(?P<s_row>\d+):(?P<e_col>[A-Z]+)(?P<e_row>\d+)")
+
+    row_idx = row_idx - 1 if above else row_idx
+
+    old_cells = set()
+    old_fas = set()
+    new_cells = dict()
+    new_fas = dict()
+    for c in ws._cells.values():
+        if c.row > row_idx:
+            old_coor = c.coordinate
+            old_cells.add((c.row, c.col_idx))
+            c.row += cnt
+            new_cells[(c.row, c.col_idx)] = c
+            if c.data_type == Cell.TYPE_FORMULA:
+                c.value = re.sub(
+                    "(\$?[A-Z]{1,3})\$?%d" % (c.row - cnt),
+                    lambda m: m.group(1) + str(c.row),
+                    c.value
+                )
+                if old_coor in ws.formula_attributes:
+                    old_fas.add(old_coor)
+                    fa = ws.formula_attributes[old_coor].copy()
+                    if 'ref' in fa:
+                        if fa['ref'] == old_coor:
+                            fa['ref'] = c.coordinate
+                        else:
+                            g = RE_RANGE.search(fa['ref']).groupdict()
+                            fa['ref'] = g['s_col'] + str(
+                                int(g['s_row']) + cnt) + ":" + g[
+                                            'e_col'] + str(
+                                int(g['e_row']) + cnt)
+                    new_fas[c.coordinate] = fa
+
+    for coor in old_cells:
+        del ws._cells[coor]
+    ws._cells.update(new_cells)
+
+    for fa in old_fas:
+        del ws.formula_attributes[fa]
+    ws.formula_attributes.update(new_fas)
+
+    for row in range(len(ws.row_dimensions) - 1 + cnt, row_idx + cnt, -1):
+        new_rd = copy.copy(ws.row_dimensions[row - cnt])
+        new_rd.index = row
+        ws.row_dimensions[row] = new_rd
+        del ws.row_dimensions[row - cnt]
+
+    row_idx += 1
+    for row in range(row_idx, row_idx + cnt):
+        new_rd = copy.copy(ws.row_dimensions[row - 1])
+        new_rd.index = row
+        ws.row_dimensions[row] = new_rd
+        for col in range(1, ws.max_column):
+            col = get_column_letter(col)
+            cell = ws.cell('%s%d' % (col, row))
+            cell.value = None
+            source = ws.cell('%s%d' % (col, row - 1))
+            if copy_style:
+                cell.number_format = source.number_format
+                cell.font = source.font.copy()
+                cell.alignment = source.alignment.copy()
+                cell.border = source.border.copy()
+                cell.fill = source.fill.copy()
+            if fill_formulae and source.data_type == Cell.TYPE_FORMULA:
+                if source.value == "=":
+                    if source.coordinate in ws.formula_attributes:
+                        fa = ws.formula_attributes[source.coordinate].copy()
+                        ws.formula_attributes[cell.coordinate] = fa
+                else:
+                    cell.value = re.sub(
+                        "(\$?[A-Z]{1,3})\$?%d" % (row - 1),
+                        lambda m: m.group(1) + str(row),
+                        source.value
+                    )
+                cell.data_type = Cell.TYPE_FORMULA
+
+    for cr_idx, cr in enumerate(ws.merged_cell_ranges):
+        g = RE_RANGE.search(cr).groupdict()
+        if row_idx >= int(g['s_row']) and row_idx <= int(g['e_row']):
+            ws.merged_cell_ranges[cr_idx] = g['s_col'] + g['s_row'] + ":" + g[
+                'e_col'] + str(int(g['e_row']) + cnt)
+
+    for k, v in ws.formula_attributes.items():
+        if 'ref' in v:
+            ref = v['ref']
+            if ":" in ref:
+                g = RE_RANGE.search(v['ref']).groupdict()
+                if row_idx >= int(g['s_row']) and row_idx <= int(g['e_row']):
+                    ws.formula_attributes[k]['ref'] = g['s_col'] + g[
+                        's_row'] + ":" + g['e_col'] + str(
+                        int(g['e_row']) + cnt)
