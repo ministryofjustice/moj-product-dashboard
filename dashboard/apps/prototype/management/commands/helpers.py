@@ -136,6 +136,7 @@ def get_projects(names, areas, as_filter=True):
             ('could not find any project with name(s) {} and area(s) {}'
              ).format(','.join(names), area_names))
     logger.info('projects: {}'.format(', '.join([p.name for p in projects])))
+    return projects
 
 
 def contains_any(field, values, ignore_case=True):
