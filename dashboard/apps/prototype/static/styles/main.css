@@ -25,3 +25,13 @@ button.update-from-float {
 .graph-spinkit {
   top: 40px;
 }
+
+.griddle-body th span {
+  color: #005ea5;
+  text-decoration: underline;
+}
+
+.griddle-body th span:hover {
+  color: #2b8cc4;
+  cursor: pointer;
+}
