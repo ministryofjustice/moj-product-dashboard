@@ -35,3 +35,7 @@ button.update-from-float {
   color: #2b8cc4;
   cursor: pointer;
 }
+
+img.rag {
+  height: 26px;
+}

@@ -486,7 +486,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'customComponent': (props) => {
         const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
         return (
-            <img src={ mapping[props.data] } alt={props.data} />
+            <img src={ mapping[props.data] } className="rag" alt={props.data} />
           )}
     },
     {
