@@ -285,6 +285,15 @@ export class ProjectContainer extends Component {
 
     return (
       <div>
+        <h1 className="heading-xlarge">{this.state.project.name}</h1>
+        <hr />
+        <KeyStats
+          budget={this.state.project.budget}
+          costToDate={this.state.project['cost_to_date']}
+          savings={this.state.project.savings}
+        />
+        <hr/>
+        <h3 className="heading-medium">Total expenditure and budget</h3>
         { timeFrameSelector }
         <ProjectGraph
           onChange={(e) => this.handleBurnDownChange(e)}
@@ -343,6 +352,40 @@ function TimeFrameSelector({
   );
 }
 
+
+function KeyStats({budget, costToDate, savings}) {
+
+  const Data = ({data, label}) => (
+    <div className="column-one-third">
+      <div className="data">
+        <h2 className="bold-xlarge">{data}</h2>
+        <p className="bold-xsmall">{label}</p>
+      </div>
+    </div>
+  );
+
+  const format = (data) => `£${Math.round(parseFloat(data)).toLocaleString()}`;
+
+  return (
+    <div>
+      <h3 className="heading-medium">Key statistics</h3>
+      <div className="grid-row">
+        <Data
+          data={format(budget)}
+          label="Budget"
+        />
+        <Data
+          data={format(costToDate)}
+          label="Total spend to date"
+        />
+        <Data
+          data={savings ? format(savings) : '\u00a0'}
+          label="Savings enabled"
+        />
+      </div>
+    </div>
+  )
+}
 
 class ProjectGraph extends Component {
 
