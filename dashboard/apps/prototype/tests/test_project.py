@@ -351,6 +351,28 @@ def test_project_last_date():
 
 
 @pytest.mark.django_db
+def test_project_phase():
+
+    project = mommy.make(Project)
+    assert project.phase == 'Not Defined'
+
+    project.discovery_date = date.today() - timedelta(days=1)
+    assert project.phase == 'Discovery'
+
+    project.alpha_date = date.today() - timedelta(days=1)
+    assert project.phase == 'Alpha'
+
+    project.beta_date = date.today() - timedelta(days=1)
+    assert project.phase == 'Beta'
+
+    project.live_date = date.today() - timedelta(days=1)
+    assert project.phase == 'Live'
+
+    project.end_date = date.today() - timedelta(days=1)
+    assert project.phase == 'Ended'
+
+
+@pytest.mark.django_db
 def test_default_start_date():
     project = make_project()
 
