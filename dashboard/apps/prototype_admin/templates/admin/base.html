@@ -14,7 +14,7 @@
 
 {% block stylesheets %}
 
-    <link rel="stylesheet" type="text/css" href="{% static "moj_admin/css/dwp_admin.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/css/dwp_admin.css" %}"/>
 
     {% block extrastyle %}
 
@@ -26,10 +26,10 @@
         <meta name="robots" content="NONE,NOARCHIVE"/>
     {% endblock %}
 {#    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>#}
-    <script type="text/javascript" src="{% static 'moj_admin/js/dwp_admin.js' %}"></script>
+    <script type="text/javascript" src="{% static 'prototype_admin/js/dwp_admin.js' %}"></script>
     {% block extrahead %}
-        <link rel="stylesheet" type="text/css" href="{% static "moj_admin/css/moj_template_overrides.css" %}"/>
-        <link rel="stylesheet" type="text/css" href="{% static "moj_admin/css/custom.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/css/moj_template_overrides.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/css/custom.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "common/common.css" %}"/>
         {# Here to ensure loaded last #}
     {% endblock %}
