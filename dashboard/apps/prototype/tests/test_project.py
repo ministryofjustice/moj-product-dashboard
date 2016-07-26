@@ -84,7 +84,7 @@ def test_project_without_tasks():
     assert 'name' in profile
     assert 'description' in profile
     assert profile['financial'] == {}
-    assert project.team_size() == 0
+    assert project.current_fte() == 0
     assert project.time_spent() == 0
     assert project.cost_to_date == 0
     assert project.total_cost == 0
@@ -225,12 +225,12 @@ def test_project_time_spent_for_project_with_tasks():
 
 
 @pytest.mark.django_db
-def test_project_team_size():
+def test_project_current_fte():
     project = make_project()
-    assert project.team_size() == 0  # no work has been done in the last week
+    assert project.current_fte() == 0  # no work has been done in the last week
     time_spent = project.time_spent()
     workdays = get_workdays(start_date, end_date)
-    assert project.team_size(start_date, end_date) == time_spent / workdays
+    assert project.current_fte(start_date, end_date) == time_spent / workdays
 
 
 @pytest.mark.django_db
