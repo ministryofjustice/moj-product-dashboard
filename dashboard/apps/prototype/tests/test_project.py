@@ -70,6 +70,12 @@ def test_project_first_last_task_dates():
 @pytest.mark.django_db
 def test_project_without_tasks():
     project = mommy.make(Project)
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=date.today()
+    )
     assert project.first_task is None
     assert project.last_task is None
 
@@ -78,9 +84,11 @@ def test_project_without_tasks():
     assert 'name' in profile
     assert 'description' in profile
     assert profile['financial'] == {}
-    assert project.team_size() == 0
+    assert project.current_fte() == 0
     assert project.time_spent() == 0
     assert project.cost_to_date == 0
+    assert project.total_cost == 0
+    assert project.financial_rag == 'GREEN'
 
 
 @pytest.mark.django_db
@@ -217,12 +225,12 @@ def test_project_time_spent_for_project_with_tasks():
 
 
 @pytest.mark.django_db
-def test_project_team_size():
+def test_project_current_fte():
     project = make_project()
-    assert project.team_size() == 0  # no work has been done in the last week
+    assert project.current_fte() == 0  # no work has been done in the last week
     time_spent = project.time_spent()
     workdays = get_workdays(start_date, end_date)
-    assert project.team_size(start_date, end_date) == time_spent / workdays
+    assert project.current_fte(start_date, end_date) == time_spent / workdays
 
 
 @pytest.mark.django_db
@@ -278,7 +286,7 @@ def test_project_budget():
 
 
 @pytest.mark.django_db
-def test_project_cost_to_date():
+def test_project_cost():
     project = make_project()
     cost = Decimal('50')
     mommy.make(
@@ -288,10 +296,37 @@ def test_project_cost_to_date():
         type=COST_TYPES.ONE_OFF,
         cost=cost
     )
-
     expected = (
         contractor_rate * man_days + non_contractor_rate * man_days + cost)
     assert project.cost_to_date == expected
+    assert project.total_cost == expected
+
+    # add a future task and cost. it shoudn't change
+    # cost_to_date but total_cost
+    contractor = mommy.make(Person, is_contractor=True)
+    mommy.make(
+        Rate,
+        start_date=start_date,
+        rate=contractor_rate,
+        person=contractor
+    )
+    mommy.make(
+        Task,
+        person=contractor,
+        project=project,
+        start_date=date.today() + timedelta(days=1),
+        end_date=date.today() + timedelta(days=3),
+        days=2
+    )
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=100),
+        type=COST_TYPES.ONE_OFF,
+        cost=cost
+    )
+    assert project.cost_to_date == expected
+    assert project.total_cost == expected + contractor_rate * 2 + cost
 
 
 @pytest.mark.django_db
@@ -506,3 +541,53 @@ def test_default_end_date_no_dates():
     project = mommy.make(Project)
     with pytest.raises(ValueError):
         project.default_end_date
+
+
+@pytest.mark.django_db
+def test_project_financial_rag():
+    project = mommy.make(Project)
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Budget,
+        project=project,
+        budget=1000,
+        start_date=date.today()
+    )
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() - timedelta(days=2),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('500')
+    )
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=2),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('500')
+    )
+    assert project.financial_rag == 'GREEN'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=4),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('100')
+    )
+    assert project.financial_rag == 'AMBER'
+
+    mommy.make(
+        Cost,
+        project=project,
+        start_date=date.today() + timedelta(days=5),
+        type=COST_TYPES.ONE_OFF,
+        cost=Decimal('1')
+    )
+    assert project.financial_rag == 'RED'

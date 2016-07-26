@@ -144,6 +144,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     y: pastMonths.map(m => round(monthly[m].cumulative)),
     name: 'Actual spend',
     type: 'scatter',
+    mode: 'lines+markers',
     yaxis: 'y',
     marker: {
       color: '#6F777B',
@@ -155,6 +156,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     y: pastMonths.map(m => round(monthly[m].remaining)),
     name: 'Actual spend',
     type: 'scatter',
+    mode: 'lines+markers',
     yaxis: 'y',
     marker: {
       color: '#B29000',
@@ -167,6 +169,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     y: lastPlusFutureMonths.map(m => round(monthly[m].cumulative)),
     name: 'Forecast spend',
     type: 'scatter',
+    mode: 'lines+markers',
     yaxis: 'y',
     line: {
       dash: 'dot'
@@ -181,6 +184,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     y: lastPlusFutureMonths.map(m => round(monthly[m].remaining)),
     name: 'Forecast spend',
     type: 'scatter',
+    mode: 'lines+markers',
     yaxis: 'y',
     marker: {
       color: '#B29000',
@@ -196,6 +200,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     y: months.map(m => round(monthly[m].budget)),
     name: 'Budget',
     type: 'scatter',
+    mode: 'lines+markers',
     yaxis: 'y',
     marker: {
       color: '#FFBF47',

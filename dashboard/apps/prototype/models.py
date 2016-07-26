@@ -221,27 +221,33 @@ class Project(models.Model):
     def first_date(self):
         """
         first day in the project lifetime. it's the lesser of
-        the discovery date and start date of the first task.
+        the discovery date and default start date.
         """
-        if self.first_task and self.discovery_date:
-            return min(self.first_task.start_date, self.discovery_date)
-        if self.first_task:
-            return self.first_task.start_date
+        candidates = []
+        try:
+            candidates.append(self.default_start_date)
+        except ValueError:
+            pass
         if self.discovery_date:
-            return self.discovery_date
+            candidates.append(self.discovery_date)
+        if candidates:
+            return min(candidates)
 
     @property
     def last_date(self):
         """
         last day in the project lifetime. it's the greater of
-        the project end date and end date of the last task.
+        the project end date and default end date.
         """
-        if self.last_task and self.end_date:
-            return max(self.last_task.end_date, self.end_date)
-        if self.last_task:
-            return self.last_task.end_date
+        candidates = []
+        try:
+            candidates.append(self.default_end_date)
+        except ValueError:
+            pass
         if self.end_date:
-            return self.end_date
+            candidates.append(self.end_date)
+        if candidates:
+            return max(candidates)
 
     @property
     def first_task(self):
@@ -331,6 +337,26 @@ class Project(models.Model):
                 candidates.append(self.last_cost.start_date)
         return max(candidates)
 
+    @property
+    def financial_rag(self):
+        """
+        financial rag is one of 'RED', 'AMBER' and 'GREEN'.
+        A measure of how well the product is keeping to budget.
+        RED: total_cost >= 110% * budget
+        AMBER: budget < total_cost < 110% * budget
+        GREEN: total_cost <= budget
+        """
+        try:
+            budget = self.budget(on=self.default_end_date)
+        except ValueError:
+            budget = 0
+        total_cost = self.total_cost
+        if budget >= total_cost:
+            return 'GREEN'
+        if budget * Decimal('1.1') >= total_cost:
+            return 'AMBER'
+        return 'RED'
+
     def profile(self, start_date=None, end_date=None, freq=None):
         """
         get the profile of a project in a time window.
@@ -365,8 +391,9 @@ class Project(models.Model):
             'first_date': self.first_date,
             'last_date': self.last_date,
             'rag': rag,
+            'financial_rag': self.financial_rag,
             'budget': self.budget(),
-            'team_size': self.team_size(start_date, end_date),
+            'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'financial': {},
         }
@@ -435,10 +462,25 @@ class Project(models.Model):
         """
         cost of the project from the start to today
         """
-        if not self.first_task:
+        try:
+            spendings = self.spendings_between(
+                self.default_start_date, date.today())
+        except ValueError:
             return 0
-        spendings = self.spendings_between(
-            self.first_task.start_date, date.today())
+        return sum(spendings[item] for item in
+                   ['contractor', 'non-contractor', 'additional'])
+
+    @property
+    def total_cost(self):
+        """
+        cost of the project from the beginning to the end
+        """
+        try:
+            spendings = self.spendings_between(
+                self.default_start_date,
+                self.default_end_date)
+        except ValueError:
+            return 0
         return sum(spendings[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
@@ -484,9 +526,9 @@ class Project(models.Model):
         return sum(task.time_spent(start_date, end_date)
                    for task in self.tasks.all())
 
-    def team_size(self, start_date=None, end_date=None):
+    def current_fte(self, start_date=None, end_date=None):
         """
-        team size measures the number of people working on the project.
+        current FTE measures the number of people working on the project.
         it is the total man-days / num of workday from a start date to
         an end date.
         :param start_date: date object for the start date.
