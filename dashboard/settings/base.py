@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
-    'debug_toolbar',
     'djcelery',
     'moj_template',
 
