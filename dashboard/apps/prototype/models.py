@@ -408,7 +408,8 @@ class Project(models.Model):
             except ValueError:
                 return result
         if freq:
-            time_windows = slice_time_window(start_date, end_date, freq)
+            time_windows = slice_time_window(
+                start_date, end_date, freq, extend=True)
         else:
             time_windows = [(start_date, end_date)]
         for sdate, edate in time_windows:

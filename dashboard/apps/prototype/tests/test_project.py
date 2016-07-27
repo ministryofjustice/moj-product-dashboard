@@ -83,7 +83,13 @@ def test_project_without_tasks():
     profile = project.profile(freq='MS')
     assert 'name' in profile
     assert 'description' in profile
-    assert profile['financial'] == {}
+    assert len(profile['financial']) == 1
+    assert next(iter(profile['financial'].values())) == {
+        'additional': Decimal('0'),
+        'budget': Decimal('0'),
+        'contractor': Decimal('0'),
+        'non-contractor': Decimal('0')
+    }
     assert project.current_fte() == 0
     assert project.time_spent() == 0
     assert project.cost_to_date == 0
@@ -114,10 +120,10 @@ def test_project_profiles_with_frequency():
         'budget': Decimal('0')
     }
     keys = [
-        '2016-01-01~2016-01-02',
+        '2015-12-27~2016-01-02',
         '2016-01-03~2016-01-09',
         '2016-01-10~2016-01-16',
-        '2016-01-17~2016-01-20',
+        '2016-01-17~2016-01-23',
     ]
     assert sorted(list(profile['financial'].keys())) == keys
 
