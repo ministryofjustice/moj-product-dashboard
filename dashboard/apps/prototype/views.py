@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
 from dashboard.libs.date_tools import parse_date
-from .models import Project, Client
+from .models import Project, Client, ProjectGroup
 from .tasks import sync_float
 
 
@@ -72,6 +72,39 @@ def project_json(request):
         start_date=start_date,
         end_date=end_date,
         freq='MS'))
+
+
+@login_required
+def project_group_html(request, id):
+    if not id:
+        id = ProjectGroup.objects.first().id
+        return redirect(reverse(project_group_html, kwargs={'id': id}))
+    try:
+        project_group = ProjectGroup.objects.get(id=id)
+    except (ValueError, ProjectGroup.DoesNotExist):
+        # TODO better error page
+        return HttpResponseNotFound(
+            'cannot find project group with id={}'.format(id))
+    context = {'project_group': project_group}
+    return render(request, 'project_group.html', context)
+
+
+@login_required
+def project_group_json(request):
+    """
+    send json for a project group profilet
+    """
+    # TODO handle errors
+    request_data = json.loads(request.body.decode())
+    try:
+        project_group = ProjectGroup.objects.get(id=request_data['id'])
+    except (ValueError, ProjectGroup.DoesNotExist):
+        error = 'cannot find project group with id={}'.format(
+            request_data['id'])
+        return JsonResponse({'error': error}, status=404)
+
+    # get the profile of the project group for each month
+    return JsonResponse(project_group.profile())
 
 
 @login_required

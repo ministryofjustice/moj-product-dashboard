@@ -597,3 +597,10 @@ def test_project_financial_rag():
         cost=Decimal('1')
     )
     assert project.financial_rag == 'RED'
+
+
+@pytest.mark.django_db
+def test_admin_url():
+    project = make_project()
+    expected = '/admin/prototype/project/{}/change/'.format(project.id)
+    assert project.admin_url == expected

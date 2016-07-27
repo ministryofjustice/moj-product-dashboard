@@ -4,7 +4,9 @@ from decimal import Decimal
 from dateutil.rrule import MONTHLY, YEARLY
 
 from django.db import models
+from django.core import urlresolvers
 from django.contrib.postgres.fields import JSONField
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
@@ -216,6 +218,13 @@ class Project(models.Model):
             return 'Discovery'
         else:
             return 'Not Defined'
+
+    @property
+    def admin_url(self):
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        name = 'admin:{}_{}_change'.format(content_type.app_label,
+                                           content_type.model)
+        return urlresolvers.reverse(name, args=(self.id,))
 
     @property
     def first_date(self):
@@ -612,6 +621,76 @@ class Note(models.Model):
     date = models.DateField()
     name = models.CharField(max_length=128, null=True)
     note = models.TextField(null=True, blank=True)
+
+
+class ProjectGroup(models.Model):
+    name = models.CharField(max_length=128)
+    projects = models.ManyToManyField(Project)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def first_date(self):
+        return min([p.first_date for p in self.projects.all()])
+
+    @property
+    def last_date(self):
+        return max([p.last_date for p in self.projects.all()])
+
+    def budget(self, on=None):
+        return sum([p.budget(on) for p in self.projects.all()])
+
+    @property
+    def cost_to_date(self, on=None):
+        return sum([p.cost_to_date for p in self.projects.all()])
+
+    def profile(self, start_date=None, end_date=None, freq='MS'):
+        """
+        get the profile of a service area in a time window.
+        specified, get all projects.
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :return: a dictionary representing the profile
+        """
+        projects = self.projects.filter(visible=True)
+        project_to_financial = {
+            project.id: project.profile(start_date, end_date, freq)['financial']
+            for project in projects
+        }
+        financial = {}
+        for profile in project_to_financial.values():
+            financial = self.merge_financial(financial, profile)
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'financial': financial,
+            'first_date': self.first_date,
+            'last_date': self.last_date,
+            'budget': self.budget(),
+            'cost_to_date': self.cost_to_date,
+        }
+        return result
+
+    @staticmethod
+    def merge_financial(financial1, financial2):
+        """
+        static method for merging the 'financial' of
+        the two project profiles.
+        """
+        result = {}
+        timeframes = set(financial1.keys()) | set(financial2.keys())
+        for timeframe in timeframes:
+            f1 = financial1.get(timeframe, {})
+            f2 = financial2.get(timeframe, {})
+            keys = set(f1.keys()) | set(f2.keys())
+            result[timeframe] = {}
+            for key in keys:
+                result[timeframe][key] = f1.get(key, 0) + f2.get(key, 0)
+        return result
 
 
 class TaskManager(models.Manager):

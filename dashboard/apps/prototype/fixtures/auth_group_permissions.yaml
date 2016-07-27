@@ -30,6 +30,9 @@
       - ['change_note', 'prototype', 'note']
       - ['add_note', 'prototype', 'note']
       - ['delete_note', 'prototype', 'note']
+      - ['add_projectgroup', 'prototype', 'projectgroup']
+      - ['change_projectgroup', 'prototype', 'projectgroup']
+      - ['delete_projectgroup', 'prototype', 'projectgroup']
 - model: auth.group
   pk: 3
   fields:
@@ -49,3 +52,6 @@
       - ['change_note', 'prototype', 'note']
       - ['add_note', 'prototype', 'note']
       - ['delete_note', 'prototype', 'note']
+      - ['add_projectgroup', 'prototype', 'projectgroup']
+      - ['change_projectgroup', 'prototype', 'projectgroup']
+      - ['delete_projectgroup', 'prototype', 'projectgroup']

@@ -18,7 +18,11 @@ import '../styles/main.css';
 
 function project(id) {
   ReactDOM.render(
-    <ProjectContainer id={id} csrftoken={Cookies.get('csrftoken')} />,
+    <ProjectContainer
+      type='project'
+      id={id}
+      csrftoken={Cookies.get('csrftoken')}
+    />,
     document.getElementById('fig-a')
   );
 
@@ -57,9 +61,21 @@ function portfolio() {
 }
 
 
+function projectGroup(id) {
+  ReactDOM.render(
+    <ProjectContainer
+      type='project-group'
+      id={id}
+      csrftoken={Cookies.get('csrftoken')}
+    />,
+    document.getElementById('container')
+  );
+}
+
+
 function route(path) {
   // call different loading functions based on page url
-  const pattern = /(projects|services|portfolio)(\/(\d+))?/;
+  const pattern = /(projects|services|project-groups|portfolio)(\/(\d+))?/;
   const matches = pattern.exec(path);
 
   if (matches === null)
@@ -73,6 +89,9 @@ function route(path) {
       break;
     case 'services':
       service(id);
+      break;
+    case 'project-groups':
+      projectGroup(id);
       break;
     case 'portfolio':
       portfolio();

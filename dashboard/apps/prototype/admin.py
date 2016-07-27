@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 
 from .forms import PayrollUploadForm
 from .models import (Person, Rate, Client, Project, Cost, Budget, RAG,
-                     Note)
+                     Note, ProjectGroup)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -199,7 +199,20 @@ class TaskAdmin(ReadOnlyAdmin):
     exclude = ['raw_data']
 
 
+class ProjectGroupAdmin(admin.ModelAdmin):
+    filter_horizontal = ('projects', )
+    list_display = ('name', 'render_projects')
+
+    def render_projects(self, obj):
+        return '<br/>'.join([
+            '<a href="{}"/>{}</a>'.format(p.admin_url, p.name)
+            for p in obj.projects.all()])
+    render_projects.short_description = 'Projects'
+    render_projects.allow_tags = True
+
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Client, ClientAdmin)
 
 admin.site.register(Project, ProjectAdmin)
+admin.site.register(ProjectGroup, ProjectGroupAdmin)
