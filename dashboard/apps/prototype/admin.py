@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 
 from .forms import PayrollUploadForm
-from .models import (Person, Rate, Client, Project, Task, Cost, Budget, RAG,
+from .models import (Person, Rate, Client, Project, Cost, Budget, RAG,
                      Note)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
