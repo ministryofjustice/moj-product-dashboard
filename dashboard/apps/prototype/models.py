@@ -568,12 +568,13 @@ class Project(models.Model, AditionalCostsMixin):
         if contractor_only and non_contractor_only:
             raise ValueError('only one of contractor_only and'
                              ' non_contractor_only can be true')
+
+        tasks = self.tasks.between(start_date, end_date)
         if contractor_only:
-            tasks = self.tasks.filter(person__is_contractor=True)
+            tasks = tasks.filter(person__is_contractor=True)
         elif non_contractor_only:
-            tasks = self.tasks.filter(person__is_contractor=False)
-        else:
-            tasks = self.tasks.all()
+            tasks = tasks.filter(person__is_contractor=False)
+
         spending_per_task = [task.people_costs(start_date, end_date)
                              for task in tasks]
         return sum(spending_per_task)
@@ -586,7 +587,7 @@ class Project(models.Model, AditionalCostsMixin):
         :param name: only get the additional people costs of this name
         :return: a decimal for total spending
         """
-        tasks = self.tasks.all()
+        tasks = self.tasks.between(start_date, end_date)
         additinal_task_costs = [task.people_costs(start_date, end_date, name)
                                 for task in tasks]
         return sum(additinal_task_costs)
@@ -883,6 +884,7 @@ class ProjectGroup(models.Model):
 
 
 class TaskManager(models.Manager):
+    use_for_related_fields = True
 
     def between(self, start_date, end_date):
         """"
