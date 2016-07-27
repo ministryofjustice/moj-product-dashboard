@@ -202,6 +202,22 @@ class Project(models.Model):
     objects = ProjectManager()
 
     @property
+    def phase(self):
+        today = date.today()
+        if self.last_date and today >= self.last_date:
+            return 'Ended'
+        elif self.live_date and today >= self.live_date:
+            return 'Live'
+        elif self.beta_date and today >= self.beta_date:
+            return 'Beta'
+        elif self.alpha_date and today >= self.alpha_date:
+            return 'Alpha'
+        elif self.first_date and today >= self.first_date:
+            return 'Discovery'
+        else:
+            return 'Not Defined'
+
+    @property
     def first_date(self):
         """
         first day in the project lifetime. it's the lesser of

@@ -190,6 +190,7 @@ class ProjectAdmin(admin.ModelAdmin):
     inlines = [CostInline, BudgetInline, RAGInline, NoteInline]
     readonly_fields = ('name', 'description', 'float_id', 'is_billable',
                        'project_manager', 'client')
+    list_display = ('name', 'rag', 'phase', 'client', 'discovery_date', 'budget')
     search_fields = ('name', 'float_id')
 
 
