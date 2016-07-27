@@ -1,5 +1,6 @@
 import pprint
 
+
 class InterceptMiddleware(object):
 
     def process_response(self, request, response):
