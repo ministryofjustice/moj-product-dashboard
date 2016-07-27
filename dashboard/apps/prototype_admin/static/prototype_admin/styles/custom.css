@@ -48,6 +48,7 @@
 }
 
 div#changelist-filter {
+    /*width: 120px;*/
     /*margin-top: 60px;*/
 }
 
@@ -56,9 +57,9 @@ div#changelist-filter {
 }
 
 #changelist table {
-    width: 1020px;
+    width: 1140px;
     margin-left: 0;
-    margin-right: 260px;
+    /*margin-right: 140px;*/
 }
 
 p {
@@ -81,7 +82,7 @@ table {
     border-collapse: collapse;
     border-spacing: 0;
     /*margin: 0;*/
-    margin-right: 260px;
+    /*margin-right: 140px;*/
     margin-left: auto;
     padding: 0;
     font-size: inherit;
@@ -229,3 +230,6 @@ div.sortoptions {
     visibility: hidden;
 }
 
+div#toolbar div {
+    background-color: #FFFFFF;
+}
