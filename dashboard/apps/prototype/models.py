@@ -204,15 +204,15 @@ class Project(models.Model):
     @property
     def phase(self):
         today = date.today()
-        if self.last_date is not None and today >= self.last_date:
+        if self.last_date and today >= self.last_date:
             return 'Ended'
-        elif self.live_date is not None and today >= self.live_date:
+        elif self.live_date and today >= self.live_date:
             return 'Live'
-        elif self.beta_date is not None and today >= self.beta_date:
+        elif self.beta_date and today >= self.beta_date:
             return 'Beta'
-        elif self.alpha_date is not None and today >= self.alpha_date:
+        elif self.alpha_date and today >= self.alpha_date:
             return 'Alpha'
-        elif self.first_date is not None and today >= self.first_date:
+        elif self.first_date and today >= self.first_date:
             return 'Discovery'
         else:
             return 'Not Defined'
