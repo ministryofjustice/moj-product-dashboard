@@ -111,10 +111,23 @@ def get_overlap(time_window0, time_window1):
     return overlap
 
 
-def slice_time_window(start_date, end_date, freq):
+def slice_time_window(start_date, end_date, freq, extend=False):
     """
     slice a time window by frequency
+    :param start_date: start of the time window
+    :param end_date: end of the time window
+    :param freq: frequency string is an offset aliases supported by pandas
+    :param extend: a boolean value. if it's true, the start_date and end_date
+    will be extended to the previous and next value following the frequency.
+    for example, if the freqency is 'MS', the start date is 2016/01/03,
+    end date 2016/12/25, it will be extended to 2016/01/01 - 2017/01/01
+    :return: a list of tuples
     """
+    if extend:
+        start_date = date_range(
+            end=start_date, periods=1, freq=freq)[0].date()
+        end_date = date_range(
+            start=end_date, periods=1, freq=freq)[0].date()
     dates = [ts.date() for ts in
              date_range(start_date, end_date, freq=freq)]
     if start_date not in dates:

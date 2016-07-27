@@ -94,13 +94,36 @@ def test_get_overlap_value_error(start_date0, end_date0,
                     (parse_date(start_date1), parse_date(end_date1)))
 
 
-# TODO more tests!
-def test_slice_time_window():
-    start_date = date(2015, 1, 2)
+def test_slice_time_window_without_extend():
+    start_date = date(2015, 1, 10)
+    end_date = date(2015, 12, 25)
+    sliced = slice_time_window(start_date, end_date, 'MS')
+    assert sliced[0] == (date(2015, 1, 10), date(2015, 1, 31))
+    assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 25))
+    assert len(sliced) == 12
+
+    start_date = date(2015, 1, 1)
     end_date = date(2015, 12, 31)
     sliced = slice_time_window(start_date, end_date, 'MS')
-    assert sliced[0] == (date(2015, 1, 2), date(2015, 1, 31))
+    assert sliced[0] == (date(2015, 1, 1), date(2015, 1, 31))
     assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+    assert len(sliced) == 12
+
+
+def test_slice_time_window_with_extend():
+    start_date = date(2015, 1, 10)
+    end_date = date(2015, 12, 25)
+    sliced = slice_time_window(start_date, end_date, 'MS', extend=True)
+    assert sliced[0] == (date(2015, 1, 1), date(2015, 1, 31))
+    assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+    assert len(sliced) == 12
+
+    start_date = date(2015, 1, 1)
+    end_date = date(2015, 12, 31)
+    sliced = slice_time_window(start_date, end_date, 'MS', extend=True)
+    assert sliced[0] == (date(2015, 1, 1), date(2015, 1, 31))
+    assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+    assert len(sliced) == 12
 
 
 def test_to_datetime():
