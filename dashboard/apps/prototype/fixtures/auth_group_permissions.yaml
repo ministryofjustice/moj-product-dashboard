@@ -35,8 +35,6 @@
   fields:
     name: Delivery
     permissions:
-      - ['change_client', 'prototype', 'client']
-      - ['change_person', 'prototype', 'person']
       - ['change_project', 'prototype', 'project']
       - ['change_task', 'prototype', 'task']
       - ['change_cost', 'prototype', 'cost']

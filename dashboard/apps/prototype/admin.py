@@ -199,12 +199,6 @@ class TaskAdmin(ReadOnlyAdmin):
 
 
 admin.site.register(Person, PersonAdmin)
-admin.site.register(Rate, RateAdmin)
 admin.site.register(Client, ClientAdmin)
-admin.site.register(Task, TaskAdmin)
 
 admin.site.register(Project, ProjectAdmin)
-admin.site.register(Cost)
-admin.site.register(Budget)
-admin.site.register(RAG)
-admin.site.register(Note)
