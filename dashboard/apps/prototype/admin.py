@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 
 from .forms import PayrollUploadForm
-from .models import (Person, Rate, Client, Project, Task, Cost, Budget, RAG,
+from .models import (Person, Rate, Client, Project, Cost, Budget, RAG,
                      Note)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
@@ -200,12 +200,6 @@ class TaskAdmin(ReadOnlyAdmin):
 
 
 admin.site.register(Person, PersonAdmin)
-admin.site.register(Rate, RateAdmin)
 admin.site.register(Client, ClientAdmin)
-admin.site.register(Task, TaskAdmin)
 
 admin.site.register(Project, ProjectAdmin)
-admin.site.register(Cost)
-admin.site.register(Budget)
-admin.site.register(RAG)
-admin.site.register(Note)
