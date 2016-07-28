@@ -13,6 +13,9 @@ from .models import Project, Client, ProjectGroup
 from .tasks import sync_float
 
 
+CUSTOMISED_GROUPS = 'Customised Groups'
+
+
 @login_required
 def index(request):
     # index page redirect /?projectid=:id to /projects/:id
@@ -44,7 +47,11 @@ def project_html(request, id):
         for service in Client.objects.all()
     }
     services = OrderedDict(sorted([(k, v) for k, v in services.items() if v]))
-    context = {'services': services,  'project': project}
+    context = {
+        'selected_id': project.id,
+        'project_type': 'project',
+        'service_to_projects': group_projects_by_service()
+    }
     return render(request, 'project.html', context)
 
 
@@ -85,8 +92,62 @@ def project_group_html(request, id):
         # TODO better error page
         return HttpResponseNotFound(
             'cannot find project group with id={}'.format(id))
-    context = {'project_group': project_group}
+    context = {
+        'selected_id': project_group.id,
+        'project_type': 'project_group',
+        'service_to_projects': group_projects_by_service()
+    }
     return render(request, 'project_group.html', context)
+
+
+def group_projects_by_service():
+    """
+    group projects and project groups by service
+    """
+    grouped_project_ids = [
+        p.id
+        for pg in ProjectGroup.objects.all()
+        for p in pg.projects.all()
+    ]
+    service_to_projects = {
+        service.name: {
+            p.id: {
+                'id': p.id,
+                'name': p.name,
+                'url': reverse(project_html, kwargs={'id': p.id}),
+                'type': 'project'
+            }
+            for p in service.projects.visible()
+            if p.id not in grouped_project_ids
+        }
+        for service in Client.objects.all()
+    }
+    for project_group in ProjectGroup.objects.all():
+        service = project_group.client
+        service_name = service.name if service else CUSTOMISED_GROUPS
+        service_dict = service_to_projects.setdefault(service_name, {})
+        service_dict[project_group.id] = {
+            'id': project_group.id,
+            'name': project_group.name,
+            'url': reverse(
+                project_group_html, kwargs={'id': project_group.id}),
+            'type': 'project_group'
+        }
+
+    def sort_project_by_name(id_to_project):
+        return OrderedDict(
+            sorted(id_to_project.items(), key=lambda p: p[1]['name']))
+
+    service_to_projects = OrderedDict(
+        sorted([
+            (k, sort_project_by_name(v)) for k, v in
+            service_to_projects.items() if v
+        ]))
+    try:
+        service_to_projects.move_to_end(CUSTOMISED_GROUPS)
+    except KeyError:
+        pass
+    return service_to_projects
 
 
 @login_required

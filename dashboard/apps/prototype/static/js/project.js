@@ -22,7 +22,7 @@ import GreenImg from '../img/green.png';
  */
 export function getProjectData(type, id, startDate, endDate, csrftoken) {
   const urls = {
-    project: '/project.json',
+    'project': '/project.json',
     'project-group': '/project-group.json'
   };
   const init = {

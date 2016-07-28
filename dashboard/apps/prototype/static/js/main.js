@@ -28,8 +28,7 @@ function project(id) {
 
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
-    const projectId = e.params.data.id;
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = e.params.data.id;
   });
 }
 
@@ -70,6 +69,10 @@ function projectGroup(id) {
     />,
     document.getElementById('container')
   );
+  // dropdown project selector
+  $('#projects').select2().on("select2:select", (e) => {
+    window.location.href = e.params.data.id;
+  });
 }
 
 

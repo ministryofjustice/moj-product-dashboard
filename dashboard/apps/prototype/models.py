@@ -645,6 +645,12 @@ class ProjectGroup(models.Model):
     def cost_to_date(self, on=None):
         return sum([p.cost_to_date for p in self.projects.all()])
 
+    @property
+    def client(self):
+        clients = [p.client for p in self.projects.all()]
+        if len({c.id for c in clients}) == 1:
+            return clients[0]
+
     def profile(self, start_date=None, end_date=None, freq='MS'):
         """
         get the profile of a service area in a time window.

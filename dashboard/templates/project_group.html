@@ -5,5 +5,6 @@
 {% block body_classes %}project group{% endblock %}
 
 {% block main %}
-<div id="container" />
+  {% include "project_selector.html" %}
+  <div id="container" />
 {% endblock %}
