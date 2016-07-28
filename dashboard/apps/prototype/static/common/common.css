@@ -98,4 +98,9 @@ body.admin li.admin, body.product li.product, body.portfolio li.portfolio, body.
     text-decoration: none;
 }
 
+ul li.user-menu {
+    float: right;
+
+}
+
 

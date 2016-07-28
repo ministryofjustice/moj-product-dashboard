@@ -14,8 +14,6 @@
 
 {% block stylesheets %}
 
-    <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/css/dwp_admin.css" %}"/>
-
     {% block extrastyle %}
 
     {% endblock %}
@@ -25,11 +23,10 @@
     {% block blockbots %}
         <meta name="robots" content="NONE,NOARCHIVE"/>
     {% endblock %}
-{#    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>#}
-    <script type="text/javascript" src="{% static 'prototype_admin/js/dwp_admin.js' %}"></script>
+
     {% block extrahead %}
-        <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/css/moj_template_overrides.css" %}"/>
-        <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/css/custom.css" %}"/>
+
+        <link rel="stylesheet" type="text/css" href="{% static "prototype_admin/styles/custom.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "common/common.css" %}"/>
         {# Here to ensure loaded last #}
     {% endblock %}
@@ -40,16 +37,16 @@
 {% block body_classes %}admin{% endblock %}
 
 {% block headerbar %}
-    {% if has_permission %}
-        <span id="user-name">{% firstof user.get_short_name user.get_username %}<span>
-        <span id="user-links">
-            <a id="update-from-float" class="update-from-float">Float sync</a> |
-        {% if site_url %}
-            <a href="{{ site_url }}">View site</a> |
-        {% endif %}
-            <a href="{% url 'admin:logout' %}">Log out</a>
-        </span>
-    {% endif %}
+{#    {% if has_permission %}#}
+{#        <span id="user-name">{% firstof user.get_short_name user.get_username %}<span>#}
+{#        <span id="user-links">#}
+{#            <a id="update-from-float" class="update-from-float">Float sync</a> |#}
+{#        {% if site_url %}#}
+{#            <a href="{{ site_url }}">View site</a> |#}
+{#        {% endif %}#}
+{#            <a href="{% url 'admin:logout' %}">Log out</a>#}
+{#        </span>#}
+{#    {% endif %}#}
 {% endblock %}
 
 {% block after_header %}
