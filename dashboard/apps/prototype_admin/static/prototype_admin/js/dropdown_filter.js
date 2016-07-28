@@ -1,5 +1,5 @@
-let listVisible = false;
-let listFilter = document.getElementById("changelist-filter");
+var listVisible = false;
+var listFilter = document.getElementById("changelist-filter");
 
 function shrink(listFilterElement) {
   listFilterElement.setAttribute("style", "height:54px");
