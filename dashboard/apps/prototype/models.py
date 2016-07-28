@@ -993,6 +993,9 @@ class Task(models.Model):
             rate = self.person.rate_between(*timewindow)
         if not rate:
             return Decimal('0')
+
+        return rate * self.get_days(*timewindow)
+
+    def get_days(self, *timewindow):
         timewindow_workdays = get_workdays(*timewindow)
-        days = Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
-        return rate * days
+        return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days

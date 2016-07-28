@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 import copy
 from openpyxl.cell import Cell
 from openpyxl.utils import get_column_letter
@@ -7,11 +8,12 @@ from calendar import monthrange
 from datetime import date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
+from datetime import datetime
+import re
 
 from django import forms
 
 from openpyxl import load_workbook
-import re
 from xlrd import open_workbook
 
 from dashboard.libs.date_tools import get_workdays
@@ -251,7 +253,55 @@ class ProjectDetailExportForm(ExportForm):
     template = 'xls/ProjectDetail.xlsx'
 
     def write(self, workbook, ws=None):
-        pass
+        ws = workbook.get_active_sheet()
+        project = self.cleaned_data['project']
+        start_date = self.cleaned_data['date']
+        last_business_day = monthrange(start_date.year, start_date.month)[1]
+        end_date = start_date.replace(day=last_business_day)
+
+        details = defaultdict(lambda: defaultdict(Decimal))
+
+        def add_cost(task):
+            if not task.person.is_contractor:
+                for name in PAYROLL_COSTS:
+                    details[task.person][name] += task.people_costs(
+                        start_date, end_date, name)
+            details[task.person]['total'] += task.people_costs(
+                start_date, end_date)
+            details[task.person]['days'] += task.get_days(start_date, end_date)
+
+        list(map(add_cost, project.tasks.between(start_date, end_date)))
+
+        ws.cell(row=2, column=1).value = datetime.now().strftime('%d/%m/%Y %I:%M%p')
+        ws.cell(row=3, column=7).value = '%s DRAFT' % datetime.now().strftime('%b %d')
+        ws.cell(row=4, column=1).value = 'Project: %s' % project.name
+
+        row = 8
+        for person, detail in details.items():
+            ws.cell(row=row, column=1).value = person.name
+            ws.cell(row=row, column=2).value = person.job_title
+            ws.cell(row=row, column=3).value = project.name
+            ws.cell(row=row, column=4).value = project.client.name
+
+            ws.cell(row=row, column=10).value = detail['days'] * Decimal('8')
+            ws.cell(row=row, column=11).value = detail['days']
+
+            ws.cell(row=row, column=12).value = ''
+
+            if person.is_contractor:
+                ws.cell(row=row, column=13).value = person.rate_between(
+                    start_date, end_date)
+            ws.cell(row=row, column=14).value = detail['total']
+
+            ws.cell(row=row, column=15).value = ''
+
+            ws.cell(row=row, column=18).value = ''
+            ws.cell(row=row, column=19).value = ''
+            ws.cell(row=row, column=20).value = ''
+            ws.cell(row=row, column=21).value = ''
+
+            insert_rows(ws, row, 1)
+            row += 1
 
 
 def insert_rows(ws, row_idx, cnt, above=False, copy_style=True,
