@@ -9,10 +9,18 @@ from .test_project import make_project
 
 @pytest.mark.django_db
 def test_project_group():
+    client1 = mommy.make(Client, name='client1')
     p1 = make_project()
     p2 = make_project()
+    p1.client = client1
+    p2.client = client1
+    p1.save()
+    p2.save()
+
     pg = ProjectGroup(name='PG1')
     pg.save()
+    pg.projects.add(p1)
+    pg.projects.add(p2)
     assert str(pg) == 'PG1'
 
     pg.projects.add(p1)
@@ -28,6 +36,7 @@ def test_project_group():
     }
     assert profile['financial'] == financial
     assert profile['name'] == 'PG1'
+    assert profile['service_area'] == {'id': client1.id, 'name': client1.name}
 
 
 @pytest.mark.django_db

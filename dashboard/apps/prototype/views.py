@@ -50,7 +50,7 @@ def project_html(request, id):
     context = {
         'selected_id': project.id,
         'project_type': 'project',
-        'service_to_projects': group_projects_by_service()
+        'service_to_projects': combine_project_and_project_group()
     }
     return render(request, 'project.html', context)
 
@@ -95,16 +95,16 @@ def project_group_html(request, id):
     context = {
         'selected_id': project_group.id,
         'project_type': 'project_group',
-        'service_to_projects': group_projects_by_service()
+        'service_to_projects': combine_project_and_project_group()
     }
     return render(request, 'project_group.html', context)
 
 
-def group_projects_by_service():
+def combine_project_and_project_group():
     """
-    group projects and project groups by service
+    combine project and project group and then group by client
     """
-    grouped_project_ids = [
+    project_ids_in_a_group = [
         p.id
         for pg in ProjectGroup.objects.all()
         for p in pg.projects.all()
@@ -118,7 +118,7 @@ def group_projects_by_service():
                 'type': 'project'
             }
             for p in service.projects.visible()
-            if p.id not in grouped_project_ids
+            if p.id not in project_ids_in_a_group
         }
         for service in Client.objects.all()
     }

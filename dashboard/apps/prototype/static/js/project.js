@@ -521,11 +521,15 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'columnName': 'name',
       'order': 1,
       'displayName': 'Product',
-      'customComponent': (props) => (
-        <a href={`/projects/${props.rowData.id}`}>
-          {props.data}
-        </a>
-      ),
+      'customComponent': (props) => {
+        let url;
+        if (props.rowData.type == 'project_group') {
+          url = `/project-groups/${props.rowData.id}`;
+        } else {
+          url = `/projects/${props.rowData.id}`;
+        };
+        return (<a href={url}>{props.data}</a>);
+      },
     },
     {
       'columnName': 'financial_rag',
