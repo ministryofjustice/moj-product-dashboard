@@ -632,11 +632,17 @@ class ProjectGroup(models.Model):
 
     @property
     def first_date(self):
-        return min([p.first_date for p in self.projects.all()])
+        try:
+            return min([p.first_date for p in self.projects.all()])
+        except ValueError:  # when there is no project
+            return None
 
     @property
     def last_date(self):
-        return max([p.last_date for p in self.projects.all()])
+        try:
+            return max([p.last_date for p in self.projects.all()])
+        except ValueError:  # when there is no project
+            return None
 
     def budget(self, on=None):
         return sum([p.budget(on) for p in self.projects.all()])

@@ -1,8 +1,9 @@
 from decimal import Decimal
 
 import pytest
+from model_mommy import mommy
 
-from dashboard.apps.prototype.models import ProjectGroup
+from dashboard.apps.prototype.models import ProjectGroup, Client
 from .test_project import make_project
 
 
@@ -12,6 +13,8 @@ def test_project_group():
     p2 = make_project()
     pg = ProjectGroup(name='PG1')
     pg.save()
+    assert str(pg) == 'PG1'
+
     pg.projects.add(p1)
     pg.projects.add(p2)
     profile = pg.profile()
@@ -24,6 +27,7 @@ def test_project_group():
         }
     }
     assert profile['financial'] == financial
+    assert profile['name'] == 'PG1'
 
 
 @pytest.mark.django_db
@@ -78,3 +82,27 @@ def test_merge_financial():
         }
     }
     assert ProjectGroup.merge_financial(financial1, financial2) == expected
+
+
+@pytest.mark.django_db
+def test_project_group_client():
+    client1 = mommy.make(Client, name='client1')
+
+    p1 = make_project()
+    p2 = make_project()
+    p1.client = client1
+    p2.client = client1
+    p1.save()
+    p2.save()
+
+    pg = ProjectGroup(name='PG1')
+    pg.save()
+    pg.projects.add(p1)
+    pg.projects.add(p2)
+
+    assert pg.client == client1
+
+    client2 = mommy.make(Client, name='client2')
+    p2.client = client2
+    p2.save()
+    assert pg.client is None
