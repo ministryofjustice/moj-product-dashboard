@@ -625,7 +625,11 @@ class Note(models.Model):
 
 class ProjectGroup(models.Model):
     name = models.CharField(max_length=128)
-    projects = models.ManyToManyField(Project)
+    projects = models.ManyToManyField(
+        Project,
+        related_name='project_groups',
+        limit_choices_to={'id__in': Project.objects.visible()}
+    )
 
     def __str__(self):
         return self.name

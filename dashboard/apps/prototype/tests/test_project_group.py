@@ -101,6 +101,8 @@ def test_project_group_client():
     pg.projects.add(p2)
 
     assert pg.client == client1
+    assert [pg.id for pg in p1.project_groups.all()] == [pg.id]
+    assert [pg.id for pg in p2.project_groups.all()] == [pg.id]
 
     client2 = mommy.make(Client, name='client2')
     p2.client = client2
