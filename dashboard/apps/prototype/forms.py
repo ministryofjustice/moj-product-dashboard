@@ -265,10 +265,10 @@ class ProjectDetailExportForm(ExportForm):
             if not task.person.is_contractor:
                 for name in PAYROLL_COSTS:
                     details[task.person][name] += task.people_costs(
-                        start_date, end_date, name)
-            details[task.person]['total'] += task.people_costs(
-                start_date, end_date)
-            details[task.person]['days'] += task.get_days(start_date, end_date)
+                        additional_cost_name=name)
+            details[task.person]['total'] += task.people_costs()
+            details[task.person]['days'] += task.get_days(
+                task.start_date, task.end_date)
 
         list(map(add_cost, project.tasks.between(start_date, end_date)))
 
