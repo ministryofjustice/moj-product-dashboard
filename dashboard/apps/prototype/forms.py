@@ -262,13 +262,15 @@ class ProjectDetailExportForm(ExportForm):
         details = defaultdict(lambda: defaultdict(Decimal))
 
         def add_cost(task):
+            s = max(task.start_date, start_date)
+            e = min(task.end_date, end_date)
             if not task.person.is_contractor:
                 for name in PAYROLL_COSTS:
                     details[task.person][name] += task.people_costs(
-                        additional_cost_name=name)
-            details[task.person]['total'] += task.people_costs()
+                        s, e, additional_cost_name=name)
+            details[task.person]['total'] += task.people_costs(s, e)
             details[task.person]['days'] += task.get_days(
-                max(task.start_date, start_date), min(task.end_date, end_date))
+                s, e)
 
         list(map(add_cost, project.tasks.between(start_date, end_date)))
 
