@@ -268,15 +268,17 @@ class ProjectDetailExportForm(ExportForm):
                         additional_cost_name=name)
             details[task.person]['total'] += task.people_costs()
             details[task.person]['days'] += task.get_days(
-                task.start_date, task.end_date)
+                max(task.start_date, start_date), min(task.end_date, end_date))
 
         list(map(add_cost, project.tasks.between(start_date, end_date)))
 
         ws.cell(row=2, column=1).value = datetime.now().strftime('%d/%m/%Y %I:%M%p')
-        ws.cell(row=3, column=7).value = '%s DRAFT' % datetime.now().strftime('%b %d')
+        ws.cell(row=3, column=7).value = '%s DRAFT' % \
+                                         start_date.strftime('%b %Y').upper()
         ws.cell(row=4, column=1).value = 'Project: %s' % project.name
 
-        row = 8
+        initial_row = 8
+        row = initial_row
         for person, detail in details.items():
             ws.cell(row=row, column=1).value = person.name
             ws.cell(row=row, column=2).value = person.job_title
@@ -302,6 +304,20 @@ class ProjectDetailExportForm(ExportForm):
 
             insert_rows(ws, row, 1)
             row += 1
+
+        for col in ['J', 'K', 'N']:
+            cells = []
+            for r in range(initial_row, row):
+                cells.append('%s%s' % (col, r))
+
+            self.write_sum(ws, cells, '%s%s' % (col, row + 1))
+            if col == 'N':
+                self.write_sum(ws, cells, '%s%s' % (col, row + 6))
+
+    def write_sum(self, ws, cells, coordinate):
+        cell = ws.cell(coordinate=coordinate)
+        cell.set_explicit_value(
+            value='=SUM(%s)' % ','.join(cells), data_type=cell.TYPE_FORMULA)
 
 
 def insert_rows(ws, row_idx, cnt, above=False, copy_style=True,
