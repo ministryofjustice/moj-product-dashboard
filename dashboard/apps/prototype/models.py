@@ -143,9 +143,9 @@ class Person(models.Model, AditionalCostsMixin):
 
         return sum([c.rate_between(start_date, end_date) for c in costs])
 
-    def rate_between(self, start_date, end_date):
+    def base_rate_between(self, start_date, end_date):
         """
-        average day rate in range
+        average base day rate in range
         param: start_date: date object - beginning of time period for average
         param: end_date: date object - end of time period for average
         return: Decimal object - average day rate
@@ -165,6 +165,17 @@ class Person(models.Model, AditionalCostsMixin):
         total_workdays = dec_workdays(start_date, end_date)
 
         average_rate = average_rate_from_segments(segments, total_workdays)
+
+        return average_rate
+
+    def rate_between(self, start_date, end_date):
+        """
+        average day with aditional costs day rate rate in range
+        param: start_date: date object - beginning of time period for average
+        param: end_date: date object - end of time period for average
+        return: Decimal object - average day rate
+        """
+        average_rate = self.base_rate_between(start_date, end_date)
 
         if average_rate:
             return average_rate + self.additional_rate(start_date, end_date)
@@ -988,7 +999,8 @@ class Task(models.Model):
             return Decimal('0')
 
         if additional_cost_name:
-            rate = self.person.additional_rate(*timewindow)
+            rate = self.person.additional_rate(*timewindow,
+                                               name=additional_cost_name)
         else:
             rate = self.person.rate_between(*timewindow)
         if not rate:
