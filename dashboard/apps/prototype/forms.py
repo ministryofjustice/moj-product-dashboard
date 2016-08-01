@@ -37,6 +37,8 @@ PAYROLL_COSTS = [
     'ERNIC',
 ]
 
+BASE_SALARY_RATE_KEY = 'Salary'
+
 
 def year_range(backward=0, forward=10):
     this_year = date.today().year
@@ -103,7 +105,7 @@ class PayrollUploadForm(forms.Form):
                 data = dict(zip(headers, row_data))
                 person = self.get_person(row, data)
                 if person:
-                    day_rate = Decimal(data['Salary']) / get_workdays(
+                    day_rate = Decimal(data[BASE_SALARY_RATE_KEY]) / get_workdays(
                         start, start + relativedelta(day=31))
                     staff_number = int(data['Staff'])
 
@@ -269,8 +271,10 @@ class ProjectDetailExportForm(ExportForm):
                     details[task.person][name] += task.people_costs(
                         s, e, additional_cost_name=name)
             details[task.person]['total'] += task.people_costs(s, e)
-            details[task.person]['days'] += task.get_days(
-                s, e)
+            details[task.person]['days'] += task.get_days(s, e)
+            details[task.person][BASE_SALARY_RATE_KEY] = \
+                task.person.base_rate_between(s, e) * \
+                details[task.person]['days']
 
         list(map(add_cost, project.tasks.between(start_date, end_date)))
 
@@ -299,10 +303,11 @@ class ProjectDetailExportForm(ExportForm):
 
             ws.cell(row=row, column=15).value = ''
 
-            ws.cell(row=row, column=18).value = ''
-            ws.cell(row=row, column=19).value = ''
-            ws.cell(row=row, column=20).value = ''
-            ws.cell(row=row, column=21).value = ''
+            if not person.is_contractor:
+                ws.cell(row=row, column=18).value = detail['Salary']
+                ws.cell(row=row, column=19).value = detail['Misc.Allow.']
+                ws.cell(row=row, column=20).value = detail['ERNIC']
+                ws.cell(row=row, column=21).value = '?'
 
             insert_rows(ws, row, 1)
             row += 1
