@@ -222,7 +222,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     data.push(budgetTrace);
   };
 
-  const range =  [ moment(startDate), moment(endDate) ];
+  const range =  [ moment(startDate, 'YYYY-MM-DD'), moment(endDate, 'YYYY-MM-DD') ];
 
   const {shapes, annotations} = backgroundForPhases(project, range);
   const todayMarkings = markingsForToday(range);
