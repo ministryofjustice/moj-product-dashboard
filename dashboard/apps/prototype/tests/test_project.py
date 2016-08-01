@@ -80,7 +80,8 @@ def test_project_without_tasks():
     assert project.last_task is None
 
     assert project.people_costs(start_date=start_date, end_date=end_date) == 0
-    profile = project.profile(freq='MS')
+    profile = project.profile(
+        start_date=start_date, end_date=end_date, freq='MS')
     assert 'name' in profile
     assert 'description' in profile
     assert len(profile['financial']) == 1

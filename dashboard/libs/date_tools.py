@@ -123,17 +123,15 @@ def slice_time_window(start_date, end_date, freq, extend=False):
     end date 2016/12/25, it will be extended to 2016/01/01 - 2017/01/01
     :return: a list of tuples
     """
+    end_date = end_date + timedelta(days=1)
     if extend:
-        start_date = date_range(
-            end=start_date, periods=1, freq=freq)[0].date()
-        end_date = date_range(
-            start=end_date, periods=1, freq=freq)[0].date()
-    dates = [ts.date() for ts in
-             date_range(start_date, end_date, freq=freq)]
+        start_date = date_range(end=start_date, periods=1, freq=freq)[0].date()
+        end_date = date_range(start=end_date, periods=1, freq=freq)[0].date()
+    dates = [ts.date() for ts in date_range(start_date, end_date, freq=freq)]
     if start_date not in dates:
         dates.insert(0, start_date)
     if end_date not in dates:
-        dates.append(end_date + timedelta(days=1))
+        dates.append(end_date)
     time_windows = []
     for current_sd, next_sd in zip(dates, dates[1:]):
         current_ed = next_sd - timedelta(days=1)
