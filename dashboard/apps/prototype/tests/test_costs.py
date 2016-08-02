@@ -6,7 +6,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 from ..constants import COST_TYPES
-from ..models import Cost, Project
+from ..models import Cost, Project, Person, PersonCost, Rate
 
 
 class CostTestCase(TestCase):
@@ -57,6 +57,10 @@ class CostTestCase(TestCase):
             round(cost.rate_between(date(2014, 1, 1), date(2014, 1, 2)), 2),
             Decimal('0'))
 
+        self.assertEqual(
+            round(cost.rate_between(date(2014, 1, 1), date(2014, 1, 2)), 2),
+            Decimal('0'))
+
     def test_rate_between_one_off(self):
         project = mommy.make(Project)
         cost = mommy.make(
@@ -101,3 +105,39 @@ class CostTestCase(TestCase):
         self.assertEqual(
             round(cost.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
             Decimal('291.26'))
+
+    def test_rate_between_anually_with_person_cost(self):
+        # project = mommy.make(Project)
+        person = mommy.make(Person)
+
+        pc = mommy.make(
+            PersonCost,
+            person=person,
+            name='ASLC',
+            start_date=date(2015, 1, 1),
+            type=COST_TYPES.ANNUALLY,
+            cost=Decimal('30000')
+        )
+
+        mommy.make(
+            Rate,
+            person=person,
+            rate=1,
+            start_date=date(2015, 1, 1)
+        )
+
+        self.assertEqual(
+            round(pc.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            Decimal('118.58'))
+
+        self.assertEqual(
+            round(person.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            Decimal('119.58'))
+
+        self.assertEqual(
+            round(person.base_rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            Decimal('1'))
+
+        self.assertEqual(
+            round(person.additional_rate(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            Decimal('118.58'))
