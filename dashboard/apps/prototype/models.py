@@ -769,10 +769,10 @@ class ProjectGroup(models.Model):
         for timeframe in timeframes:
             f1 = financial1.get(timeframe, {})
             f2 = financial2.get(timeframe, {})
-            keys = set(f1.keys()) | set(f2.keys())
-            result[timeframe] = {}
-            for key in keys:
-                result[timeframe][key] = f1.get(key, 0) + f2.get(key, 0)
+            result[timeframe] = {
+                key: f1.get(key, Decimal('0')) + f2.get(key, Decimal('0'))
+                for key in set(f1.keys()) | set(f2.keys())
+            }
         return result
 
 
