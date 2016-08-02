@@ -169,7 +169,7 @@ class Client(models.Model):
             for group in ProjectGroup.objects.all()
             for p in group.projects.all()
         ]
-        projects = self.projects.filter(visible=True).exclude(
+        projects = self.projects.visible().exclude(
             id__in=project_ids_in_a_group)
         project_groups = [group for group in ProjectGroup.objects.all()
                           if group.client and group.client.id == self.id]
