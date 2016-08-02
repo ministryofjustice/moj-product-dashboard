@@ -6,7 +6,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 from ..constants import COST_TYPES
-from ..models import Cost, Project, Person, PersonCost, Rate
+from ..models import Cost, Project, Person, PersonCost, Rate, Task
 
 
 class CostTestCase(TestCase):
@@ -107,12 +107,12 @@ class CostTestCase(TestCase):
             Decimal('291.26'))
 
     def test_rate_between_anually_with_person_cost(self):
-        # project = mommy.make(Project)
-        person = mommy.make(Person)
+        proj = mommy.make(Project)
+        p = mommy.make(Person)
 
         pc = mommy.make(
             PersonCost,
-            person=person,
+            person=p,
             name='ASLC',
             start_date=date(2015, 1, 1),
             type=COST_TYPES.ANNUALLY,
@@ -121,9 +121,18 @@ class CostTestCase(TestCase):
 
         mommy.make(
             Rate,
-            person=person,
+            person=p,
             rate=1,
             start_date=date(2015, 1, 1)
+        )
+
+        mommy.make(
+            Task,
+            person=p,
+            project=proj,
+            start_date=date(2015, 1, 1),
+            end_date=date(2015, 1, 2),
+            days=1
         )
 
         self.assertEqual(
@@ -131,13 +140,25 @@ class CostTestCase(TestCase):
             Decimal('118.58'))
 
         self.assertEqual(
-            round(person.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            round(proj.people_additional_costs(date(2015, 1, 1), date(2015, 1, 2), 'ASLC'), 2),
+            Decimal('118.58'))
+
+        self.assertEqual(
+            round(proj.people_additional_costs(date(2015, 1, 1), date(2015, 1, 2)), 2),
             Decimal('119.58'))
 
         self.assertEqual(
-            round(person.base_rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            round(p.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            Decimal('119.58'))
+
+        self.assertEqual(
+            round(p.base_rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
             Decimal('1'))
 
         self.assertEqual(
-            round(person.additional_rate(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            round(p.additional_rate(date(2015, 1, 1), date(2015, 1, 2)), 2),
+            Decimal('118.58'))
+
+        self.assertEqual(
+            round(p.additional_rate(date(2015, 1, 1), date(2015, 1, 2), 'ASLC'), 2),
             Decimal('118.58'))
