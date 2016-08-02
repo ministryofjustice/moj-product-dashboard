@@ -16,7 +16,7 @@
     <div class="module">
         <table width="100%">
             <caption>
-                <a href="{% url 'admin:person_upload_payroll' %}" class="section" title="Payroll features">Finance</a>
+                Finance
             </caption>
             {% if perms.prototype.upload_person %}
                 <tr class="model-">
@@ -47,7 +47,7 @@
         <div class="app-{{ app.app_label }} module">
         <table>
         <caption>
-            <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+            {{ app.name }}
         </caption>
         {% for model in app.models %}
             <tr class="model-{{ model.object_name|lower }}">
