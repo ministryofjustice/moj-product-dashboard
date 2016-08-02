@@ -16,6 +16,9 @@ import { plotCumulativeSpendings } from './cumulative-graph';
 import RedImg from '../img/red.png';
 import AmberImg from '../img/amber.png';
 import GreenImg from '../img/green.png';
+import OKImg from '../img/ok.png';
+import AtRiskImg from '../img/at-risk.png';
+import InTroubleImg from '../img/in-trouble.png';
 
 /**
  * send a POST request to the backend to retrieve project profile
@@ -532,13 +535,17 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       },
     },
     {
-      'columnName': 'financial_rag',
+      'columnName': 'status',
       'order': 3,
-      'displayName': 'Financial RAG',
+      'displayName': 'Status',
       'customComponent': (props) => {
-        const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
+        const mapping = {
+          'OK': OKImg,
+          'At risk': AtRiskImg,
+          'In trouble': InTroubleImg
+        };
         return (
-            <img src={ mapping[props.data] } className="rag" alt={props.data} />
+            <img src={ mapping[props.data] } className="status" alt={props.data} />
           )}
     },
     {
@@ -564,6 +571,16 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Budget',
       'customCompareFn': Number,
       'customComponent': displayMoney,
+    },
+    {
+      'columnName': 'financial_rag',
+      'order': 7,
+      'displayName': 'Financial RAG',
+      'customComponent': (props) => {
+        const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
+        return (
+            <img src={ mapping[props.data] } className="rag" alt={props.data} />
+          )}
     }
   ];
 
