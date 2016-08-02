@@ -94,20 +94,42 @@ def test_get_overlap_value_error(start_date0, end_date0,
                     (parse_date(start_date1), parse_date(end_date1)))
 
 
-# TODO more tests!
-def test_slice_time_window():
-    start_date = date(2015, 1, 2)
-    end_date = date(2015, 12, 31)
-    sliced = slice_time_window(start_date, end_date, 'MS')
-    assert sliced[0] == (date(2015, 1, 2), date(2015, 1, 31))
-    assert sliced[-1] == (date(2015, 12, 1), date(2015, 12, 31))
+@pytest.mark.parametrize("start_date, end_date, extend, first, last, length", [
+    ('2015-01-10', '2015-01-25', True,
+     ('2015-01-01', '2015-01-31'), ('2015-01-01', '2015-01-31'), 1),
+    ('2015-01-10', '2015-01-25', False,
+     ('2015-01-10', '2015-01-25'), ('2015-01-10', '2015-01-25'), 1),
+    ('2015-01-10', '2015-12-25', True,
+     ('2015-01-01', '2015-01-31'), ('2015-12-01', '2015-12-31'), 12),
+    ('2015-01-10', '2015-12-25', False,
+     ('2015-01-10', '2015-01-31'), ('2015-12-01', '2015-12-25'), 12),
+    ('2015-01-01', '2015-12-31',
+     True, ('2015-01-01', '2015-01-31'), ('2015-12-01', '2015-12-31'), 12),
+    ('2015-01-01', '2015-12-31',
+     False, ('2015-01-01', '2015-01-31'), ('2015-12-01', '2015-12-31'), 12),
+    ('2015-01-01', '2015-01-01',
+     True, ('2015-01-01', '2015-01-31'), ('2015-01-01', '2015-01-31'), 1),
+    ('2015-01-01', '2015-01-01',
+     False, ('2015-01-01', '2015-01-01'), ('2015-01-01', '2015-01-01'), 1),
+    ('2015-01-31', '2015-01-31',
+     True, ('2015-01-01', '2015-01-31'), ('2015-01-01', '2015-01-31'), 1),
+    ('2015-01-31', '2015-01-31',
+     False, ('2015-01-31', '2015-01-31'), ('2015-01-31', '2015-01-31'), 1),
+])
+def test_slice_time_window(start_date, end_date, extend, first, last, length):
+    sliced = slice_time_window(
+        parse_date(start_date), parse_date(end_date),
+        'MS', extend=extend)
+    assert sliced[0] == tuple([parse_date(d) for d in first])
+    assert sliced[-1] == tuple([parse_date(d) for d in last])
+    assert len(sliced) == length
 
 
 def test_to_datetime():
     assert to_datetime(date(2015, 12, 1)) == datetime(2015, 12, 1, 0, 0, 0)
 
 
-@pytest.mark.parametrize("start_date, end_date, frequency, bymonthday, expected", [
+@pytest.mark.parametrize("start_date, end_date, freq, bymonthday, expected", [
     (date(2015, 1, 2), date(2015, 3, 3), MONTHLY, 2,
      [date(2015, 1, 2), date(2015, 2, 2), date(2015, 3, 2)]),
 
@@ -123,7 +145,6 @@ def test_to_datetime():
     (date(2015, 1, 30), date(2017, 3, 3), YEARLY, None,
      [date(2015, 1, 30), date(2016, 1, 30), date(2017, 1, 30)]),
 ])
-def test_slice_on_date(start_date, end_date, frequency, bymonthday, expected):
-    dates = dates_between(start_date, end_date, frequency,
-                          bymonthday=bymonthday)
+def test_slice_on_date(start_date, end_date, freq, bymonthday, expected):
+    dates = dates_between(start_date, end_date, freq, bymonthday=bymonthday)
     assert dates == expected

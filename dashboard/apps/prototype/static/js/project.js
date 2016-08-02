@@ -20,7 +20,11 @@ import GreenImg from '../img/green.png';
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(id, startDate, endDate, csrftoken) {
+export function getProjectData(type, id, startDate, endDate, csrftoken) {
+  const urls = {
+    'project': '/project.json',
+    'project-group': '/project-group.json'
+  };
   const init = {
     credentials: 'same-origin',
     method: 'POST',
@@ -31,7 +35,7 @@ export function getProjectData(id, startDate, endDate, csrftoken) {
     },
     body: JSON.stringify({id: id, startDate: startDate, endDate: endDate})
   };
-  return fetch('/project.json', init)
+  return fetch(urls[type], init)
     .then(response => response.json());
 }
 
@@ -161,7 +165,8 @@ export class ProjectContainer extends Component {
 
   componentDidMount() {
     const { startDate, endDate } = this.timeFrames[this.state.timeFrame];
-    getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
+    getProjectData(this.props.type, this.props.id, startDate,
+                   endDate, this.props.csrftoken)
       .then(project => {
         const firstDate = project['first_date'];
         const lastDate = project['last_date'];
@@ -516,11 +521,15 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'columnName': 'name',
       'order': 1,
       'displayName': 'Product',
-      'customComponent': (props) => (
-        <a href={`/projects/${props.rowData.id}`}>
-          {props.data}
-        </a>
-      ),
+      'customComponent': (props) => {
+        let url;
+        if (props.rowData.type == 'project_group') {
+          url = `/project-groups/${props.rowData.id}`;
+        } else {
+          url = `/projects/${props.rowData.id}`;
+        };
+        return (<a href={url}>{props.data}</a>);
+      },
     },
     {
       'columnName': 'financial_rag',

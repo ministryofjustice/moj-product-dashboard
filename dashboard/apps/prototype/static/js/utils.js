@@ -35,11 +35,11 @@ export function postToBackend(url, body) {
 export function monthRange(startDate, endDate, startOrEnd) {
   let start, end;
   if (startOrEnd == 'start') {
-    start = moment(startDate).startOf('month');
-    end = moment(endDate).startOf('month');
+    start = moment(startDate, 'YYYY-MM-DD').startOf('month');
+    end = moment(endDate, 'YYYY-MM-DD').startOf('month');
   } else {
-    start = moment(startDate).endOf('month');
-    end = moment(endDate).endOf('month');
+    start = moment(startDate, 'YYYY-MM-DD').endOf('month');
+    end = moment(endDate, 'YYYY-MM-DD').endOf('month');
   };
   const range = [];
   let month = start;
@@ -163,12 +163,12 @@ export function lastQuarter(now) {
 
 
 export function startOfMonth(date) {
-  return moment(date).startOf('month').format('YYYY-MM-DD');
+  return moment(date, 'YYYY-MM-DD').startOf('month').format('YYYY-MM-DD');
 }
 
 
 export function endOfMonth(date) {
-  return moment(date).endOf('month').format('YYYY-MM-DD');
+  return moment(date, 'YYYY-MM-DD').endOf('month').format('YYYY-MM-DD');
 }
 
 

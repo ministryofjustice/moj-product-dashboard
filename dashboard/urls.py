@@ -20,6 +20,7 @@ from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.prototype.views import (
     index, service_html, service_json, project_html, project_json,
+    project_group_json, project_group_html,
     portfolio_html, portfolio_json, sync_from_float)
 from django.contrib.auth import views as auth_views
 
@@ -30,7 +31,10 @@ urlpatterns = [
     url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
     url(r'^service.json', service_json, name='service_json'),
     url(r'^projects/(?P<id>[0-9]+)?$', project_html, name='project'),
+    url(r'^project-groups/(?P<id>[0-9]+)?$', project_group_html,
+        name='project_group'),
     url(r'^project.json', project_json, name='project_json'),
+    url(r'^project-group.json', project_group_json, name='project_group_json'),
     url(r'^portfolio.json', portfolio_json, name='portfolio_json'),
     url(r'^portfolio', portfolio_html, name='portfolio_html'),
     url(r'^admin/', admin.site.urls),

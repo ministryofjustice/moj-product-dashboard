@@ -80,10 +80,17 @@ def test_project_without_tasks():
     assert project.last_task is None
 
     assert project.people_costs(start_date=start_date, end_date=end_date) == 0
-    profile = project.profile(freq='MS')
+    profile = project.profile(
+        start_date=start_date, end_date=end_date, freq='MS')
     assert 'name' in profile
     assert 'description' in profile
-    assert profile['financial'] == {}
+    assert len(profile['financial']) == 1
+    assert next(iter(profile['financial'].values())) == {
+        'additional': Decimal('0'),
+        'budget': Decimal('0'),
+        'contractor': Decimal('0'),
+        'non-contractor': Decimal('0')
+    }
     assert project.current_fte() == 0
     assert project.time_spent() == 0
     assert project.cost_to_date == 0
@@ -114,10 +121,10 @@ def test_project_profiles_with_frequency():
         'budget': Decimal('0')
     }
     keys = [
-        '2016-01-01~2016-01-02',
+        '2015-12-27~2016-01-02',
         '2016-01-03~2016-01-09',
         '2016-01-10~2016-01-16',
-        '2016-01-17~2016-01-20',
+        '2016-01-17~2016-01-23',
     ]
     assert sorted(list(profile['financial'].keys())) == keys
 
@@ -591,3 +598,10 @@ def test_project_financial_rag():
         cost=Decimal('1')
     )
     assert project.financial_rag == 'RED'
+
+
+@pytest.mark.django_db
+def test_admin_url():
+    project = make_project()
+    expected = '/admin/prototype/project/{}/change/'.format(project.id)
+    assert project.admin_url == expected

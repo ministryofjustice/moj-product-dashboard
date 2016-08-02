@@ -13,8 +13,10 @@ from faker import Faker
 from model_mommy import mommy
 
 from dashboard.apps.prototype.views import (
-    index, project_html, project_json, service_html, service_json)
-from dashboard.apps.prototype.models import Client as Service, Project
+    index, project_html, project_json, service_html, service_json,
+    project_group_html, project_group_json)
+from dashboard.apps.prototype.models import (
+    Client as Service, Project, ProjectGroup)
 
 
 def make_login_client():
@@ -61,6 +63,15 @@ def test_index_no_projectid_with_data():
 
 
 @pytest.mark.django_db
+def test_project_html_without_projectid():
+    project = mommy.make(Project)
+    client = make_login_client()
+    rsp = client.get(reverse(project_html))
+    assert rsp.status_code == 302
+    assert rsp.url == reverse(project_html, kwargs={'id': project.id})
+
+
+@pytest.mark.django_db
 def test_project_html_with_valid_projectid():
     client = make_login_client()
     project = mommy.make(Project)
@@ -102,7 +113,16 @@ def test_project_json_with_invalid_id():
 
 
 @pytest.mark.django_db
-def test_service_html():
+def test_service_html_without_id():
+    client = make_login_client()
+    service = mommy.make(Service)
+    rsp = client.get(reverse(service_html))
+    assert rsp.status_code == 302
+    assert rsp.url == reverse(service_html, kwargs={'id': service.id})
+
+
+@pytest.mark.django_db
+def test_service_html_with_valid_id():
     client = make_login_client()
     service = mommy.make(Service)
     rsp = client.get(reverse(service_html, kwargs={'id': service.id}))
@@ -134,6 +154,56 @@ def test_service_json_with_invalid_id():
     client = make_login_client()
     rsp = client.post(
         reverse(service_json),
+        json.dumps({'id': 'invalid_id'}),
+        content_type='application/json'
+    )
+    assert rsp.status_code == 404
+    assert rsp['Content-Type'] == 'application/json'
+
+
+@pytest.mark.django_db
+def test_project_group_html_without_projectid():
+    group = mommy.make(ProjectGroup)
+    client = make_login_client()
+    rsp = client.get(reverse(project_group_html))
+    assert rsp.status_code == 302
+    assert rsp.url == reverse(project_group_html, kwargs={'id': group.id})
+
+
+@pytest.mark.django_db
+def test_project_group_html_with_valid_projectid():
+    client = make_login_client()
+    group = mommy.make(ProjectGroup)
+    rsp = client.get(reverse(project_group_html, kwargs={'id': group.id}))
+    assert rsp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_project_group_html_with_non_existing_id():
+    client = make_login_client()
+    group = mommy.make(ProjectGroup)
+    rsp = client.get(reverse(project_group_html, kwargs={'id': group.id + 1}))
+    assert rsp.status_code == 404
+
+
+@pytest.mark.django_db
+def test_project_group_json_with_valid_id():
+    client = make_login_client()
+    group = mommy.make(ProjectGroup)
+    rsp = client.post(
+        reverse(project_group_json),
+        json.dumps({'id': group.id}),
+        content_type='application/json'
+    )
+    assert rsp.status_code == 200
+    assert rsp['Content-Type'] == 'application/json'
+
+
+@pytest.mark.django_db
+def test_project_group_json_with_invalid_id():
+    client = make_login_client()
+    rsp = client.post(
+        reverse(project_group_json),
         json.dumps({'id': 'invalid_id'}),
         content_type='application/json'
     )

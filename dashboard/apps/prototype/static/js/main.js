@@ -18,14 +18,17 @@ import '../styles/main.css';
 
 function project(id) {
   ReactDOM.render(
-    <ProjectContainer id={id} csrftoken={Cookies.get('csrftoken')} />,
+    <ProjectContainer
+      type='project'
+      id={id}
+      csrftoken={Cookies.get('csrftoken')}
+    />,
     document.getElementById('fig-a')
   );
 
   // dropdown project selector
   $('#projects').select2().on("select2:select", (e) => {
-    const projectId = e.params.data.id;
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = e.params.data.id;
   });
 }
 
@@ -57,9 +60,25 @@ function portfolio() {
 }
 
 
+function projectGroup(id) {
+  ReactDOM.render(
+    <ProjectContainer
+      type='project-group'
+      id={id}
+      csrftoken={Cookies.get('csrftoken')}
+    />,
+    document.getElementById('container')
+  );
+  // dropdown project selector
+  $('#projects').select2().on("select2:select", (e) => {
+    window.location.href = e.params.data.id;
+  });
+}
+
+
 function route(path) {
   // call different loading functions based on page url
-  const pattern = /(projects|services|portfolio)(\/(\d+))?/;
+  const pattern = /(projects|services|project-groups|portfolio)(\/(\d+))?/;
   const matches = pattern.exec(path);
 
   if (matches === null)
@@ -73,6 +92,9 @@ function route(path) {
       break;
     case 'services':
       service(id);
+      break;
+    case 'project-groups':
+      projectGroup(id);
       break;
     case 'portfolio':
       portfolio();
