@@ -53,6 +53,10 @@ class CostTestCase(TestCase):
             round(cost.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
             Decimal('142.86'))
 
+        self.assertEqual(
+            round(cost.rate_between(date(2014, 1, 1), date(2014, 1, 2)), 2),
+            Decimal('0'))
+
     def test_rate_between_one_off(self):
         project = mommy.make(Project)
         cost = mommy.make(
