@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from urllib.request import Request
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import PermissionDenied
 from django.test import TestCase, mock
 
 from model_mommy import mommy
@@ -99,3 +101,35 @@ class TaskTimeSpentTestCase(TestCase):
         mock_request = mock.Mock(user=self.super_user)
         can_upload = model_admin.has_upload_permission(mock_request)
         self.assertFalse(can_upload)
+
+    def test_users_cant_access_exports(self):
+        model_admin = ProjectAdmin(Project, admin.site)
+        for user in [self.user_admin, self.other_admin, self.regular_user]:
+            mock_request = mock.Mock(user=user)
+
+            self.assertRaises(
+                PermissionDenied,
+                model_admin.adjustment_export_view,
+                mock_request)
+            self.assertRaises(
+                PermissionDenied,
+                model_admin.intercompany_export_view,
+                mock_request)
+            self.assertRaises(
+                PermissionDenied,
+                model_admin.project_detail_export_view,
+                mock_request)
+
+    def test_finance_users_can_access_exports(self):
+        model_admin = ProjectAdmin(Project, admin.site)
+        mock_request = mock.Mock(spec=Request, user=self.finance_admin,
+                                 method='GET', COOKIES={}, META={})
+
+        resp = model_admin.adjustment_export_view(mock_request)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = model_admin.intercompany_export_view(mock_request)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = model_admin.project_detail_export_view(mock_request)
+        self.assertEqual(resp.status_code, 200)
