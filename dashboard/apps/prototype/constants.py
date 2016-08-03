@@ -16,3 +16,10 @@ COST_TYPES = Choices(
     ('MONTHLY',  2, 'Monthly'),
     ('ANNUALLY',  3, 'Annually'),
 )
+
+
+STATUS_TYPES = Choices(
+    ('OK',  1, 'OK'),
+    ('AT_RISK',  2, 'At risk'),
+    ('IN_TROUBLE',  3, 'In trouble'),
+)

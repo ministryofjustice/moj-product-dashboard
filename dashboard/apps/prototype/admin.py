@@ -10,8 +10,8 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 
 from .forms import PayrollUploadForm
-from .models import (Person, Rate, Client, Project, Cost, Budget, RAG,
-                     Note, ProjectGroup)
+from .models import (Person, Rate, Client, Project, Cost, Budget,
+                     ProjectStatus, ProjectGroupStatus, Note, ProjectGroup)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -172,8 +172,13 @@ class BudgetInline(admin.TabularInline):
     extra = 0
 
 
-class RAGInline(admin.TabularInline):
-    model = RAG
+class ProjectStatusInline(admin.TabularInline):
+    model = ProjectStatus
+    extra = 0
+
+
+class ProjectGroupStatusInline(admin.TabularInline):
+    model = ProjectGroupStatus
     extra = 0
 
 
@@ -187,10 +192,11 @@ class ProjectAdmin(admin.ModelAdmin):
               'project_manager', 'client', 'discovery_date', 'alpha_date',
               'beta_date', 'live_date', 'end_date', 'visible']
     exclude = ['raw_data']
-    inlines = [CostInline, BudgetInline, RAGInline, NoteInline]
+    inlines = [CostInline, BudgetInline, ProjectStatusInline, NoteInline]
     readonly_fields = ('name', 'description', 'float_id', 'is_billable',
                        'project_manager', 'client')
-    list_display = ('name', 'rag', 'phase', 'client', 'discovery_date', 'budget')
+    list_display = ('name', 'status', 'phase', 'client', 'discovery_date',
+                    'budget')
     search_fields = ('name', 'float_id')
 
 
@@ -202,6 +208,7 @@ class TaskAdmin(ReadOnlyAdmin):
 class ProjectGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ('projects', )
     list_display = ('name', 'render_projects')
+    inlines = [ProjectGroupStatusInline]
 
     def render_projects(self, obj):
         return '<br/>'.join([

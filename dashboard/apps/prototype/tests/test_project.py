@@ -7,8 +7,8 @@ from model_mommy import mommy
 
 from dashboard.libs.date_tools import parse_date, get_workdays
 from dashboard.apps.prototype.models import (
-    Project, Task, Person, Rate, Cost, RAG, Budget)
-from prototype.constants import COST_TYPES, RAG_TYPES
+    Project, Task, Person, Rate, Cost, ProjectStatus, Budget)
+from prototype.constants import COST_TYPES, STATUS_TYPES
 
 
 task_time_ranges = [
@@ -91,8 +91,8 @@ def test_project_without_tasks():
         'contractor': Decimal('0'),
         'non-contractor': Decimal('0')
     }
-    assert project.current_fte() == 0
     assert project.time_spent() == 0
+    assert project.current_fte() == 0
     assert project.cost_to_date == 0
     assert project.total_cost == 0
     assert project.financial_rag == 'GREEN'
@@ -241,29 +241,32 @@ def test_project_current_fte():
 
 
 @pytest.mark.django_db
-def test_project_rag():
+def test_project_status():
     project = make_project()
-    assert project.rag() is None
+    assert project.status() is None
 
     today = date.today()
     date_1 = today - timedelta(days=100)
     date_2 = today - timedelta(days=50)
     date_3 = today + timedelta(days=50)
-    rag1 = mommy.make(
-        RAG, project=project, rag=RAG_TYPES.GREEN, start_date=date_1)
-    rag2 = mommy.make(
-        RAG, project=project, rag=RAG_TYPES.AMBER, start_date=date_2)
-    rag3 = mommy.make(
-        RAG, project=project, rag=RAG_TYPES.RED, start_date=date_3)
+    status1 = mommy.make(
+        ProjectStatus, project=project, status=STATUS_TYPES.OK,
+        start_date=date_1)
+    status2 = mommy.make(
+        ProjectStatus, project=project, status=STATUS_TYPES.AT_RISK,
+        start_date=date_2)
+    status3 = mommy.make(
+        ProjectStatus, project=project, status=STATUS_TYPES.IN_TROUBLE,
+        start_date=date_3)
 
-    assert project.rag(on=date_1) == rag1
-    assert project.rag(on=date_1 + timedelta(days=25)) == rag1
-    assert project.rag(on=date_2) == rag2
-    assert project.rag() == rag2
-    assert project.rag(on=today) == rag2
-    assert project.rag(on=today - timedelta(days=25)) == rag2
-    assert project.rag(on=today + timedelta(days=25)) == rag2
-    assert project.rag(on=today + timedelta(days=75)) == rag3
+    assert project.status(on=date_1) == status1
+    assert project.status(on=date_1 + timedelta(days=25)) == status1
+    assert project.status(on=date_2) == status2
+    assert project.status() == status2
+    assert project.status(on=today) == status2
+    assert project.status(on=today - timedelta(days=25)) == status2
+    assert project.status(on=today + timedelta(days=25)) == status2
+    assert project.status(on=today + timedelta(days=75)) == status3
 
 
 @pytest.mark.django_db

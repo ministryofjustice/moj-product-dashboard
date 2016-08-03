@@ -16,7 +16,7 @@ from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 from dashboard.libs.cache_tools import method_cache
 
-from .constants import RAG_TYPES, COST_TYPES
+from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
 
 
 class Person(models.Model):
@@ -372,10 +372,10 @@ class Project(models.Model):
         budget = self.final_budget
         total_cost = self.total_cost
         if budget >= total_cost:
-            return 'GREEN'
+            return RAG_TYPES.GREEN.constant
         if budget * Decimal('1.1') >= total_cost:
-            return 'AMBER'
-        return 'RED'
+            return RAG_TYPES.AMBER.constant
+        return RAG_TYPES.RED.constant
 
     def profile(self, start_date=None, end_date=None, freq=None):
         """
@@ -389,8 +389,8 @@ class Project(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
-        rag = self.rag()
-        rag = rag.get_rag_display() if rag else ''
+        status = self.status()
+        status = status.get_status_display() if status else ''
         if self.client:
             service_area = {
                 'id': self.client.id,
@@ -411,7 +411,7 @@ class Project(models.Model):
             'end_date': self.end_date,
             'first_date': self.first_date,
             'last_date': self.last_date,
-            'rag': rag,
+            'status': status,
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
             'current_fte': self.current_fte(start_date, end_date),
@@ -528,17 +528,17 @@ class Project(models.Model):
         except ValueError:
             return Decimal('0')
 
-    def rag(self, on=None):
+    def status(self, on=None):
         """
-        get the rag for the project on a date
+        get the status for the project on a date
         :param on: optional date object. if empty use today's date
         :return: a rag object
         """
         if not on:
             on = date.today()
-        rag = self.rags.filter(start_date__lte=on)\
-            .order_by('-start_date').first()
-        return rag
+        status = self.statuses.filter(
+            start_date__lte=on).order_by('-start_date').first()
+        return status
 
     def time_spent(self, start_date=None, end_date=None):
         """
@@ -631,11 +631,22 @@ class Budget(models.Model):
     budget = models.DecimalField(max_digits=16, decimal_places=2)
 
 
-class RAG(models.Model):
-    project = models.ForeignKey('Project', related_name='rags')
+class Status(models.Model):
     start_date = models.DateField()
-    rag = models.PositiveSmallIntegerField(
-        choices=RAG_TYPES, default=RAG_TYPES.GREEN)
+    status = models.PositiveSmallIntegerField(
+        choices=STATUS_TYPES, default=STATUS_TYPES.OK)
+
+    class Meta:
+        abstract = True
+        verbose_name_plural = "statuses"
+
+
+class ProjectStatus(Status):
+    project = models.ForeignKey('Project', related_name='statuses')
+
+
+class ProjectGroupStatus(Status):
+    project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
 
 
 class Note(models.Model):
@@ -688,6 +699,10 @@ class ProjectGroup(models.Model):
             return clients[0]
 
     @property
+    def final_budget(self):
+        return sum(p.final_budget for p in self.projects.all())
+
+    @property
     def financial_rag(self):
         """
         financial rag is one of 'RED', 'AMBER' and 'GREEN'.
@@ -696,13 +711,25 @@ class ProjectGroup(models.Model):
         AMBER: budget < total_cost < 110% * budget
         GREEN: total_cost <= budget
         """
-        budget = sum(p.final_budget for p in self.projects.all())
+        budget = self.final_budget
         total_cost = self.total_cost
         if budget >= total_cost:
-            return 'GREEN'
+            return RAG_TYPES.GREEN.constant
         if budget * Decimal('1.1') >= total_cost:
-            return 'AMBER'
-        return 'RED'
+            return RAG_TYPES.AMBER.constant
+        return RAG_TYPES.RED.constant
+
+    def status(self, on=None):
+        """
+        get the status for the project group on a date
+        :param on: optional date object. if empty use today's date
+        :return: a rag object
+        """
+        if not on:
+            on = date.today()
+        status = self.statuses.filter(
+            start_date__lte=on).order_by('-start_date').first()
+        return status
 
     def current_fte(self, start_date=None, end_date=None):
         """
@@ -728,6 +755,8 @@ class ProjectGroup(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
+        status = self.status()
+        status = status.get_status_display() if status else ''
         if self.client:
             service_area = {
                 'id': self.client.id,
@@ -746,6 +775,7 @@ class ProjectGroup(models.Model):
         result = {
             'id': self.id,
             'name': self.name,
+            'status': status,
             'type': 'project_group',
             'service_area': service_area,
             'financial': financial,
