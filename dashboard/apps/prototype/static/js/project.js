@@ -10,7 +10,7 @@ import { monthRange, thisCalendarYear,
          thisFinancialYear, thisQuarter, lastCalendarYear,
          lastFinancialYear, lastQuarter,
          startOfMonth, endOfMonth,
-         min, max, values, round } from './utils';
+         min, max, values, round, numberWithCommas } from './utils';
 import { plotCumulativeSpendings } from './cumulative-graph';
 
 import RedImg from '../img/red.png';
@@ -372,7 +372,7 @@ function KeyStats({budget, costToDate, savings}) {
     </div>
   );
 
-  const format = (data) => `£${Math.round(parseFloat(data)).toLocaleString()}`;
+  const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
   return (
     <div>
@@ -514,8 +514,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
 export const ProjectsTable = ({ projects, showService, showFilter }) => {
 
   const displayMoney = (props) => {
-    const number = Number(Number(props.data).toFixed(0))
-      .toLocaleString();
+    const number = numberWithCommas(Number(props.data).toFixed(0));
     return (<span>£{number}</span>);
   };
 
