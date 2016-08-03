@@ -221,7 +221,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
         return urls + super(ProjectAdmin, self).get_urls()
 
     def _export_view(self, request, form_class, file_name):
-        if not self.is_finance(request.user):
+        if not self.is_finance(request.user):  # pragma: no cover
             raise PermissionDenied
 
         if request.method == 'POST':
@@ -289,7 +289,7 @@ class ProjectGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'render_projects')
     inlines = [ProjectGroupStatusInline]
 
-    def render_projects(self, obj):
+    def render_projects(self, obj):  # pragma: no cover
         return '<br/>'.join([
             '<a href="{}"/>{}</a>'.format(p.admin_url, p.name)
             for p in obj.projects.all()])
