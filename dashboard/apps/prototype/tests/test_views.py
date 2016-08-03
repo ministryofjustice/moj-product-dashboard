@@ -225,7 +225,6 @@ def test_sync_float(mock_sync_float):
         json.dumps({}),
         content_type='application/json'
     )
-    mock_sync_float.assert_called_once()
     assert rsp.status_code == 200
     assert rsp['Content-Type'] == 'application/json'
     assert rsp.json() == {'status': 'STARTED'}
