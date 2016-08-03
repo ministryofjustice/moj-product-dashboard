@@ -161,8 +161,10 @@ class RateAdmin(FinancePermissions, admin.ModelAdmin):
     search_fields = ('person__name', 'person__job_title')
 
 
-class ClientAdmin(ReadOnlyAdmin):
+class ClientAdmin(admin.ModelAdmin):
     search_fields = ('name', 'float_id')
+    fields = ['id', 'name', 'float_id', 'visible']
+    readonly_fields = ['id', 'name', 'float_id']
     exclude = ['raw_data']
 
 

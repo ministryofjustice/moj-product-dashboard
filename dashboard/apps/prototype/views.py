@@ -45,7 +45,7 @@ def project_html(request, id):
             'cannot find project with id={}'.format(id))
     services = {
         service.name: {p.id: p.name for p in service.projects.visible()}
-        for service in Client.objects.all()
+        for service in Client.objects.filter(visible=True)
     }
     services = OrderedDict(sorted([(k, v) for k, v in services.items() if v]))
     context = {
@@ -121,7 +121,7 @@ def combine_project_and_project_group():
             for p in service.projects.visible()
             if p.id not in project_ids_in_a_group
         }
-        for service in Client.objects.all()
+        for service in Client.objects.filter(visible=True)
     }
     for project_group in ProjectGroup.objects.all():
         service = project_group.client
@@ -172,15 +172,15 @@ def project_group_json(request):
 @login_required
 def service_html(request, id):
     if not id:
-        id = Client.objects.first().id
+        id = Client.objects.filter(visible=True).first().id
         return redirect(reverse(service_html, kwargs={'id': id}))
     try:
-        service = Client.objects.get(id=id)
+        service = Client.objects.filter(visible=True).get(id=id)
     except (ValueError, Client.DoesNotExist):
         # TODO better error page
         return HttpResponseNotFound(
             'cannot find service with id={}'.format(id))
-    services = {c.id: c.name for c in Client.objects.all()}
+    services = {c.id: c.name for c in Client.objects.filter(visible=True)}
     context = {'services': services, 'service': service}
     return render(request, 'service.html', context=context)
 
@@ -189,7 +189,7 @@ def service_html(request, id):
 def service_json(request):
     request_data = json.loads(request.body.decode())
     try:
-        client = Client.objects.get(id=request_data['id'])
+        client = Client.objects.filter(visible=True).get(id=request_data['id'])
     except (ValueError, Client.DoesNotExist):
         error = 'cannot find service area with id={}'.format(
             request_data['id'])
@@ -206,7 +206,8 @@ def portfolio_html(request):
 @login_required
 @cache_page(60 * 15)
 def portfolio_json(request):
-    result = {client.id: client.profile() for client in Client.objects.all()}
+    result = {client.id: client.profile() for client
+              in Client.objects.filter(visible=True)}
     return JsonResponse(result)
 
 
