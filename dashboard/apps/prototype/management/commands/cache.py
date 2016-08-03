@@ -36,7 +36,8 @@ class Command(BaseCommand):
             start_date = project.first_task.start_date
             end_date = project.last_task.end_date
             # monthly people costs
-            time_windows = slice_time_window(start_date, end_date, freq='MS')
+            time_windows = slice_time_window(
+                start_date, end_date, freq='MS', extend=True)
             # to date people costs
             time_windows.append((start_date, date.today()))
             for sdate, edate in time_windows:

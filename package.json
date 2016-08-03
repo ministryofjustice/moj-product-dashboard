@@ -24,10 +24,10 @@
     "history": "^3.0.0",
     "jest-cli": "^12.1.1",
     "moment": "^2.13.0",
-    "react": "^15.1.0",
+    "react": "^15.3.0",
     "react-dom": "^15.1.0",
     "react-spinkit": "^1.1.7",
-    "rebass": "^0.2.7",
+    "rebass": "^0.3.0",
     "style-loader": "^0.13.1",
     "webpack": "^1.13.0"
   },
@@ -41,7 +41,7 @@
     "automock": false,
     "moduleNameMapper": {
       "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS)$": "<rootDir>/dashboard/apps/prototype/static/js/EmptyModule.js"
-}
+    }
   },
   "scripts": {
     "test": "jest",

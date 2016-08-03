@@ -1,0 +1,10 @@
+{% extends 'common.html' %}
+
+{% load staticfiles %}
+
+{% block body_classes %}project group{% endblock %}
+
+{% block main %}
+  {% include "project_selector.html" %}
+  <div id="container" />
+{% endblock %}

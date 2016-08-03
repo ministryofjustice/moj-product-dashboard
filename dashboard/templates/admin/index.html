@@ -12,15 +12,32 @@
 {% block content %}
 <div id="content-main">
 
-{% if True %}
+{% if perms.prototype.upload_person %}
     <div class="module">
         <table width="100%">
             <caption>
-                <a href="{% url 'admin:person_upload_payroll' %}" class="section" title="Payroll features">Payroll</a>
+                Finance
             </caption>
-            <tr class="model-">
-                <th scope="row"><a href="{% url 'admin:person_upload_payroll' %}">Upload payroll</a></th>
-            </tr>
+            {% if perms.prototype.upload_person %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:person_upload_payroll' %}">Upload payroll</a></th>
+                </tr>
+            {% endif %}
+            {% if perms.prototype.adjustmentexport_project %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:project_adjustment_export' %}">Adjustment Export</a></th>
+                </tr>
+            {% endif %}
+            {% if perms.prototype.intercompanyexport_project %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:project_intercompany_export' %}">Intercompany Export</a></th>
+                </tr>
+            {% endif %}
+            {% if perms.prototype.projectdetailexport_project %}
+                <tr class="model-">
+                    <th scope="row"><a href="{% url 'admin:project_projectdetail_export' %}">Project Detail Export</a></th>
+                </tr>
+            {% endif %}
         </table>
     </div>
 {% endif %}
@@ -30,7 +47,7 @@
         <div class="app-{{ app.app_label }} module">
         <table>
         <caption>
-            <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+            {{ app.name }}
         </caption>
         {% for model in app.models %}
             <tr class="model-{{ model.object_name|lower }}">

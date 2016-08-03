@@ -16,11 +16,18 @@ import { plotCumulativeSpendings } from './cumulative-graph';
 import RedImg from '../img/red.png';
 import AmberImg from '../img/amber.png';
 import GreenImg from '../img/green.png';
+import OKImg from '../img/ok.png';
+import AtRiskImg from '../img/at-risk.png';
+import InTroubleImg from '../img/in-trouble.png';
 
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(id, startDate, endDate, csrftoken) {
+export function getProjectData(type, id, startDate, endDate, csrftoken) {
+  const urls = {
+    'project': '/project.json',
+    'project-group': '/project-group.json'
+  };
   const init = {
     credentials: 'same-origin',
     method: 'POST',
@@ -31,7 +38,7 @@ export function getProjectData(id, startDate, endDate, csrftoken) {
     },
     body: JSON.stringify({id: id, startDate: startDate, endDate: endDate})
   };
-  return fetch('/project.json', init)
+  return fetch(urls[type], init)
     .then(response => response.json());
 }
 
@@ -161,7 +168,8 @@ export class ProjectContainer extends Component {
 
   componentDidMount() {
     const { startDate, endDate } = this.timeFrames[this.state.timeFrame];
-    getProjectData(this.props.id, startDate, endDate, this.props.csrftoken)
+    getProjectData(this.props.type, this.props.id, startDate,
+                   endDate, this.props.csrftoken)
       .then(project => {
         const firstDate = project['first_date'];
         const lastDate = project['last_date'];
@@ -516,20 +524,28 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'columnName': 'name',
       'order': 1,
       'displayName': 'Product',
-      'customComponent': (props) => (
-        <a href={`/projects/${props.rowData.id}`}>
-          {props.data}
-        </a>
-      ),
+      'customComponent': (props) => {
+        let url;
+        if (props.rowData.type == 'project_group') {
+          url = `/project-groups/${props.rowData.id}`;
+        } else {
+          url = `/projects/${props.rowData.id}`;
+        };
+        return (<a href={url}>{props.data}</a>);
+      },
     },
     {
-      'columnName': 'financial_rag',
+      'columnName': 'status',
       'order': 3,
-      'displayName': 'Financial RAG',
+      'displayName': 'Status',
       'customComponent': (props) => {
-        const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
+        const mapping = {
+          'OK': OKImg,
+          'At risk': AtRiskImg,
+          'In trouble': InTroubleImg
+        };
         return (
-            <img src={ mapping[props.data] } className="rag" alt={props.data} />
+            <img src={ mapping[props.data] } className="status" alt={props.data} />
           )}
     },
     {
@@ -555,6 +571,16 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Budget',
       'customCompareFn': Number,
       'customComponent': displayMoney,
+    },
+    {
+      'columnName': 'financial_rag',
+      'order': 7,
+      'displayName': 'Financial RAG',
+      'customComponent': (props) => {
+        const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
+        return (
+            <img src={ mapping[props.data] } className="rag" alt={props.data} />
+          )}
     }
   ];
 

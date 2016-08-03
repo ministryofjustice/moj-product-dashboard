@@ -1,0 +1,19 @@
+<strong>Choose a project</strong>
+<p>e.g claim for crown court defence</p>
+<select id="projects">
+{% for service_name, projects in service_to_projects.items %}
+  <optgroup label="{{ service_name }}">
+  {% for id, project in projects.items %}
+    {% if id == selected_id and project.type == project_type %}
+    <option value="{{ project.url }}" selected>
+      {{ project.name }}
+    </option>
+    {% else %}
+    <option value="{{ project.url }}">
+      {{ project.name }}
+    </option>
+    {% endif %}
+  {% endfor %}
+  </optgroup>
+{% endfor %}
+</select>

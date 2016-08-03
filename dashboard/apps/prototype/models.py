@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, date
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY
 
 from django.db import models
+from django.core import urlresolvers
 from django.contrib.postgres.fields import JSONField
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
@@ -14,11 +17,101 @@ from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 from dashboard.libs.cache_tools import method_cache
 
-from .constants import RAG_TYPES, COST_TYPES
+from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
 
 
-class Person(models.Model):
+class BaseCost(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    name = models.CharField(max_length=128, null=True)
+    note = models.TextField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    type = models.PositiveSmallIntegerField(
+        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
+
+    def cost_between(self, start_date, end_date):
+        start_date = max(start_date, self.start_date)
+        end_date = min(end_date, self.end_date or end_date)
+        if self.type == COST_TYPES.ONE_OFF:
+            if start_date <= self.start_date <= end_date:
+                return self.cost
+            return Decimal('0')
+
+        dates = dates_between(start_date, end_date, self.freq,
+                              bymonthday=self.bymonthday,
+                              byyearday=self.byyearday)
+
+        return len(dates) * self.cost
+
+    def rate_between(self, start_date, end_date):
+        if not self.end_date:
+            if self.type == COST_TYPES.MONTHLY:
+                cost_end_date = self.start_date + relativedelta(months=1)
+            elif self.type == COST_TYPES.ANNUALLY:
+                cost_end_date = self.start_date + relativedelta(years=1)
+            else:
+                raise Exception('Cant get rate on one off cost')
+        else:
+            cost_end_date = self.end_date
+
+        cost_working_days = dec_workdays(self.start_date, cost_end_date)
+
+        overlap = get_overlap(
+            (self.start_date, cost_end_date),
+            (start_date, end_date))
+
+        if not overlap:
+            return Decimal('0')
+
+        overlap_working_days = dec_workdays(*overlap)
+
+        return self.cost * overlap_working_days / cost_working_days
+
+    @property
+    def byyearday(self):
+        if self.type == COST_TYPES.ANNUALLY:
+            return self.start_date.timetuple().tm_yday
+
+    @property
+    def bymonthday(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return self.start_date.day
+
+    @property
+    def freq(self):
+        if self.type == COST_TYPES.MONTHLY:
+            return MONTHLY
+        elif self.type == COST_TYPES.ANNUALLY:
+            return YEARLY
+
+    class Meta:
+        abstract = True
+
+
+class AditionalCostsMixin():
+    def get_costs_between(self, start_date, end_date, name=None):
+        costs = self.costs.filter(
+            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+            start_date__lte=end_date
+        )
+
+        if name:
+            costs = costs.filter(name=name)
+
+        return costs
+
+    def additional_costs(self, start_date, end_date, name=None):
+        def cost_of_cost(cost):
+            return cost.cost_between(start_date, end_date)
+
+        costs = self.get_costs_between(start_date, end_date, name=None)
+
+        return sum(map(cost_of_cost, costs)) or Decimal('0')
+
+
+class Person(models.Model, AditionalCostsMixin):
     float_id = models.CharField(max_length=128, unique=True)
+    staff_number = models.PositiveIntegerField(null=True, unique=True)
     name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
@@ -42,9 +135,17 @@ class Person(models.Model):
             ('upload_person', 'Can upload monthly payroll'),
         )
 
-    def rate_between(self, start_date, end_date):
+    def additional_rate(self, start_date, end_date, name=None):
+        costs = self.get_costs_between(start_date, end_date, name=name)
+
+        if not costs:
+            return Decimal('0')
+
+        return sum([c.rate_between(start_date, end_date) for c in costs])
+
+    def base_rate_between(self, start_date, end_date):
         """
-        average day rate in range
+        average base day rate in range
         param: start_date: date object - beginning of time period for average
         param: end_date: date object - end of time period for average
         return: Decimal object - average day rate
@@ -63,16 +164,35 @@ class Person(models.Model):
 
         total_workdays = dec_workdays(start_date, end_date)
 
-        return average_rate_from_segments(segments, total_workdays)
+        average_rate = average_rate_from_segments(segments, total_workdays)
 
-    def rate_on(self, on=None):
+        return average_rate
+
+    def rate_between(self, start_date, end_date):
+        """
+        average day with aditional costs day rate rate in range
+        param: start_date: date object - beginning of time period for average
+        param: end_date: date object - end of time period for average
+        return: Decimal object - average day rate
+        """
+        average_rate = self.base_rate_between(start_date, end_date)
+
+        if average_rate:
+            return average_rate + self.additional_rate(start_date, end_date)
+
+    def rate_on(self, on):
         """
         rate at time of date
         param: on: date object - if no start or end then rate on specific date
         return: Decimal object - rate on date
         """
         rate = self.rates.on(on=on)
-        return rate.rate_on(on) if rate else None
+        if rate:
+            return rate.rate_on(on) + self.additional_rate(on, on)
+
+
+class PersonCost(BaseCost):
+    person = models.ForeignKey('Person', related_name='costs')
 
 
 class RatesManager(models.Manager):
@@ -162,7 +282,15 @@ class Client(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
-        projects = self.projects.filter(visible=True)
+        project_ids_in_a_group = [
+            p.id
+            for group in ProjectGroup.objects.all()
+            for p in group.projects.all()
+        ]
+        projects = self.projects.visible().exclude(
+            id__in=project_ids_in_a_group)
+        project_groups = [group for group in ProjectGroup.objects.all()
+                          if group.client and group.client.id == self.id]
         if project_ids is not None:
             projects = projects.filter(id__in=project_ids)
         result = {
@@ -170,9 +298,15 @@ class Client(models.Model):
             'name': self.name
         }
         result['projects'] = {
-            project.id: project.profile(start_date, end_date, freq)
+            'project:{}'.format(project.id): project.profile(
+                start_date, end_date, freq)
             for project in projects
         }
+        result['projects'].update({
+            'project-group:{}'.format(group.id): group.profile(
+                start_date, end_date, freq)
+            for group in project_groups
+        })
         return result
 
 
@@ -183,8 +317,9 @@ class ProjectManager(models.Manager):
         return self.get_queryset().filter(visible=True)
 
 
-class Project(models.Model):
+class Project(models.Model, AditionalCostsMixin):
     name = models.CharField(max_length=128)
+    hr_id = models.CharField(max_length=12, unique=True, null=True)
     description = models.TextField()
     float_id = models.CharField(max_length=128, unique=True)
     is_billable = models.BooleanField(default=True)
@@ -216,6 +351,13 @@ class Project(models.Model):
             return 'Discovery'
         else:
             return 'Not Defined'
+
+    @property
+    def admin_url(self):
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        name = 'admin:{}_{}_change'.format(content_type.app_label,
+                                           content_type.model)
+        return urlresolvers.reverse(name, args=(self.id,))
 
     @property
     def first_date(self):
@@ -318,7 +460,7 @@ class Project(models.Model):
         """
         default end date is the date when the last spend occurs or
         the last budget allocated to the project.
-        it is the smallest of these dates in the project:
+        it is the greatest of these dates in the project:
         end date of the last task, start date of the last budget,
         the start date and end date of the last cost.
         :return: a date object
@@ -346,16 +488,13 @@ class Project(models.Model):
         AMBER: budget < total_cost < 110% * budget
         GREEN: total_cost <= budget
         """
-        try:
-            budget = self.budget(on=self.default_end_date)
-        except ValueError:
-            budget = 0
+        budget = self.final_budget
         total_cost = self.total_cost
         if budget >= total_cost:
-            return 'GREEN'
+            return RAG_TYPES.GREEN.constant
         if budget * Decimal('1.1') >= total_cost:
-            return 'AMBER'
-        return 'RED'
+            return RAG_TYPES.AMBER.constant
+        return RAG_TYPES.RED.constant
 
     def profile(self, start_date=None, end_date=None, freq=None):
         """
@@ -369,8 +508,8 @@ class Project(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
-        rag = self.rag()
-        rag = rag.get_rag_display() if rag else ''
+        status = self.status()
+        status = status.get_status_display() if status else ''
         if self.client:
             service_area = {
                 'id': self.client.id,
@@ -381,6 +520,7 @@ class Project(models.Model):
         result = {
             'id': self.id,
             'name': self.name,
+            'type': 'project',
             'service_area': service_area,
             'description': self.description,
             'discovery_date': self.discovery_date,
@@ -390,7 +530,7 @@ class Project(models.Model):
             'end_date': self.end_date,
             'first_date': self.first_date,
             'last_date': self.last_date,
-            'rag': rag,
+            'status': status,
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
             'current_fte': self.current_fte(start_date, end_date),
@@ -408,7 +548,8 @@ class Project(models.Model):
             except ValueError:
                 return result
         if freq:
-            time_windows = slice_time_window(start_date, end_date, freq)
+            time_windows = slice_time_window(
+                start_date, end_date, freq, extend=True)
         else:
             time_windows = [(start_date, end_date)]
         for sdate, edate in time_windows:
@@ -438,24 +579,29 @@ class Project(models.Model):
         if contractor_only and non_contractor_only:
             raise ValueError('only one of contractor_only and'
                              ' non_contractor_only can be true')
+
+        tasks = self.tasks.between(start_date, end_date)
         if contractor_only:
-            tasks = self.tasks.filter(person__is_contractor=True)
+            tasks = tasks.filter(person__is_contractor=True)
         elif non_contractor_only:
-            tasks = self.tasks.filter(person__is_contractor=False)
-        else:
-            tasks = self.tasks.all()
+            tasks = tasks.filter(person__is_contractor=False)
+
         spending_per_task = [task.people_costs(start_date, end_date)
                              for task in tasks]
         return sum(spending_per_task)
 
-    def additional_costs(self, start_date, end_date):
-        def cost_of_cost(cost):
-            return cost.cost_between(start_date, end_date)
-
-        return sum(map(cost_of_cost, self.costs.filter(
-            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
-            start_date__lte=end_date
-        ))) or Decimal('0')
+    def people_additional_costs(self, start_date, end_date, name=None):
+        """
+        get the additional non salary people costs for a project
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param name: only get the additional people costs of this name
+        :return: a decimal for total spending
+        """
+        tasks = self.tasks.between(start_date, end_date)
+        additinal_task_costs = [task.people_costs(start_date, end_date, name)
+                                for task in tasks]
+        return sum(additinal_task_costs)
 
     @property
     def cost_to_date(self):
@@ -466,7 +612,7 @@ class Project(models.Model):
             spendings = self.spendings_between(
                 self.default_start_date, date.today())
         except ValueError:
-            return 0
+            return Decimal('0')
         return sum(spendings[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
@@ -480,7 +626,7 @@ class Project(models.Model):
                 self.default_start_date,
                 self.default_end_date)
         except ValueError:
-            return 0
+            return Decimal('0')
         return sum(spendings[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
@@ -496,17 +642,27 @@ class Project(models.Model):
             .order_by('-start_date').first()
         return budget.budget if budget else Decimal('0')
 
-    def rag(self, on=None):
+    @property
+    def final_budget(self):
         """
-        get the rag for the project on a date
+        budget on the default end date
+        """
+        try:
+            return self.budget(on=self.default_end_date)
+        except ValueError:
+            return Decimal('0')
+
+    def status(self, on=None):
+        """
+        get the status for the project on a date
         :param on: optional date object. if empty use today's date
         :return: a rag object
         """
         if not on:
             on = date.today()
-        rag = self.rags.filter(start_date__lte=on)\
-            .order_by('-start_date').first()
-        return rag
+        status = self.statuses.filter(
+            start_date__lte=on).order_by('-start_date').first()
+        return status
 
     def time_spent(self, start_date=None, end_date=None):
         """
@@ -521,7 +677,7 @@ class Project(models.Model):
             if not end_date:
                 end_date = self.last_task.end_date
         except AttributeError:  # when there is no task in a project
-            return 0
+            return Decimal('0')
 
         return sum(task.time_spent(start_date, end_date)
                    for task in self.tasks.all())
@@ -542,55 +698,19 @@ class Project(models.Model):
             start_date = end_date - timedelta(days=7)
         workdays = get_workdays(start_date, end_date)
         if workdays == 0:  # avoid zero division
-            return 0
+            return Decimal('0')
         return self.time_spent(start_date, end_date) / workdays
 
     class Meta:
         permissions = (
-            ('upload_project', 'Can upload monthly payroll'),
+            ('adjustmentexport_project', 'Can run Adjustment Export'),
+            ('intercompanyexport_project', 'Can run Intercompany Export'),
+            ('projectdetailexport_project', 'Can run Intercompany Export'),
         )
 
 
-class Cost(models.Model):
+class Cost(BaseCost):
     project = models.ForeignKey('Project', related_name='costs')
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    name = models.CharField(max_length=128, null=True)
-    note = models.TextField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
-    type = models.PositiveSmallIntegerField(
-        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
-
-    def cost_between(self, start_date, end_date):
-        start_date = max(start_date, self.start_date)
-        end_date = min(end_date, self.end_date or end_date)
-        if self.type == COST_TYPES.ONE_OFF:
-            if start_date <= self.start_date <= end_date:
-                return self.cost
-            return Decimal('0')
-
-        dates = dates_between(start_date, end_date, self.freq,
-                              bymonthday=self.bymonthday,
-                              byyearday=self.byyearday)
-        # print(self, start_date, end_date, dates)
-        return len(dates) * self.cost
-
-    @property
-    def byyearday(self):
-        if self.type == COST_TYPES.ANNUALLY:
-            return self.start_date.timetuple().tm_yday
-
-    @property
-    def bymonthday(self):
-        if self.type == COST_TYPES.MONTHLY:
-            return self.start_date.day
-
-    @property
-    def freq(self):
-        if self.type == COST_TYPES.MONTHLY:
-            return MONTHLY
-        elif self.type == COST_TYPES.ANNUALLY:
-            return YEARLY
 
 
 class Budget(models.Model):
@@ -599,11 +719,22 @@ class Budget(models.Model):
     budget = models.DecimalField(max_digits=16, decimal_places=2)
 
 
-class RAG(models.Model):
-    project = models.ForeignKey('Project', related_name='rags')
+class Status(models.Model):
     start_date = models.DateField()
-    rag = models.PositiveSmallIntegerField(
-        choices=RAG_TYPES, default=RAG_TYPES.GREEN)
+    status = models.PositiveSmallIntegerField(
+        choices=STATUS_TYPES, default=STATUS_TYPES.OK)
+
+    class Meta:
+        abstract = True
+        verbose_name_plural = "statuses"
+
+
+class ProjectStatus(Status):
+    project = models.ForeignKey('Project', related_name='statuses')
+
+
+class ProjectGroupStatus(Status):
+    project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
 
 
 class Note(models.Model):
@@ -613,7 +744,158 @@ class Note(models.Model):
     note = models.TextField(null=True, blank=True)
 
 
+class ProjectGroup(models.Model):
+    name = models.CharField(max_length=128)
+    projects = models.ManyToManyField(
+        Project,
+        related_name='project_groups',
+        limit_choices_to={'id__in': Project.objects.visible()}
+    )
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def first_date(self):
+        try:
+            return min([p.first_date for p in self.projects.all()])
+        except ValueError:  # when there is no project
+            return None
+
+    @property
+    def last_date(self):
+        try:
+            return max([p.last_date for p in self.projects.all()])
+        except ValueError:  # when there is no project
+            return None
+
+    def budget(self, on=None):
+        return sum([p.budget(on) for p in self.projects.all()])
+
+    @property
+    def cost_to_date(self, on=None):
+        return sum([p.cost_to_date for p in self.projects.all()])
+
+    @property
+    def total_cost(self):
+        return sum([p.total_cost for p in self.projects.all()])
+
+    @property
+    def client(self):
+        clients = [p.client for p in self.projects.all() if p.client]
+        if len({c.id for c in clients}) == 1:
+            return clients[0]
+
+    @property
+    def final_budget(self):
+        return sum(p.final_budget for p in self.projects.all())
+
+    @property
+    def financial_rag(self):
+        """
+        financial rag is one of 'RED', 'AMBER' and 'GREEN'.
+        A measure of how well the product is keeping to budget.
+        RED: total_cost >= 110% * budget
+        AMBER: budget < total_cost < 110% * budget
+        GREEN: total_cost <= budget
+        """
+        budget = self.final_budget
+        total_cost = self.total_cost
+        if budget >= total_cost:
+            return RAG_TYPES.GREEN.constant
+        if budget * Decimal('1.1') >= total_cost:
+            return RAG_TYPES.AMBER.constant
+        return RAG_TYPES.RED.constant
+
+    def status(self, on=None):
+        """
+        get the status for the project group on a date
+        :param on: optional date object. if empty use today's date
+        :return: a rag object
+        """
+        if not on:
+            on = date.today()
+        status = self.statuses.filter(
+            start_date__lte=on).order_by('-start_date').first()
+        return status
+
+    def current_fte(self, start_date=None, end_date=None):
+        """
+        current FTE measures the number of people working on the project.
+        it is the total man-days / num of workday from a start date to
+        an end date.
+        :param start_date: date object for the start date.
+        if not specified, use the date 8 days ago from today.
+        :param end_date: date object for the end date.
+        if not specified, use the date of yesterday.
+        """
+        return sum(p.current_fte(start_date, end_date)
+                   for p in self.projects.all())
+
+    def profile(self, start_date=None, end_date=None, freq='MS'):
+        """
+        get the profile of a project group in a time window.
+        specified, get all projects.
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :return: a dictionary representing the profile
+        """
+        status = self.status()
+        status = status.get_status_display() if status else ''
+        if self.client:
+            service_area = {
+                'id': self.client.id,
+                'name': self.client.name,
+            }
+        else:
+            service_area = {}
+        projects = self.projects.filter(visible=True)
+        project_to_financial = {
+            project.id: project.profile(start_date, end_date, freq)['financial']
+            for project in projects
+        }
+        financial = {}
+        for profile in project_to_financial.values():
+            financial = self.merge_financial(financial, profile)
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'status': status,
+            'type': 'project_group',
+            'service_area': service_area,
+            'financial': financial,
+            'financial_rag': self.financial_rag,
+            'current_fte': self.current_fte(start_date, end_date),
+            'first_date': self.first_date,
+            'last_date': self.last_date,
+            'budget': self.budget(),
+            'cost_to_date': self.cost_to_date,
+        }
+        return result
+
+    @staticmethod
+    def merge_financial(financial1, financial2):
+        """
+        static method for merging the 'financial' of
+        the two project profiles.
+        """
+        result = {}
+        timeframes = set(financial1.keys()) | set(financial2.keys())
+        for timeframe in timeframes:
+            f1 = financial1.get(timeframe, {})
+            f2 = financial2.get(timeframe, {})
+            result[timeframe] = {
+                key: f1.get(key, Decimal('0')) + f2.get(key, Decimal('0'))
+                for key in set(f1.keys()) | set(f2.keys())
+            }
+        return result
+
+
 class TaskManager(models.Manager):
+    use_for_related_fields = True
 
     def between(self, start_date, end_date):
         """"
@@ -684,13 +966,13 @@ class Task(models.Model):
         # we shouldn't have these, but it can happen
         # where some tasks spread over holidays only
         if self.workdays == 0:
-            return 0
+            return Decimal('0')
 
         timewindow = get_overlap(
             (start_date, end_date), (self.start_date, self.end_date))
 
         if not timewindow:
-            return 0
+            return Decimal('0')
         if timewindow == (self.start_date, self.end_date):
             return self.days
 
@@ -698,11 +980,13 @@ class Task(models.Model):
 
         return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
 
-    def people_costs(self, start_date=None, end_date=None):
+    def people_costs(self, start_date=None, end_date=None,
+                     additional_cost_name=None):
         """
         get the money spent on the task during a time window.
         :param start_date: start date of the time window, a date object
         :param end_date: end date of the time window, a date object
+        :param additional_cost_name: name of specific additional cost to total
         :return: cost in pound, a decimal
         """
         start_date = start_date or self.start_date
@@ -712,11 +996,18 @@ class Task(models.Model):
             (start_date, end_date), (self.start_date, self.end_date))
 
         if not timewindow:
-            return 0
+            return Decimal('0')
 
-        rate = self.person.rate_between(*timewindow)
+        if additional_cost_name:
+            rate = self.person.additional_rate(*timewindow,
+                                               name=additional_cost_name)
+        else:
+            rate = self.person.rate_between(*timewindow)
         if not rate:
-            return 0
+            return Decimal('0')
+
+        return rate * self.get_days(*timewindow)
+
+    def get_days(self, *timewindow):
         timewindow_workdays = get_workdays(*timewindow)
-        days = Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
-        return rate * days
+        return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
