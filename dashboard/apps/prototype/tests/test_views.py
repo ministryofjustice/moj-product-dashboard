@@ -217,7 +217,7 @@ def test_project_group_json_with_invalid_id():
 @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
                    CELERY_ALWAYS_EAGER=True,
                    BROKER_BACKEND='memory')
-@patch('dashboard.apps.prototype.views.sync_float')
+@patch('dashboard.apps.prototype.views.sync_float.delay')
 def test_sync_float(mock_sync_float):
     client = make_login_client()
     rsp = client.post(
@@ -225,6 +225,7 @@ def test_sync_float(mock_sync_float):
         json.dumps({}),
         content_type='application/json'
     )
+    mock_sync_float.assert_called_once_with()
     assert rsp.status_code == 200
     assert rsp['Content-Type'] == 'application/json'
     assert rsp.json() == {'status': 'STARTED'}
