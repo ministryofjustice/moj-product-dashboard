@@ -148,7 +148,16 @@
                 <li class="service"><a href="/services/">Service Overview</a></li>
                 <li class="portfolio"><a href="/portfolio">Portfolio Summary</a></li>
                 <li class="admin"><a href="/admin">Admin</a></li>
-                <li class="user-menu"><a>{{ request.user.username }}</a></li>
+                <li class="user-menu">
+                    <div id="user-menu-dropdown">
+                        <a id="user-menu-button">{{ request.user.username }}</a>
+                        <br/>
+                        <ul>
+                            <li class="user-menu-item"><a href="/logout">Logout</a></li>
+                            <li class="user-menu-item"><a href="/password_change">Change Password</a></li>
+                        </ul>
+                    </div>
+                </li>
             </ul>
         </div>
     </div>

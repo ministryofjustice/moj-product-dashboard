@@ -35,6 +35,8 @@ urlpatterns = [
     url(r'^portfolio', portfolio_html, name='portfolio_html'),
     url(r'^admin/', admin.site.urls),
     url(r'^login/', auth_views.login),
+    url(r'^logout/', auth_views.logout, kwargs={'next_page': '/'}),
+    url(r'^password_change/', auth_views.password_change),
     url(r'^ping.json$', PingJsonView.as_view(**settings.PING_JSON_KEYS),
         name='ping_json'),
     url(r'^healthcheck.json$', HealthcheckView.as_view(),

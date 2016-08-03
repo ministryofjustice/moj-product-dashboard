@@ -233,3 +233,11 @@ div.sortoptions {
 div#toolbar div {
     background-color: #FFFFFF;
 }
+
+.nav-bar ul li.user-menu-item {
+    display: block;
+}
+
+#user-menu-dropdown {
+    z-index: 1000;
+}

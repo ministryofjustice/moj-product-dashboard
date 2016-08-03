@@ -1,25 +1,40 @@
 var listVisible = false;
+var userMenuVisible = false;
 var listFilter = document.getElementById("changelist-filter");
+var userMenu = document.getElementById("user-menu-dropdown");
 
-function shrink(listFilterElement) {
-  listFilterElement.setAttribute("style", "height:54px");
-  listFilterElement.style.overflow = "hidden";
-  listVisible = false;
+function shrink(dropDownElement, height) {
+  var height_style = "height:" + String(height) + "px";
+  dropDownElement.setAttribute("style", height_style);
+  dropDownElement.style.overflow = "hidden";
 }
 
-function expand(listFilterElement) {
-  listFilterElement.setAttribute("style", "height:auto");
-  listFilterElement.style.overflow = "visible";
-  listVisible = true;
+function expand(dropDownElement) {
+  dropDownElement.setAttribute("style", "height:auto");
+  dropDownElement.style.overflow = "visible";
 }
 
 
-function dropDownClick() {
+function filterClick() {
   if (listVisible) {
-    shrink(listFilter);
+    shrink(listFilter, 54);
+    listVisible = false;
 
   } else if (!listVisible) {
     expand(listFilter);
+    listVisible = true;
+
+  }
+}
+
+function userClick() {
+  if (userMenuVisible) {
+    shrink(userMenu, 24);
+    userMenuVisible = false;
+
+  } else if (!userMenuVisible) {
+    expand(userMenu);
+    userMenuVisible = true;
 
   }
 }
@@ -28,10 +43,18 @@ if (listFilter != null) {
 
   filterHeading = listFilter.getElementsByTagName("h2")[0];
   headingText = filterHeading.innerHTML;
-  headingText = headingText + "<a id='dropdown_button'>show/hide</a>";
+  headingText = headingText + "<a id='dropdown-button'>show/hide</a>";
   filterHeading.innerHTML = headingText;
-  dropDownButton = document.getElementById("dropdown_button");
-  dropDownButton.onclick = dropDownClick;
-  shrink(listFilter);
+  filterDropDownButton = document.getElementById("dropdown-button");
+  filterDropDownButton.onclick = filterClick;
+  shrink(listFilter, 54);
+
+}
+
+if (userMenu != null) {
+
+  userDropDownButton = document.getElementById("user-menu-button");
+  userDropDownButton.onclick = userClick;
+  shrink(userMenu, 24);
 
 }
