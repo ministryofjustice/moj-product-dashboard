@@ -181,7 +181,7 @@ class ExportForm(forms.Form):
         )
 
     def write(self, workbook, ws=None):
-        if ws is None:
+        if ws is None:  # pragma: no cover
             ws = workbook.get_active_sheet()
         project = self.cleaned_data['project']
         date = self.cleaned_data['date']
@@ -328,7 +328,7 @@ class ProjectDetailExportForm(ExportForm):
 
 
 def insert_rows(ws, row_idx, cnt, above=False, copy_style=True,
-                fill_formulae=True):  # flake8: noqa
+                fill_formulae=True):  # flake8: noqa  # pragma: no cover
     """Inserts new (empty) rows into worksheet at specified row index.
 
     :param row_idx: Row index specifying where to insert new rows.
