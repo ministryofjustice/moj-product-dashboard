@@ -7,15 +7,15 @@
    <a href="../../../">{{ opts.app_label|capfirst|escape }}</a> ›
    <a href="../../">{{ opts.verbose_name_plural|capfirst }}</a> ›
    <a href="../">{{ original.name }}</a> ›
-   {% trans 'Upload monthly payroll' %}</div>
+   {% trans 'Export' %}</div>
 {% endif %}{% endblock %}
 
 {% block content %}
-  <h1>Upload payroll</h1>
+  <h1>Export</h1>
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-  <input class="button" type="submit" value="Upload payroll" />
+  <input class="button" type="submit" value="Export" />
   </form>
 {% endblock %}

@@ -1,3 +1,5 @@
+import re
+
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import csrf_protect_m
@@ -5,13 +7,15 @@ from django.contrib.auth.decorators import permission_required
 from django.core.checks import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
 
-from .forms import PayrollUploadForm
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup)
+from .forms import (PayrollUploadForm, AdjustmentExportForm,
+                    IntercompanyExportForm, ProjectDetailExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -187,7 +191,7 @@ class NoteInline(admin.TabularInline):
     extra = 0
 
 
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     fields = ['name', 'description', 'float_id', 'is_billable',
               'project_manager', 'client', 'discovery_date', 'alpha_date',
               'beta_date', 'live_date', 'end_date', 'visible']
@@ -198,6 +202,81 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'status', 'phase', 'client', 'discovery_date',
                     'budget')
     search_fields = ('name', 'float_id')
+
+    def get_urls(self):
+        urls = [
+            url(
+                r'^export/adjustment/$',
+                self.admin_site.admin_view(self.adjustment_export_view),
+                name='project_adjustment_export'),
+            url(
+                r'^export/intercompany/$',
+                self.admin_site.admin_view(self.intercompany_export_view),
+                name='project_intercompany_export'),
+            url(
+                r'^export/projectdetail/$',
+                self.admin_site.admin_view(self.project_detail_export_view),
+                name='project_projectdetail_export'),
+        ]
+        return urls + super(ProjectAdmin, self).get_urls()
+
+    def _export_view(self, request, form_class, file_name):
+        if not self.is_finance(request.user):  # pragma: no cover
+            raise PermissionDenied
+
+        if request.method == 'POST':
+            form = form_class(data=request.POST, files=request.FILES)
+            if form.is_valid():
+                fname = '%s_%s_%s-%s.xlsm' % (
+                    file_name,
+                    re.sub(
+                        '[^0-9a-zA-Z]+',
+                        '-',
+                        form.cleaned_data['project'].name),
+                    form.cleaned_data['date'].year,
+                    form.cleaned_data['date'].month)
+                workbook = form.export()
+                response = HttpResponse(
+                    content_type="application/vnd.ms-excel")
+                response['Content-Disposition'] = 'attachment; filename=%s' \
+                                                  % fname
+                workbook.save(response)
+                return response
+        else:
+            form = form_class()
+
+        return render_to_response(
+            'admin/prototype/export.html',
+            {
+                'opts': self.model._meta,
+                'has_permission': self.is_finance(request.user),
+                'form': form,
+            },
+            context_instance=RequestContext(request))
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.adjustmentexport_project',
+                                          raise_exception=True))
+    def adjustment_export_view(self, request, *args, **kwargs):
+        return self._export_view(request, AdjustmentExportForm,
+                                 'Adjustment_Journal')
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.intercompanyexport_project',
+                                          raise_exception=True))
+    def intercompany_export_view(self, request, *args, **kwargs):
+        return self._export_view(request, IntercompanyExportForm,
+                                 'Intercompany_Journal')
+
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.projectdetailexport_project',
+                                          raise_exception=True))
+    def project_detail_export_view(self, request, *args, **kwargs):
+        return self._export_view(request, ProjectDetailExportForm,
+                                 'Project_Detail')
 
 
 class TaskAdmin(ReadOnlyAdmin):
@@ -210,7 +289,7 @@ class ProjectGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'render_projects')
     inlines = [ProjectGroupStatusInline]
 
-    def render_projects(self, obj):
+    def render_projects(self, obj):  # pragma: no cover
         return '<br/>'.join([
             '<a href="{}"/>{}</a>'.format(p.admin_url, p.name)
             for p in obj.projects.all()])
