@@ -14,8 +14,8 @@ from django.utils.decorators import method_decorator
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup)
-from .forms import PayrollUploadForm, AdjustmentExportForm, \
-    IntercompanyExportForm, ProjectDetailExportForm
+from .forms import (PayrollUploadForm, AdjustmentExportForm,
+                    IntercompanyExportForm, ProjectDetailExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
