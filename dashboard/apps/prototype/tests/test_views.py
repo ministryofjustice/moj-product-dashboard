@@ -3,6 +3,7 @@
 unit tests views.py
 """
 import json
+from unittest.mock import patch
 
 from django.test import Client
 from django.test.utils import override_settings
@@ -216,13 +217,15 @@ def test_project_group_json_with_invalid_id():
 @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
                    CELERY_ALWAYS_EAGER=True,
                    BROKER_BACKEND='memory')
-def test_sync_float():
+@patch('dashboard.apps.prototype.views.sync_float')
+def test_sync_float(mock_sync_float):
     client = make_login_client()
     rsp = client.post(
         reverse(sync_from_float),
         json.dumps({}),
         content_type='application/json'
     )
+    mock_sync_float.assert_called_once()
     assert rsp.status_code == 200
     assert rsp['Content-Type'] == 'application/json'
     assert rsp.json() == {'status': 'STARTED'}
