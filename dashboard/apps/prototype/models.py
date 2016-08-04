@@ -261,6 +261,7 @@ class Rate(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=128)
     float_id = models.CharField(max_length=128, unique=True)
+    visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
 
     class Meta:
