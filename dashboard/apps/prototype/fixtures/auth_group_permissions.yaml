@@ -39,6 +39,9 @@
       - ['add_projectgroup', 'prototype', 'projectgroup']
       - ['change_projectgroup', 'prototype', 'projectgroup']
       - ['delete_projectgroup', 'prototype', 'projectgroup']
+      - ['change_saving', 'prototype', 'saving']
+      - ['add_saving', 'prototype', 'saving']
+      - ['delete_saving', 'prototype', 'saving']
 - model: auth.group
   pk: 3
   fields:
@@ -64,3 +67,6 @@
       - ['add_projectgroup', 'prototype', 'projectgroup']
       - ['change_projectgroup', 'prototype', 'projectgroup']
       - ['delete_projectgroup', 'prototype', 'projectgroup']
+      - ['change_saving', 'prototype', 'saving']
+      - ['add_saving', 'prototype', 'saving']
+      - ['delete_saving', 'prototype', 'saving']
