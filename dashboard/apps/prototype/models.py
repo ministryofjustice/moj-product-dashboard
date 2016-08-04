@@ -516,11 +516,14 @@ class Project(BaseProject, AditionalCostsMixin):
         non_contractor_cost = self.people_costs(
             start_date, end_date, non_contractor_only=True)
         additional_costs = self.additional_costs(start_date, end_date)
+        savings = self.additional_costs(start_date, end_date,
+                                        attribute='savings')
         value = {
             'contractor': contractor_cost,
             'non-contractor': non_contractor_cost,
             'additional': additional_costs,
             'budget': self.budget(start_date),
+            'savings': savings,
         }
         return value
 
