@@ -327,10 +327,14 @@ class Project(models.Model, AditionalCostsMixin):
     project_manager = models.ForeignKey(
         'Person', related_name='projects', null=True)
     client = models.ForeignKey('Client', related_name='projects', null=True)
-    discovery_date = models.DateField(null=True, blank=True)
-    alpha_date = models.DateField(null=True, blank=True)
-    beta_date = models.DateField(null=True, blank=True)
-    live_date = models.DateField(null=True, blank=True)
+    discovery_date = models.DateField(null=True, blank=True,
+                                      verbose_name='discovery start')
+    alpha_date = models.DateField(null=True, blank=True,
+                                  verbose_name='alpha start')
+    beta_date = models.DateField(null=True, blank=True,
+                                 verbose_name='beta start')
+    live_date = models.DateField(null=True, blank=True,
+                                 verbose_name='live start')
     end_date = models.DateField(null=True, blank=True)
     visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
