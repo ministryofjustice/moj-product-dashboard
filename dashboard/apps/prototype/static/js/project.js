@@ -575,6 +575,10 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'columnName': 'financial_rag',
       'order': 7,
       'displayName': 'Financial RAG',
+      'customCompareFn': (label) => {
+        const mappings = {RED: 3, AMBER: 2, GREEN: 1};
+        return mappings[label];
+      },
       'customComponent': (props) => {
         const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
         return (
