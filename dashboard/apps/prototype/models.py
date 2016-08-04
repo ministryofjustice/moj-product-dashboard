@@ -89,8 +89,10 @@ class BaseCost(models.Model):
 
 
 class AditionalCostsMixin():
-    def get_costs_between(self, start_date, end_date, name=None):
-        costs = self.costs.filter(
+    def get_costs_between(self, start_date, end_date, name=None,
+                          attribute='costs'):
+        qs = getattr(self, attribute)
+        costs = qs.filter(
             Q(end_date__gte=start_date) | Q(end_date__isnull=True),
             start_date__lte=end_date
         )
@@ -100,11 +102,13 @@ class AditionalCostsMixin():
 
         return costs
 
-    def additional_costs(self, start_date, end_date, name=None):
+    def additional_costs(self, start_date, end_date, name=None,
+                         attribute='costs'):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
-        costs = self.get_costs_between(start_date, end_date, name=None)
+        costs = self.get_costs_between(start_date, end_date, name=None,
+                                       attribute=attribute)
 
         return sum(map(cost_of_cost, costs)) or Decimal('0')
 
@@ -728,6 +732,10 @@ class Project(BaseProject, AditionalCostsMixin):
 
 class Cost(BaseCost):
     project = models.ForeignKey('Project', related_name='costs')
+
+
+class Saving(BaseCost):
+    project = models.ForeignKey('Project', related_name='savings')
 
 
 class Budget(models.Model):
