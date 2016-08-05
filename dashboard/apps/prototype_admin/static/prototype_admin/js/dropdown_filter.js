@@ -1,11 +1,11 @@
 var listVisible = false;
 var userMenuVisible = false;
 var listFilter = document.getElementById("changelist-filter");
-var userMenu = document.getElementById("user-menu-dropdown");
+var userMenu = document.getElementById("user-menu-options");
 
 function shrink(dropDownElement, height) {
-  var height_style = "height:" + String(height) + "px";
-  dropDownElement.setAttribute("style", height_style);
+  var heightStyle = "height:" + String(height) + "px";
+  dropDownElement.setAttribute("style", heightStyle);
   dropDownElement.style.overflow = "hidden";
 }
 
@@ -29,11 +29,13 @@ function filterClick() {
 
 function userClick() {
   if (userMenuVisible) {
-    shrink(userMenu, 24);
+    userMenu.setAttribute("style", "display:none");
+    // shrink(userMenu, 24);
     userMenuVisible = false;
 
   } else if (!userMenuVisible) {
-    expand(userMenu);
+    userMenu.setAttribute("style", "display:inline");
+    // expand(userMenu);
     userMenuVisible = true;
 
   }
@@ -55,6 +57,6 @@ if (userMenu != null) {
 
   userDropDownButton = document.getElementById("user-menu-button");
   userDropDownButton.onclick = userClick;
-  shrink(userMenu, 24);
+  // shrink(userMenu, 24);
 
 }

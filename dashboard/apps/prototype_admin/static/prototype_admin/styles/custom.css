@@ -239,5 +239,11 @@ div#toolbar div {
 }
 
 #user-menu-dropdown {
-    z-index: 1000;
+    z-index: 999;
+    /*display: inline-block;*/
+    /*position: relative;*/
+}
+
+#user-menu-options {
+    display: none;
 }
