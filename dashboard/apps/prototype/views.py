@@ -166,7 +166,7 @@ def project_group_json(request):
         return JsonResponse({'error': error}, status=404)
 
     # get the profile of the project group for each month
-    return JsonResponse(project_group.profile())
+    return JsonResponse(project_group.profile(freq='MS'))
 
 
 @login_required
