@@ -736,10 +736,12 @@ class Status(models.Model):
 
 class ProjectStatus(Status):
     project = models.ForeignKey('Project', related_name='statuses')
+    reason = models.TextField(null=True, blank=True)
 
 
 class ProjectGroupStatus(Status):
     project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
+    reason = models.TextField(null=True, blank=True)
 
 
 class Note(models.Model):
