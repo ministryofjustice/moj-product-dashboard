@@ -30,8 +30,12 @@ class BaseCost(models.Model):
         choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
 
     def cost_between(self, start_date, end_date):
-        start_date = max(start_date, self.start_date)
-        end_date = min(end_date, self.end_date or end_date)
+        start_date = max(start_date, self.start_date) if start_date else \
+            self.start_date
+        end_date = min(end_date, self.end_date or end_date) if end_date else \
+            self.end_date
+        # If there is no end date then set it for today
+        end_date = end_date or date.today()
         if self.type == COST_TYPES.ONE_OFF:
             if start_date <= self.start_date <= end_date:
                 return self.cost
@@ -91,11 +95,12 @@ class BaseCost(models.Model):
 class AditionalCostsMixin():
     def get_costs_between(self, start_date, end_date, name=None,
                           attribute='costs'):
-        qs = getattr(self, attribute)
-        costs = qs.filter(
-            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
-            start_date__lte=end_date
-        )
+        costs = getattr(self, attribute).all()
+        if start_date and end_date:
+            costs = costs.filter(
+                Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+                start_date__lte=end_date
+            )
 
         if name:
             costs = costs.filter(name=name)
@@ -419,6 +424,8 @@ class BaseProject(models.Model):
             'financial': self.financial(start_date, end_date, freq),
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
+            'savings': self.additional_costs(start_date, end_date,
+                                             attribute='savings'),
             'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,

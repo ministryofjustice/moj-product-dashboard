@@ -48,6 +48,7 @@ export function getProjectData(type, id, startDate, endDate, csrftoken) {
 export function parseProjectFinancials(financial) {
   const result = {};
   let cumulative = 0;
+  let savings = 0;
 
   Object.keys(financial).sort().map(month => {
     const mf = financial[month];
@@ -56,10 +57,12 @@ export function parseProjectFinancials(financial) {
                   parseFloat(mf['non-contractor']) +
                   parseFloat(mf['additional']);
 
+    savings += parseFloat(mf['savings']);
+
     cumulative += total;
     const remaining = budget - cumulative;
     const ms = moment(month, 'YYYY-MM').format('YYYY-MM');
-    result[ms] = { total, cumulative, budget, remaining };
+    result[ms] = { total, cumulative, budget, remaining, savings };
   });
 
   return result;
@@ -387,7 +390,7 @@ function KeyStats({budget, costToDate, savings}) {
           label="Total spend to date"
         />
         <Data
-          data={savings ? format(savings) : '\u00a0'}
+          data={format(savings)}
           label="Savings enabled"
         />
       </div>
