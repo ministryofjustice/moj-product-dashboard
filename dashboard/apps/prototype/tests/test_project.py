@@ -7,7 +7,7 @@ from model_mommy import mommy
 
 from dashboard.libs.date_tools import parse_date, get_workdays
 from dashboard.apps.prototype.models import (
-    Project, Task, Person, Rate, Cost, ProjectStatus, Budget)
+    Project, Client, Task, Person, Rate, Cost, ProjectStatus, Budget)
 from prototype.constants import COST_TYPES, STATUS_TYPES
 
 
@@ -214,10 +214,18 @@ def test_project_costs():
 
 @pytest.mark.django_db
 def test_project_visible():
-    mommy.make(Project, visible=False)
-    mommy.make(Project, visible=True)
+    visible_client = mommy.make(Client, visible=True)
+    invisible_client = mommy.make(Client, visible=False)
 
-    assert Project.objects.visible().count() == 1
+    p1 = mommy.make(Project, visible=True, client=visible_client)
+    p2 = mommy.make(Project, visible=True)
+
+    mommy.make(Project, visible=False, client=visible_client)
+    mommy.make(Project, visible=False, client=invisible_client)
+    mommy.make(Project, visible=True, client=invisible_client)
+    mommy.make(Project, visible=False)
+
+    assert {p.id for p in Project.objects.visible()} == {p1.id, p2.id}
 
 
 @pytest.mark.django_db
