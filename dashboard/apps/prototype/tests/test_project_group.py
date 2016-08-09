@@ -25,7 +25,7 @@ def test_project_group():
 
     pg.projects.add(p1)
     pg.projects.add(p2)
-    profile = pg.profile()
+    profile = pg.profile(freq='MS')
     financial = {
         '2016-01-01~2016-01-31': {
             'non-contractor': Decimal('2800.0000000'),

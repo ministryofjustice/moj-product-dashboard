@@ -525,7 +525,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Product',
       'customComponent': (props) => {
         let url;
-        if (props.rowData.type == 'project_group') {
+        if (props.rowData.type == 'ProjectGroup') {
           url = `/project-groups/${props.rowData.id}`;
         } else {
           url = `/projects/${props.rowData.id}`;
@@ -534,8 +534,21 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       },
     },
     {
-      'columnName': 'status',
+      'columnName': 'phase',
       'order': 3,
+      'displayName': 'Phase',
+      'customComponent': (props) => {
+        const val = props.data === 'Not Defined' ? '' : props.data;
+        return (<span>{val}</span>);
+      },
+      'customCompareFn': (phase) => {
+        const val = {Discovery: 0, Alpha: 1, Beta: 2, Live: 3, Ended: 4}[phase];
+        return typeof val === 'undefined' ? 5 : val;
+      },
+    },
+    {
+      'columnName': 'status',
+      'order': 4,
       'displayName': 'Status',
       'customComponent': (props) => {
         const mapping = {
@@ -549,7 +562,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
     },
     {
       'columnName': 'current_fte',
-      'order': 4,
+      'order': 5,
       'displayName': 'Current FTE',
       'customCompareFn': Number,
       'customComponent': (props) => (
@@ -559,21 +572,21 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
     },
     {
       'columnName': 'cost_to_date',
-      'order': 5,
+      'order': 6,
       'displayName': 'Cost to date',
       'customCompareFn': Number,
       'customComponent': displayMoney,
     },
     {
       'columnName': 'budget',
-      'order': 6,
+      'order': 7,
       'displayName': 'Budget',
       'customCompareFn': Number,
       'customComponent': displayMoney,
     },
     {
       'columnName': 'financial_rag',
-      'order': 7,
+      'order': 8,
       'displayName': 'Financial RAG',
       'customCompareFn': (label) => {
         const mappings = {RED: 3, AMBER: 2, GREEN: 1};
@@ -584,6 +597,16 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
         return (
             <img src={ mapping[props.data] } className="rag" alt={props.data} />
           )}
+    },
+    {
+      'columnName': 'end_date',
+      'order': 9,
+      'displayName': 'Estimated end date',
+      'customComponent': (props) => {
+        const date = moment(props.data, 'YYYY-MM-DD').format('DD/MM/YYYY');
+        const val = date === 'Invalid date' ? '' : date;
+        return (<span>{val}</span>);
+      }
     }
   ];
 
