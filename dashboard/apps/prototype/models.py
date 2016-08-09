@@ -424,8 +424,7 @@ class BaseProject(models.Model):
             'financial': self.financial(start_date, end_date, freq),
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
-            'savings': self.additional_costs(start_date, end_date,
-                                             attribute='savings'),
+            'savings': self.savings_between(start_date, end_date),
             'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,
@@ -523,8 +522,7 @@ class Project(BaseProject, AditionalCostsMixin):
         non_contractor_cost = self.people_costs(
             start_date, end_date, non_contractor_only=True)
         additional_costs = self.additional_costs(start_date, end_date)
-        savings = self.additional_costs(start_date, end_date,
-                                        attribute='savings')
+        savings = self.savings_between(start_date, end_date)
         value = {
             'contractor': contractor_cost,
             'non-contractor': non_contractor_cost,
@@ -732,6 +730,18 @@ class Project(BaseProject, AditionalCostsMixin):
             return Decimal('0')
         return self.time_spent(start_date, end_date) / workdays
 
+    def savings_between(self, start_date=None, end_date=None):
+        """
+        returns total savings for the project
+
+        :param start_date: date object for the start date.
+        if not specified, use the date of the first saving for the project.
+        :param end_date: date object for the end date.
+        if not specified, use the date of today.
+        """
+        return self.additional_costs(start_date, end_date,
+                                     attribute='savings')
+
     class Meta:
         permissions = (
             ('adjustmentexport_project', 'Can run Adjustment Export'),
@@ -863,6 +873,18 @@ class ProjectGroup(BaseProject):
                 for key in set(f1.keys()) | set(f2.keys())
             }
         return result
+
+    def savings_between(self, start_date=None, end_date=None):
+        """
+        returns total savings for the project
+
+        :param start_date: date object for the start date.
+        if not specified, use the date of the first saving for the project.
+        :param end_date: date object for the end date.
+        if not specified, use the date of today.
+        """
+        return sum(p.savings_between(start_date, end_date) for p in
+                   self.projects.filter(visible=True))
 
 
 class TaskManager(models.Manager):
