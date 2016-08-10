@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Cookies from 'js-cookie';
 import { createHistory } from 'history';
 import React from 'react';

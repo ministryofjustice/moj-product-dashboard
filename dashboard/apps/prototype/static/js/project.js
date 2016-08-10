@@ -3,7 +3,7 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
-import { Select, Radio, config } from 'rebass';
+import { Select } from 'rebass';
 
 import Plotly from './plotly-custom';
 import { monthRange, thisCalendarYear,
@@ -430,22 +430,28 @@ class ProjectGraph extends Component {
   render() {
     return (
       <div>
-        <Radio
-          checked={!this.props.showBurnDown}
-          circle
-          label="Show burn up"
-          name="burn-up-burn-down"
-          value="burn-up"
-          onChange={this.props.onChange}
-        />
-        <Radio
-          checked={this.props.showBurnDown}
-          circle
-          label="Show burn down"
-          name="burn-up-burn-down"
-          value="burn-down"
-          onChange={this.props.onChange}
-        />
+        <fieldset className="inline">
+          <label className="block-label" htmlFor="radio-burn-up">
+            <input
+              id="radio-burn-up"
+              type="radio"
+              value="burn-up"
+              checked={!this.props.showBurnDown}
+              onChange={this.props.onChange}
+            />
+            Burn up
+          </label>
+          <label className="block-label" htmlFor="radio-burn-down">
+            <input
+              id="radio-burn-down"
+              type="radio"
+              value="burn-down"
+              checked={this.props.showBurnDown}
+              onChange={this.props.onChange}
+            />
+            Burn down
+          </label>
+        </fieldset>
         <div ref={(elem) => this.container1=elem} />
         <div ref={(elem) => this.container2=elem} />
       </div>

@@ -32,13 +32,7 @@ module.exports = {
         test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$/,
         loader: "file-loader"
       }
-    ],
-    resolve: {
-      alias: {
-        'jquery': 'jquery/src/jquery',
-        'select2': 'select2/src/js/jquery.select2'
-      }
-    }
+    ]
   },
   plugins: [
     new ExtractTextPlugin("prototype.css")
