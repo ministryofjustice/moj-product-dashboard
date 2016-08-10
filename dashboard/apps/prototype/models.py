@@ -25,7 +25,8 @@ class BaseCost(models.Model):
     end_date = models.DateField(null=True, blank=True)
     name = models.CharField(max_length=128, null=True)
     note = models.TextField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=ugettext_lazy('Amount'))
     type = models.PositiveSmallIntegerField(
         choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
 
