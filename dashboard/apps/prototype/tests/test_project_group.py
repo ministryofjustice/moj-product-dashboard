@@ -31,7 +31,8 @@ def test_project_group():
             'non-contractor': Decimal('2800.0000000'),
             'contractor': Decimal('3200.0000000'),
             'budget': Decimal('0'),
-            'additional': Decimal('0')
+            'additional': Decimal('0'),
+            'savings': Decimal('0')
         }
     }
     assert profile['financial'] == financial
@@ -46,7 +47,8 @@ def test_merge_financial():
             'contractor': 1600,
             'non-contractor': 1400,
             'additional': 1000,
-            'budget': 5000
+            'budget': 5000,
+            'savings': Decimal('0')
         }
     }
     assert ProjectGroup.merge_financial(financial1, {}) == financial1
@@ -56,6 +58,7 @@ def test_merge_financial():
             'non-contractor': 1400,
             'additional': 500,
             'budget': 4000,
+            'savings': Decimal('0')
         }
     }
     expected = {
@@ -63,7 +66,8 @@ def test_merge_financial():
             'contractor': 3200,
             'non-contractor': 2800,
             'additional': 1500,
-            'budget': 9000
+            'budget': 9000,
+            'savings': Decimal('0')
         }
     }
     assert ProjectGroup.merge_financial(financial1, financial2) == expected
@@ -74,6 +78,7 @@ def test_merge_financial():
             'non-contractor': 1400,
             'additional': 500,
             'budget': 4000,
+            'savings': Decimal('0')
         }
     }
     expected = {
@@ -81,13 +86,15 @@ def test_merge_financial():
             'contractor': 1600,
             'non-contractor': 1400,
             'additional': 1000,
-            'budget': 5000
+            'budget': 5000,
+            'savings': Decimal('0')
         },
         '2016-02-01~2016-02-28': {
             'contractor': 1600,
             'non-contractor': 1400,
             'additional': 500,
             'budget': 4000,
+            'savings': Decimal('0')
         }
     }
     assert ProjectGroup.merge_financial(financial1, financial2) == expected

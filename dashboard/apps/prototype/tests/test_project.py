@@ -89,7 +89,8 @@ def test_project_without_tasks():
         'additional': Decimal('0'),
         'budget': Decimal('0'),
         'contractor': Decimal('0'),
-        'non-contractor': Decimal('0')
+        'non-contractor': Decimal('0'),
+        'savings': Decimal('0')
     }
     assert project.time_spent() == 0
     assert project.current_fte() == 0
@@ -105,7 +106,8 @@ def test_project_profiles_without_frequency():
         'contractor': contractor_rate * man_days,
         'non-contractor': non_contractor_rate * man_days,
         'additional': Decimal('0'),
-        'budget': Decimal('0')
+        'budget': Decimal('0'),
+        'savings': Decimal('0')
     }
     key = '2016-01-01~2016-01-20'
     assert profile['financial'] == {key: financial}
@@ -118,7 +120,8 @@ def test_project_profiles_with_frequency():
         'contractor': contractor_rate * man_days,
         'non-contractor': non_contractor_rate * man_days,
         'additional': Decimal('0'),
-        'budget': Decimal('0')
+        'budget': Decimal('0'),
+        'savings': Decimal('0')
     }
     keys = [
         '2015-12-27~2016-01-02',

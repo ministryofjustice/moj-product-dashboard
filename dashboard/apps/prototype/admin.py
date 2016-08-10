@@ -13,7 +13,8 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
-                     ProjectStatus, ProjectGroupStatus, Note, ProjectGroup)
+                     ProjectStatus, ProjectGroupStatus, Note, ProjectGroup,
+                     Saving)
 from .forms import (PayrollUploadForm, AdjustmentExportForm,
                     IntercompanyExportForm, ProjectDetailExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
@@ -193,12 +194,18 @@ class NoteInline(admin.TabularInline):
     extra = 0
 
 
+class SavingInline(admin.TabularInline):
+    model = Saving
+    extra = 0
+
+
 class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     fields = ['name', 'description', 'float_id', 'is_billable',
               'project_manager', 'client', 'discovery_date', 'alpha_date',
               'beta_date', 'live_date', 'end_date', 'visible']
     exclude = ['raw_data']
-    inlines = [CostInline, BudgetInline, ProjectStatusInline, NoteInline]
+    inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
+               NoteInline]
     readonly_fields = ('name', 'description', 'float_id', 'is_billable',
                        'project_manager', 'client')
     list_display = ('name', 'status', 'phase', 'client', 'discovery_date',
