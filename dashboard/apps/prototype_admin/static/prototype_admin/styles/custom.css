@@ -239,7 +239,8 @@ div#toolbar div {
 }
 
 #user-menu-dropdown {
-    z-index: 999;
+    float: right;
+    /*z-index: 999;*/
     /*display: inline-block;*/
     /*position: relative;*/
 }
