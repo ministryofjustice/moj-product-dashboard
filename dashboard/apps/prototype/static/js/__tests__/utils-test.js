@@ -8,7 +8,8 @@ import {
   lastFinancialYear,
   thisQuarter,
   lastQuarter,
-  round
+  round,
+  numberWithCommas
 } from '../utils';
 
 describe('monthRange', () => {
@@ -141,8 +142,25 @@ describe('round', () => {
       [-12.34       , -12],       // -12
       [-1.23        , -1]         // -1
     ];
-    pairs.map(([original, rounded])=> {
+    pairs.map(([original, rounded]) => {
       expect(round(original)).toEqual(rounded);
+    });
+  });
+});
+
+
+describe('numberWithCommas', () => {
+  it(`puts commas to separate every 3 digits of a number`, () => {
+    const pairs = [
+      ['123'   , '123'],
+      [123     , '123'],
+      [1234    , '1,234'],
+      [12345   , '12,345'],
+      [123456  , '123,456'],
+      [1234567 , '1,234,567']
+    ];
+    pairs.map(([original, expected]) => {
+      expect(numberWithCommas(original)).toEqual(expected);
     });
   });
 });

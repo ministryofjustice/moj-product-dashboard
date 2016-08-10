@@ -25,13 +25,18 @@ class BaseCost(models.Model):
     end_date = models.DateField(null=True, blank=True)
     name = models.CharField(max_length=128, null=True)
     note = models.TextField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=ugettext_lazy('Amount'))
     type = models.PositiveSmallIntegerField(
         choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
 
     def cost_between(self, start_date, end_date):
-        start_date = max(start_date, self.start_date)
-        end_date = min(end_date, self.end_date or end_date)
+        start_date = max(start_date, self.start_date) if start_date else \
+            self.start_date
+        end_date = min(end_date, self.end_date or end_date) if end_date else \
+            self.end_date
+        # If there is no end date then set it for today
+        end_date = end_date or date.today()
         if self.type == COST_TYPES.ONE_OFF:
             if start_date <= self.start_date <= end_date:
                 return self.cost
@@ -89,22 +94,27 @@ class BaseCost(models.Model):
 
 
 class AditionalCostsMixin():
-    def get_costs_between(self, start_date, end_date, name=None):
-        costs = self.costs.filter(
-            Q(end_date__gte=start_date) | Q(end_date__isnull=True),
-            start_date__lte=end_date
-        )
+    def get_costs_between(self, start_date, end_date, name=None,
+                          attribute='costs'):
+        costs = getattr(self, attribute).all()
+        if start_date and end_date:
+            costs = costs.filter(
+                Q(end_date__gte=start_date) | Q(end_date__isnull=True),
+                start_date__lte=end_date
+            )
 
         if name:
             costs = costs.filter(name=name)
 
         return costs
 
-    def additional_costs(self, start_date, end_date, name=None):
+    def additional_costs(self, start_date, end_date, name=None,
+                         attribute='costs'):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
-        costs = self.get_costs_between(start_date, end_date, name=None)
+        costs = self.get_costs_between(start_date, end_date, name=None,
+                                       attribute=attribute)
 
         return sum(map(cost_of_cost, costs)) or Decimal('0')
 
@@ -261,6 +271,7 @@ class Rate(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=128)
     float_id = models.CharField(max_length=128, unique=True)
+    visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
 
     class Meta:
@@ -314,32 +325,31 @@ class ProjectManager(models.Manager):
     use_for_related_fields = True
 
     def visible(self):
-        return self.get_queryset().filter(visible=True)
+        return self.get_queryset().filter(visible=True).filter(
+            models.Q(client=None) | models.Q(client__visible=True)
+        )
 
 
-class Project(models.Model, AditionalCostsMixin):
+class BaseProject(models.Model):
     name = models.CharField(max_length=128)
-    hr_id = models.CharField(max_length=12, unique=True, null=True)
-    description = models.TextField()
-    float_id = models.CharField(max_length=128, unique=True)
-    is_billable = models.BooleanField(default=True)
-    project_manager = models.ForeignKey(
-        'Person', related_name='projects', null=True)
-    client = models.ForeignKey('Client', related_name='projects', null=True)
-    discovery_date = models.DateField(null=True, blank=True)
-    alpha_date = models.DateField(null=True, blank=True)
-    beta_date = models.DateField(null=True, blank=True)
-    live_date = models.DateField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    discovery_date = models.DateField(null=True, blank=True,
+                                      verbose_name='discovery start')
+    alpha_date = models.DateField(null=True, blank=True,
+                                  verbose_name='alpha start')
+    beta_date = models.DateField(null=True, blank=True,
+                                 verbose_name='beta start')
+    live_date = models.DateField(null=True, blank=True,
+                                 verbose_name='live start')
     end_date = models.DateField(null=True, blank=True)
-    visible = models.BooleanField(default=True)
-    raw_data = JSONField(null=True)
 
-    objects = ProjectManager()
+    def __str__(self):
+        return self.name
 
     @property
     def phase(self):
         today = date.today()
-        if self.last_date and today >= self.last_date:
+        if self.end_date and today >= self.end_date:
             return 'Ended'
         elif self.live_date and today >= self.live_date:
             return 'Live'
@@ -347,10 +357,98 @@ class Project(models.Model, AditionalCostsMixin):
             return 'Beta'
         elif self.alpha_date and today >= self.alpha_date:
             return 'Alpha'
-        elif self.first_date and today >= self.first_date:
+        elif self.discovery_date and today >= self.discovery_date:
             return 'Discovery'
         else:
             return 'Not Defined'
+
+    @property
+    def financial_rag(self):
+        """
+        financial rag is one of 'RED', 'AMBER' and 'GREEN'.
+        A measure of how well the product is keeping to budget.
+        RED: total_cost >= 110% * budget
+        AMBER: budget < total_cost < 110% * budget
+        GREEN: total_cost <= budget
+        """
+        budget = self.final_budget
+        total_cost = self.total_cost
+        if budget >= total_cost:
+            return RAG_TYPES.GREEN.constant
+        if budget * Decimal('1.1') >= total_cost:
+            return RAG_TYPES.AMBER.constant
+        return RAG_TYPES.RED.constant
+
+    def status(self, on=None):
+        """
+        get the status for the project group on a date
+        :param on: optional date object. if empty use today's date
+        :return: a rag object
+        """
+        if not on:
+            on = date.today()
+        status = self.statuses.filter(
+            start_date__lte=on).order_by('-start_date').first()
+        return status
+
+    def profile(self, start_date=None, end_date=None, freq=None):
+        """
+        get the profile of a project group in a time window.
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :return: a dictionary representing the profile
+        """
+        status = self.status()
+        status = status.get_status_display() if status else ''
+        if self.client:
+            service_area = {
+                'id': self.client.id,
+                'name': self.client.name,
+            }
+        else:
+            service_area = {}
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'status': status,
+            'type': self.__class__.__name__,
+            'service_area': service_area,
+            'description': self.description,
+            'discovery_date': self.discovery_date,
+            'alpha_date': self.alpha_date,
+            'beta_date': self.beta_date,
+            'live_date': self.live_date,
+            'end_date': self.end_date,
+            'first_date': self.first_date,
+            'last_date': self.last_date,
+            'financial': self.financial(start_date, end_date, freq),
+            'financial_rag': self.financial_rag,
+            'budget': self.budget(),
+            'savings': self.savings_between(start_date, end_date),
+            'current_fte': self.current_fte(start_date, end_date),
+            'cost_to_date': self.cost_to_date,
+            'phase': self.phase,
+        }
+        return result
+
+    class Meta:
+        abstract = True
+
+
+class Project(BaseProject, AditionalCostsMixin):
+    hr_id = models.CharField(max_length=12, unique=True, null=True)
+    float_id = models.CharField(max_length=128, unique=True)
+    is_billable = models.BooleanField(default=True)
+    project_manager = models.ForeignKey(
+        'Person', related_name='projects', null=True)
+    client = models.ForeignKey('Client', related_name='projects', null=True)
+    visible = models.BooleanField(default=True)
+    raw_data = JSONField(null=True)
+
+    objects = ProjectManager()
 
     @property
     def admin_url(self):
@@ -427,11 +525,13 @@ class Project(models.Model, AditionalCostsMixin):
         non_contractor_cost = self.people_costs(
             start_date, end_date, non_contractor_only=True)
         additional_costs = self.additional_costs(start_date, end_date)
+        savings = self.savings_between(start_date, end_date)
         value = {
             'contractor': contractor_cost,
             'non-contractor': non_contractor_cost,
             'additional': additional_costs,
             'budget': self.budget(start_date),
+            'savings': savings,
         }
         return value
 
@@ -479,86 +579,30 @@ class Project(models.Model, AditionalCostsMixin):
                 candidates.append(self.last_cost.start_date)
         return max(candidates)
 
-    @property
-    def financial_rag(self):
-        """
-        financial rag is one of 'RED', 'AMBER' and 'GREEN'.
-        A measure of how well the product is keeping to budget.
-        RED: total_cost >= 110% * budget
-        AMBER: budget < total_cost < 110% * budget
-        GREEN: total_cost <= budget
-        """
-        budget = self.final_budget
-        total_cost = self.total_cost
-        if budget >= total_cost:
-            return RAG_TYPES.GREEN.constant
-        if budget * Decimal('1.1') >= total_cost:
-            return RAG_TYPES.AMBER.constant
-        return RAG_TYPES.RED.constant
-
-    def profile(self, start_date=None, end_date=None, freq=None):
-        """
-        get the profile of a project in a time window.
-        :param project_ids: a list of project_ids, if the value is not
-        specified, get all projects.
-        :param start_date: start date of time window, a date object
-        :param end_date: end date of time window, a date object
-        :param freq: an optional parameter to slice the time window into
-        sub windows. value of freq should be an offset aliases supported by
-        pandas date_range, e.g. MS for month start.
-        :return: a dictionary representing the profile
-        """
-        status = self.status()
-        status = status.get_status_display() if status else ''
-        if self.client:
-            service_area = {
-                'id': self.client.id,
-                'name': self.client.name,
-            }
-        else:
-            service_area = {}
-        result = {
-            'id': self.id,
-            'name': self.name,
-            'type': 'project',
-            'service_area': service_area,
-            'description': self.description,
-            'discovery_date': self.discovery_date,
-            'alpha_date': self.alpha_date,
-            'beta_date': self.beta_date,
-            'live_date': self.live_date,
-            'end_date': self.end_date,
-            'first_date': self.first_date,
-            'last_date': self.last_date,
-            'status': status,
-            'financial_rag': self.financial_rag,
-            'budget': self.budget(),
-            'current_fte': self.current_fte(start_date, end_date),
-            'cost_to_date': self.cost_to_date,
-            'financial': {},
-        }
+    def financial(self, start_date, end_date, freq):
         if not start_date:
             try:
                 start_date = self.default_start_date
             except ValueError:
-                return result
+                return {}
         if not end_date:
             try:
                 end_date = self.default_end_date
             except ValueError:
-                return result
+                return {}
         if freq:
             time_windows = slice_time_window(
                 start_date, end_date, freq, extend=True)
         else:
             time_windows = [(start_date, end_date)]
+        result = {}
         for sdate, edate in time_windows:
             # use '{sdate}~{edate}' as the dictionary key.
             # this is perhaps not the best way to do it.
             # leave it open to change when a better way emerges.
             key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
                                  edate.strftime('%Y-%m-%d'))
-            result['financial'][key] = self.spendings_between(sdate, edate)
+            result[key] = self.spendings_between(sdate, edate)
         return result
 
     def __str__(self):
@@ -652,18 +696,6 @@ class Project(models.Model, AditionalCostsMixin):
         except ValueError:
             return Decimal('0')
 
-    def status(self, on=None):
-        """
-        get the status for the project on a date
-        :param on: optional date object. if empty use today's date
-        :return: a rag object
-        """
-        if not on:
-            on = date.today()
-        status = self.statuses.filter(
-            start_date__lte=on).order_by('-start_date').first()
-        return status
-
     def time_spent(self, start_date=None, end_date=None):
         """
         get the days spent on the project during a time window.
@@ -701,6 +733,18 @@ class Project(models.Model, AditionalCostsMixin):
             return Decimal('0')
         return self.time_spent(start_date, end_date) / workdays
 
+    def savings_between(self, start_date=None, end_date=None):
+        """
+        returns total savings for the project
+
+        :param start_date: date object for the start date.
+        if not specified, use the date of the first saving for the project.
+        :param end_date: date object for the end date.
+        if not specified, use the date of today.
+        """
+        return self.additional_costs(start_date, end_date,
+                                     attribute='savings')
+
     class Meta:
         permissions = (
             ('adjustmentexport_project', 'Can run Adjustment Export'),
@@ -711,6 +755,10 @@ class Project(models.Model, AditionalCostsMixin):
 
 class Cost(BaseCost):
     project = models.ForeignKey('Project', related_name='costs')
+
+
+class Saving(BaseCost):
+    project = models.ForeignKey('Project', related_name='savings')
 
 
 class Budget(models.Model):
@@ -731,10 +779,12 @@ class Status(models.Model):
 
 class ProjectStatus(Status):
     project = models.ForeignKey('Project', related_name='statuses')
+    reason = models.TextField(null=True, blank=True)
 
 
 class ProjectGroupStatus(Status):
     project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
+    reason = models.TextField(null=True, blank=True)
 
 
 class Note(models.Model):
@@ -744,16 +794,12 @@ class Note(models.Model):
     note = models.TextField(null=True, blank=True)
 
 
-class ProjectGroup(models.Model):
-    name = models.CharField(max_length=128)
+class ProjectGroup(BaseProject):
     projects = models.ManyToManyField(
         Project,
         related_name='project_groups',
-        limit_choices_to={'id__in': Project.objects.visible()}
+        limit_choices_to=lambda: {'id__in': Project.objects.visible()}
     )
-
-    def __str__(self):
-        return self.name
 
     @property
     def first_date(self):
@@ -790,35 +836,6 @@ class ProjectGroup(models.Model):
     def final_budget(self):
         return sum(p.final_budget for p in self.projects.all())
 
-    @property
-    def financial_rag(self):
-        """
-        financial rag is one of 'RED', 'AMBER' and 'GREEN'.
-        A measure of how well the product is keeping to budget.
-        RED: total_cost >= 110% * budget
-        AMBER: budget < total_cost < 110% * budget
-        GREEN: total_cost <= budget
-        """
-        budget = self.final_budget
-        total_cost = self.total_cost
-        if budget >= total_cost:
-            return RAG_TYPES.GREEN.constant
-        if budget * Decimal('1.1') >= total_cost:
-            return RAG_TYPES.AMBER.constant
-        return RAG_TYPES.RED.constant
-
-    def status(self, on=None):
-        """
-        get the status for the project group on a date
-        :param on: optional date object. if empty use today's date
-        :return: a rag object
-        """
-        if not on:
-            on = date.today()
-        status = self.statuses.filter(
-            start_date__lte=on).order_by('-start_date').first()
-        return status
-
     def current_fte(self, start_date=None, end_date=None):
         """
         current FTE measures the number of people working on the project.
@@ -832,48 +849,15 @@ class ProjectGroup(models.Model):
         return sum(p.current_fte(start_date, end_date)
                    for p in self.projects.all())
 
-    def profile(self, start_date=None, end_date=None, freq='MS'):
-        """
-        get the profile of a project group in a time window.
-        specified, get all projects.
-        :param start_date: start date of time window, a date object
-        :param end_date: end date of time window, a date object
-        :param freq: an optional parameter to slice the time window into
-        sub windows. value of freq should be an offset aliases supported by
-        pandas date_range, e.g. MS for month start.
-        :return: a dictionary representing the profile
-        """
-        status = self.status()
-        status = status.get_status_display() if status else ''
-        if self.client:
-            service_area = {
-                'id': self.client.id,
-                'name': self.client.name,
-            }
-        else:
-            service_area = {}
+    def financial(self, start_date, end_date, freq):
         projects = self.projects.filter(visible=True)
         project_to_financial = {
             project.id: project.profile(start_date, end_date, freq)['financial']
             for project in projects
         }
-        financial = {}
+        result = {}
         for profile in project_to_financial.values():
-            financial = self.merge_financial(financial, profile)
-        result = {
-            'id': self.id,
-            'name': self.name,
-            'status': status,
-            'type': 'project_group',
-            'service_area': service_area,
-            'financial': financial,
-            'financial_rag': self.financial_rag,
-            'current_fte': self.current_fte(start_date, end_date),
-            'first_date': self.first_date,
-            'last_date': self.last_date,
-            'budget': self.budget(),
-            'cost_to_date': self.cost_to_date,
-        }
+            result = self.merge_financial(result, profile)
         return result
 
     @staticmethod
@@ -892,6 +876,18 @@ class ProjectGroup(models.Model):
                 for key in set(f1.keys()) | set(f2.keys())
             }
         return result
+
+    def savings_between(self, start_date=None, end_date=None):
+        """
+        returns total savings for the project
+
+        :param start_date: date object for the start date.
+        if not specified, use the date of the first saving for the project.
+        :param end_date: date object for the end date.
+        if not specified, use the date of today.
+        """
+        return sum(p.savings_between(start_date, end_date) for p in
+                   self.projects.filter(visible=True))
 
 
 class TaskManager(models.Manager):

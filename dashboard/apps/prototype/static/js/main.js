@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import select2 from 'select2';
 import Cookies from 'js-cookie';
 import { createHistory } from 'history';
 import React from 'react';
@@ -11,7 +10,6 @@ import { PortfolioContainer } from './portfolio';
 import { initCommon } from './common';
 
 
-import 'select2/dist/css/select2.min.css';
 import '../styles/gov-uk-elements.css';
 import '../styles/main.css';
 
@@ -23,30 +21,19 @@ function project(id) {
       id={id}
       csrftoken={Cookies.get('csrftoken')}
     />,
-    document.getElementById('fig-a')
+    document.getElementById('container')
   );
-
-  // dropdown project selector
-  $('#projects').select2().on("select2:select", (e) => {
-    window.location.href = e.params.data.id;
-  });
 }
 
 
 function service(id) {
-  // dropdown service selector
-  $('#services').select2().on("select2:select", (e) => {
-    const serviceId = e.params.data.id;
-    window.location.href = `/services/${serviceId}`;
-  });
-
   // project table
   ReactDOM.render(
     <ServiceContainer
       id={id}
       csrftoken={Cookies.get('csrftoken')}
     />,
-    document.getElementById('projects')
+    document.getElementById('container')
   );
 }
 
@@ -69,16 +56,17 @@ function projectGroup(id) {
     />,
     document.getElementById('container')
   );
-  // dropdown project selector
-  $('#projects').select2().on("select2:select", (e) => {
-    window.location.href = e.params.data.id;
-  });
 }
 
 
 function route(path) {
   // call different loading functions based on page url
-  const pattern = /(projects|services|project-groups|portfolio)(\/(\d+))?/;
+  if (path === '/') {
+    portfolio();
+    return;
+  }
+
+  const pattern = /(projects|services|project-groups)(\/(\d+))?/;
   const matches = pattern.exec(path);
 
   if (matches === null)
@@ -86,6 +74,7 @@ function route(path) {
 
   const [_0, endpoint, _1, id] = matches;
 
+  console.log(endpoint);
   switch (endpoint) {
     case 'projects':
       project(id);
@@ -95,9 +84,6 @@ function route(path) {
       break;
     case 'project-groups':
       projectGroup(id);
-      break;
-    case 'portfolio':
-      portfolio();
       break;
   };
 }

@@ -87,7 +87,6 @@ class TaskTimeSpentTestCase(TestCase):
                                  add=False, delete=False)
 
     def test_read_only_fields(self):
-        self.assertFieldsReadOnly(self.finance_admin, ClientAdmin, Client)
         self.assertFieldsReadOnly(self.finance_admin, TaskAdmin, Task)
 
     def test_upload_permission(self):

@@ -7,7 +7,7 @@ from model_mommy import mommy
 
 from dashboard.libs.date_tools import parse_date, get_workdays
 from dashboard.apps.prototype.models import (
-    Project, Task, Person, Rate, Cost, ProjectStatus, Budget)
+    Project, Client, Task, Person, Rate, Cost, ProjectStatus, Budget)
 from prototype.constants import COST_TYPES, STATUS_TYPES
 
 
@@ -89,7 +89,8 @@ def test_project_without_tasks():
         'additional': Decimal('0'),
         'budget': Decimal('0'),
         'contractor': Decimal('0'),
-        'non-contractor': Decimal('0')
+        'non-contractor': Decimal('0'),
+        'savings': Decimal('0')
     }
     assert project.time_spent() == 0
     assert project.current_fte() == 0
@@ -105,7 +106,8 @@ def test_project_profiles_without_frequency():
         'contractor': contractor_rate * man_days,
         'non-contractor': non_contractor_rate * man_days,
         'additional': Decimal('0'),
-        'budget': Decimal('0')
+        'budget': Decimal('0'),
+        'savings': Decimal('0')
     }
     key = '2016-01-01~2016-01-20'
     assert profile['financial'] == {key: financial}
@@ -118,7 +120,8 @@ def test_project_profiles_with_frequency():
         'contractor': contractor_rate * man_days,
         'non-contractor': non_contractor_rate * man_days,
         'additional': Decimal('0'),
-        'budget': Decimal('0')
+        'budget': Decimal('0'),
+        'savings': Decimal('0')
     }
     keys = [
         '2015-12-27~2016-01-02',
@@ -214,10 +217,18 @@ def test_project_costs():
 
 @pytest.mark.django_db
 def test_project_visible():
-    mommy.make(Project, visible=False)
-    mommy.make(Project, visible=True)
+    visible_client = mommy.make(Client, visible=True)
+    invisible_client = mommy.make(Client, visible=False)
 
-    assert Project.objects.visible().count() == 1
+    p1 = mommy.make(Project, visible=True, client=visible_client)
+    p2 = mommy.make(Project, visible=True)
+
+    mommy.make(Project, visible=False, client=visible_client)
+    mommy.make(Project, visible=False, client=invisible_client)
+    mommy.make(Project, visible=True, client=invisible_client)
+    mommy.make(Project, visible=False)
+
+    assert {p.id for p in Project.objects.visible()} == {p1.id, p2.id}
 
 
 @pytest.mark.django_db

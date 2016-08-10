@@ -10,7 +10,7 @@ import { monthRange, thisCalendarYear,
          thisFinancialYear, thisQuarter, lastCalendarYear,
          lastFinancialYear, lastQuarter,
          startOfMonth, endOfMonth,
-         min, max, values, round } from './utils';
+         min, max, values, round, numberWithCommas } from './utils';
 import { plotCumulativeSpendings } from './cumulative-graph';
 
 import RedImg from '../img/red.png';
@@ -48,6 +48,7 @@ export function getProjectData(type, id, startDate, endDate, csrftoken) {
 export function parseProjectFinancials(financial) {
   const result = {};
   let cumulative = 0;
+  let savings = 0;
 
   Object.keys(financial).sort().map(month => {
     const mf = financial[month];
@@ -56,10 +57,12 @@ export function parseProjectFinancials(financial) {
                   parseFloat(mf['non-contractor']) +
                   parseFloat(mf['additional']);
 
+    savings += parseFloat(mf['savings']);
+
     cumulative += total;
     const remaining = budget - cumulative;
     const ms = moment(month, 'YYYY-MM').format('YYYY-MM');
-    result[ms] = { total, cumulative, budget, remaining };
+    result[ms] = { total, cumulative, budget, remaining, savings };
   });
 
   return result;
@@ -372,7 +375,7 @@ function KeyStats({budget, costToDate, savings}) {
     </div>
   );
 
-  const format = (data) => `£${Math.round(parseFloat(data)).toLocaleString()}`;
+  const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
   return (
     <div>
@@ -387,7 +390,7 @@ function KeyStats({budget, costToDate, savings}) {
           label="Total spend to date"
         />
         <Data
-          data={savings ? format(savings) : '\u00a0'}
+          data={format(savings)}
           label="Savings enabled"
         />
       </div>
@@ -514,8 +517,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
 export const ProjectsTable = ({ projects, showService, showFilter }) => {
 
   const displayMoney = (props) => {
-    const number = Number(Number(props.data).toFixed(0))
-      .toLocaleString();
+    const number = numberWithCommas(Number(props.data).toFixed(0));
     return (<span>£{number}</span>);
   };
 
@@ -526,7 +528,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Product',
       'customComponent': (props) => {
         let url;
-        if (props.rowData.type == 'project_group') {
+        if (props.rowData.type == 'ProjectGroup') {
           url = `/project-groups/${props.rowData.id}`;
         } else {
           url = `/projects/${props.rowData.id}`;
@@ -535,8 +537,21 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       },
     },
     {
-      'columnName': 'status',
+      'columnName': 'phase',
       'order': 3,
+      'displayName': 'Phase',
+      'customComponent': (props) => {
+        const val = props.data === 'Not Defined' ? '' : props.data;
+        return (<span>{val}</span>);
+      },
+      'customCompareFn': (phase) => {
+        const val = {Discovery: 0, Alpha: 1, Beta: 2, Live: 3, Ended: 4}[phase];
+        return typeof val === 'undefined' ? 5 : val;
+      },
+    },
+    {
+      'columnName': 'status',
+      'order': 4,
       'displayName': 'Status',
       'customComponent': (props) => {
         const mapping = {
@@ -550,7 +565,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
     },
     {
       'columnName': 'current_fte',
-      'order': 4,
+      'order': 5,
       'displayName': 'Current FTE',
       'customCompareFn': Number,
       'customComponent': (props) => (
@@ -560,27 +575,41 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
     },
     {
       'columnName': 'cost_to_date',
-      'order': 5,
+      'order': 6,
       'displayName': 'Cost to date',
       'customCompareFn': Number,
       'customComponent': displayMoney,
     },
     {
       'columnName': 'budget',
-      'order': 6,
+      'order': 7,
       'displayName': 'Budget',
       'customCompareFn': Number,
       'customComponent': displayMoney,
     },
     {
       'columnName': 'financial_rag',
-      'order': 7,
+      'order': 8,
       'displayName': 'Financial RAG',
+      'customCompareFn': (label) => {
+        const mappings = {RED: 3, AMBER: 2, GREEN: 1};
+        return mappings[label];
+      },
       'customComponent': (props) => {
         const mapping = { RED: RedImg, AMBER: AmberImg, GREEN: GreenImg };
         return (
             <img src={ mapping[props.data] } className="rag" alt={props.data} />
           )}
+    },
+    {
+      'columnName': 'end_date',
+      'order': 9,
+      'displayName': 'Estimated end date',
+      'customComponent': (props) => {
+        const date = moment(props.data, 'YYYY-MM-DD').format('DD/MM/YYYY');
+        const val = date === 'Invalid date' ? '' : date;
+        return (<span>{val}</span>);
+      }
     }
   ];
 
@@ -591,9 +620,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Service area',
       'customCompareFn': (serv) => serv.name,
       'customComponent': (props) => (
-        <a href={`/services/${props.data.id}`}>
-          {props.data.name}
-        </a>
+        <span>{props.data.name}</span>
       )
     });
   };

@@ -15,7 +15,7 @@ from faker import Faker
 from model_mommy import mommy
 
 from dashboard.apps.prototype.views import (
-    index, project_html, project_json, service_html, service_json,
+    project_html, project_json, service_html, service_json,
     project_group_html, project_group_json, sync_from_float)
 from dashboard.apps.prototype.models import (
     Client as Service, Project, ProjectGroup)
@@ -38,7 +38,7 @@ def make_login_client():
 
 
 @pytest.mark.parametrize('view', [
-    index,
+    project_html,
     project_json
 ])
 def test_login_required(view):
@@ -46,22 +46,6 @@ def test_login_required(view):
     rsp = client.get(reverse(view))
     assert rsp.status_code == 302
     assert rsp.url.startswith(reverse(auth_views.login))
-
-
-@pytest.mark.django_db
-def test_index_no_projectid_no_data():
-    client = make_login_client()
-    rsp = client.get(reverse(index))
-    assert rsp.status_code == 500
-
-
-@pytest.mark.django_db
-def test_index_no_projectid_with_data():
-    client = make_login_client()
-    project = mommy.make(Project)
-    rsp = client.get(reverse(index))
-    assert rsp.status_code == 302
-    assert rsp.url == reverse(project_html, kwargs={'id': project.id})
 
 
 @pytest.mark.django_db
