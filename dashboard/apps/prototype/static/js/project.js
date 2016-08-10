@@ -620,9 +620,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Service area',
       'customCompareFn': (serv) => serv.name,
       'customComponent': (props) => (
-        <a href={`/services/${props.data.id}`}>
-          {props.data.name}
-        </a>
+        <span>{props.data.name}</span>
       )
     });
   };
