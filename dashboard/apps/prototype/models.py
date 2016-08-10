@@ -325,7 +325,9 @@ class ProjectManager(models.Manager):
     use_for_related_fields = True
 
     def visible(self):
-        return self.get_queryset().filter(visible=True)
+        return self.get_queryset().filter(visible=True).filter(
+            models.Q(client=None) | models.Q(client__visible=True)
+        )
 
 
 class BaseProject(models.Model):
@@ -796,7 +798,7 @@ class ProjectGroup(BaseProject):
     projects = models.ManyToManyField(
         Project,
         related_name='project_groups',
-        limit_choices_to={'id__in': Project.objects.visible()}
+        limit_choices_to=lambda: {'id__in': Project.objects.visible()}
     )
 
     @property
