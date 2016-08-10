@@ -73,7 +73,6 @@ function route(path) {
 
   const [_0, endpoint, _1, id] = matches;
 
-  console.log(endpoint);
   switch (endpoint) {
     case 'projects':
       project(id);
