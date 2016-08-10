@@ -8,19 +8,22 @@ const financial = {
     'contractor': '100.500',
     'non-contractor': '200.80',
     'budget': '500.00',
-    'additional': '50.2'
+    'additional': '50.2',
+    'savings': '800.25'
   },
   '2016-02': {
     'contractor': '200.500',
     'non-contractor': '99.00',
     'budget': '800.00',
-    'additional': '70.4'
+    'additional': '70.4',
+    'savings': '0'
   },
   '2016-03': {
     'contractor': '150.500',
     'non-contractor': '149.20',
     'budget': '900.00',
-    'additional': '10.2'
+    'additional': '10.2',
+    'savings': '652.31'
   }
 };
 
@@ -33,19 +36,22 @@ describe('parseProjectFinancials', () => {
       budget: 500,
       total: 351.5,
       cumulative: 351.5,
-      remaining: 148.5
+      remaining: 148.5,
+      savings: 800.25
     });
     expect(parsed['2016-02']).toEqual({
       budget: 800,
       total: 369.9,
       cumulative: 721.4,
-      remaining: 800 - 721.4  // float is not exactly 78.6
+      remaining: 800 - 721.4,  // float is not exactly 78.6
+      savings: 800.25
     });
     expect(parsed['2016-03']).toEqual({
       budget: 900,
       total: 309.9,
       cumulative: 1031.3,
-      remaining: 900 - 1031.3  // float is not exactly 131.3
+      remaining: 900 - 1031.3,  // float is not exactly 131.3
+      savings: 1452.56
     });
   });
 });
