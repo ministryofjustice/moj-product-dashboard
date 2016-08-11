@@ -39,7 +39,7 @@ function backgroundForPhases(project, range) {
     'alpha': {
       start: alpha,
       end: beta,
-      fillcolor: '#de397f'
+      fillcolor: '#d53880'
     },
     'beta': {
       start: beta,
@@ -78,7 +78,7 @@ function backgroundForPhases(project, range) {
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
-        text: phase,
+        text: phase.toUpperCase(),
         showarrow: false,
         bgcolor: fillcolor,
         font: {

@@ -296,7 +296,13 @@ export class ProjectContainer extends Component {
 
     return (
       <div>
-        <h1 className="heading-xlarge">{this.state.project.name}</h1>
+        <h1 className="heading-xlarge">
+          <div className="banner">
+            <PhaseTag phase={this.state.project.phase} />
+            <RagTag rag={this.state.project['financial_rag']} />
+          </div>
+          {this.state.project.name}
+        </h1>
         <hr />
         <KeyStats
           budget={this.state.project.budget}
@@ -642,4 +648,41 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       showFilter={showFilter}
     />
   );
+}
+
+function PhaseTag({phase}) {
+  const classNameMapping = {
+    Discovery: 'phase-tag-discovery',
+    Alpha: 'phase-tag-alpha',
+    Beta: 'phase-tag-beta',
+    Live: 'phase-tag-live',
+    Ended: 'phase-tag-ended'
+  };
+  const className = classNameMapping[phase];
+  if (className) {
+    return (
+      <strong className={`phase-tag ${className}`}>
+        { phase }
+      </strong>
+    );
+  };
+  return null;
+}
+
+
+function RagTag({rag}) {
+  const classNameMapping = {
+    RED: 'rag-tag-red',
+    AMBER: 'rag-tag-amber',
+    GREEN: 'rag-tag-green'
+  };
+  const className = classNameMapping[rag];
+  if (className) {
+    return (
+      <strong className={`rag-tag ${className}`}>
+        RAG
+      </strong>
+    );
+  };
+  return null;
 }
