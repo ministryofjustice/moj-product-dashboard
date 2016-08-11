@@ -530,7 +530,7 @@ class Project(BaseProject, AditionalCostsMixin):
             'contractor': contractor_cost,
             'non-contractor': non_contractor_cost,
             'additional': additional_costs,
-            'budget': self.budget(start_date),
+            'budget': self.budget(end_date),
             'savings': savings,
         }
         return value

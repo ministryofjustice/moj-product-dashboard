@@ -2,7 +2,7 @@ import Plotly from './plotly-custom';
 import moment from 'moment';
 
 import { parseProjectFinancials } from './project';
-import { endOfMonth, round } from './utils';
+import { endOfMonth, round, monthRange } from './utils';
 
 /**
  * work out the date labels for the xaxis
@@ -133,8 +133,12 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
   const monthly = parseProjectFinancials(project.financial);
   const months = Object.keys(monthly).sort();
+  const finalMonth = months.slice(-1)[0];
+  const remainingMonths = monthRange(finalMonth, endDate, 'end');
+  const monthsExtended = months.concat(remainingMonths);
   const pastMonths = months.filter(m => m < currentMonth);
   const lastPlusFutureMonths = months.filter(m => m >= lastMonth);
+  const lastPlusFutureMonthsExtended = lastPlusFutureMonths.concat(remainingMonths);
 
   const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
 
@@ -178,9 +182,15 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       line: {width: 0}  // for ie9 only
     }
   };
+  const finalRemaining = round(monthly[finalMonth].remaining);
   const forecastRemainingTrace = {
-    x: lastPlusFutureMonths.map(toLabel),
-    y: lastPlusFutureMonths.map(m => round(monthly[m].remaining)),
+    x: lastPlusFutureMonthsExtended.map(toLabel),
+    y: lastPlusFutureMonthsExtended.map(m => {
+      if (m in monthly) {
+        return round(monthly[m].remaining);
+      }
+      return finalRemaining;
+    }),
     name: 'Forecast spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -194,9 +204,15 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
 
+  const finalBudget = round(monthly[finalMonth].budget);
   const budgetTrace = {
-    x: months.map(toLabel),
-    y: months.map(m => round(monthly[m].budget)),
+    x: monthsExtended.map(toLabel),
+    y: monthsExtended.map(m => {
+      if (m in monthly) {
+        return round(monthly[m].budget);
+      }
+      return finalBudget;
+    }),
     name: 'Budget',
     type: 'scatter',
     mode: 'lines+markers',
