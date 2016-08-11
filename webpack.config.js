@@ -1,6 +1,6 @@
 var path = require('path');
 
-var directory = path.resolve(__dirname, "dashboard/apps/prototype/static");
+var directory = path.resolve(__dirname, "dashboard/assets");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {

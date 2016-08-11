@@ -138,6 +138,9 @@ USE_TZ = True
 
 STATIC_ROOT = location('static')
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    location('assets'),
+)
 
 PING_JSON_KEYS = {
     'build_date_key': 'APP_BUILD_DATE',
