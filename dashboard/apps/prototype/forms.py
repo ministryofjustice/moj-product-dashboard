@@ -175,7 +175,7 @@ class ExportForm(forms.Form):
         return wb
 
     def _get_template(self):
-        for template_setting in settings.TEMPLATE_DIRS:
+        for template_setting in settings.TEMPLATES:
             for dir in template_setting['DIRS']:
                 template = os.path.join(dir, self.template)
                 if os.path.isfile(template):
