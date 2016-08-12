@@ -182,14 +182,13 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       line: {width: 0}  // for ie9 only
     }
   };
-  const finalRemaining = round(monthly[finalMonth].remaining);
   const forecastRemainingTrace = {
     x: lastPlusFutureMonthsExtended.map(toLabel),
     y: lastPlusFutureMonthsExtended.map(m => {
       if (m in monthly) {
         return round(monthly[m].remaining);
       }
-      return finalRemaining;
+      return round(monthly[finalMonth].remaining);
     }),
     name: 'Forecast spend',
     type: 'scatter',
@@ -204,14 +203,13 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
 
-  const finalBudget = round(monthly[finalMonth].budget);
   const budgetTrace = {
     x: monthsExtended.map(toLabel),
     y: monthsExtended.map(m => {
       if (m in monthly) {
         return round(monthly[m].budget);
       }
-      return finalBudget;
+      return round(monthly[finalMonth].budget);
     }),
     name: 'Budget',
     type: 'scatter',
