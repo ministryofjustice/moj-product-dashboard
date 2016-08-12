@@ -25,7 +25,6 @@ function tickFormat(range) {
  * phases
  * */
 function backgroundForPhases(project, range) {
-
   const discovery = project['discovery_date'];
   const alpha = project['alpha_date'];
   const beta = project['beta_date'];
@@ -40,7 +39,7 @@ function backgroundForPhases(project, range) {
     'alpha': {
       start: alpha,
       end: beta,
-      fillcolor: '#de397f'
+      fillcolor: '#d53880'
     },
     'beta': {
       start: beta,
@@ -49,7 +48,6 @@ function backgroundForPhases(project, range) {
     },
     'live': {
       start: live,
-      end: range[1].format('YYYY-MM-DD'),
       fillcolor: '#839951'
     }
   }
@@ -58,13 +56,14 @@ function backgroundForPhases(project, range) {
 
   Object.keys(phases).map( phase => {
     const {start, end, fillcolor} = phases[phase];
-    if (start && end) {
+    if (start) {
+      const x1 = end ? end : range[1].format('YYYY-MM-DD');
       shapes.push({
         type: 'rect',
         xref: 'x',
         yref: 'paper',
         x0: start,
-        x1: end,
+        x1: x1,
         y0: 0,
         y1: 1,
         fillcolor: fillcolor,
@@ -73,13 +72,13 @@ function backgroundForPhases(project, range) {
           width: 0
         }
       });
-      const l = moment(start) > range[0] ? moment(start ): range[0];
-      const h = moment(end) < range[1] ? moment(end) : range[1];
+      const l = moment(start) > range[0] ? moment(start): range[0];
+      const h = moment(x1) < range[1] ? moment(x1) : range[1];
       annotations.push({
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
-        text: phase,
+        text: phase.toUpperCase(),
         showarrow: false,
         bgcolor: fillcolor,
         font: {
