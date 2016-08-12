@@ -4,6 +4,7 @@ import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 import { Select } from 'rebass';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import Plotly from './plotly-custom';
 import { monthRange, thisCalendarYear,
@@ -85,6 +86,7 @@ export class ProjectContainer extends Component {
       minStartDate: null,
       maxEndDate: null
     };
+    Tabs.setUseDefaultStyles(false);
   }
 
   get timeFrames() {
@@ -303,22 +305,32 @@ export class ProjectContainer extends Component {
           </div>
           {this.state.project.name}
         </h1>
-        <hr />
-        <KeyStats
-          budget={this.state.project.budget}
-          costToDate={this.state.project['cost_to_date']}
-          savings={this.state.project.savings}
-        />
-        <hr/>
-        <h3 className="heading-medium">Total expenditure and budget</h3>
-        { timeFrameSelector }
-        <ProjectGraph
-          onChange={(e) => this.handleBurnDownChange(e)}
-          project={this.state.project}
-          showBurnDown={this.state.showBurnDown}
-          startDate={this.state.startDate}
-          endDate={this.state.endDate}
-        />
+        <Tabs className="product-tabs">
+          <TabList>
+            <Tab>Overview</Tab>
+            <Tab>Product information</Tab>
+          </TabList>
+          <TabPanel>
+            <KeyStats
+              budget={this.state.project.budget}
+              costToDate={this.state.project['cost_to_date']}
+              savings={this.state.project.savings}
+            />
+            <hr/>
+            <h3 className="heading-medium">Total expenditure and budget</h3>
+            { timeFrameSelector }
+            <ProjectGraph
+              onChange={(e) => this.handleBurnDownChange(e)}
+              project={this.state.project}
+              showBurnDown={this.state.showBurnDown}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+            />
+          </TabPanel>
+          <TabPanel>
+            <p>{ this.state.project.description }</p>
+          </TabPanel>
+        </Tabs>
       </div>
     );
   }
