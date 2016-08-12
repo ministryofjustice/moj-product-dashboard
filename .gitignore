@@ -18,7 +18,7 @@ output.log
 coverage/*
 
 # Dist assets
-dashboard/apps/prototype/static/dist
+dashboard/assets/dist
 
 # Celery
 celerybeat-schedule
