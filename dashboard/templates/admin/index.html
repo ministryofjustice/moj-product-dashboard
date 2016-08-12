@@ -12,7 +12,7 @@
 {% block content %}
 <div id="content-main">
 
-{% if perms.prototype.upload_person %}
+{% if request.user.is_finance %}
     <div class="module">
         <table width="100%">
             <caption>
