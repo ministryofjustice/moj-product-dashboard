@@ -146,27 +146,19 @@
             <ul>
               <li class="portfolio"><a href="{% url 'portfolio_html' %}">Portfolio Summary</a></li>
                 <li class="admin"><a href="/admin">Admin</a></li>
-{#                <li class="user-menu">#}
-{#                    <div id="user-menu-dropdown">#}
-{#                        <a id="user-menu-button">{{ request.user.username }}</a>#}
-{#                        <div id="user-menu-options">#}
-{#                            <ul>#}
-{#                                <li class="user-menu-item"><a href="/logout">Logout</a></li>#}
-{#                                <li class="user-menu-item"><a href="/password_change">Change Password</a></li>#}
-{#                            </ul>#}
-{#                        <div>#}
-{#                    </div>#}
-{#                </li>#}
+                <li class="user-menu">
+                    <div id="user-menu-dropdown">
+                        <a id="user-menu-button">{{ request.user.username }}</a>
+                        <div id="user-menu-options">
+                            <ul>
+                                <li class="user-menu-item"><a href="/logout">Logout</a></li>
+                                <li class="user-menu-item"><a href="/password_change">Change Password</a></li>
+                            </ul>
+                        <div>
+                    </div>
+                </li>
             </ul>
-            <div id="user-menu-dropdown">
-                <a id="user-menu-button">{{ request.user.username }}</a>
-                <div id="user-menu-options">
-                    <ul>
-                        <li class="user-menu-item"><a href="/logout">Logout</a></li>
-                        <li class="user-menu-item"><a href="/password_change">Change Password</a></li>
-                    </ul>
-                <div>
-            </div>
+
         </div>
     </div>
 </div>
