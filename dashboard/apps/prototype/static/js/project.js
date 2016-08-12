@@ -244,13 +244,30 @@ export class ProjectContainer extends Component {
     }
   }
 
+  checkDateRange(startDate) {
+    if (startDate > this.endDate) {
+      console.log('startDate > endDate');
+      return true;
+    }
+    return false;
+  }
+
   handleStartDateChange(evt) {
-    const startDate = evt.target.value;
+    let startDate = evt.target.value;
+    console.log(evt);
+    console.log(evt.target);
+    console.log(startDate);
+    console.log(this.timeFrameOpts);
+    console.log(this.timeFrames);
+    const endDate = this.state.endDate;
     // do nothing if there is no change
     if (startDate == this.state.startDate) {
       return;
     }
-    const endDate = this.state.endDate;
+    if (this.checkDateRange(startDate, endDate)) {
+      startDate = this.state.startDate;
+      evt.target.value = startDate;
+    }
     this.setState({
       startDate: startDate,
       timeFrame: this.matchTimeFrame(startDate, endDate)
