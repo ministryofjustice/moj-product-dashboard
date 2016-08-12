@@ -233,3 +233,30 @@ div.sortoptions {
 div#toolbar div {
     background-color: #FFFFFF;
 }
+
+div.dashboard-admin-nav ul li a {
+    padding: 20px 20px 4px 14px;
+    color: #0b0c0c;
+    text-decoration: none;
+}
+
+div.dashboard-admin-nav ul li a:hover {
+    border-bottom: 3px solid #005ea5;
+    cursor: pointer;
+}
+
+div.dashboard-admin-nav ul li {
+    display:inline;
+    vertical-align:middle;
+}
+
+div.dashboard-admin-nav ul {
+    padding: 0;
+    margin: 20px 0px;
+    list-style-type: none;
+    display:inline-block;
+}
+
+div.dashboard-admin-nav {
+    width: 100%;
+}

@@ -12,6 +12,9 @@
 {% block content %}
 <div id="content-main">
 
+{% block dashboard_admin_nav %}
+{% endblock %}
+
 {% if request.user.is_finance %}
     <div class="module">
         <table width="100%">

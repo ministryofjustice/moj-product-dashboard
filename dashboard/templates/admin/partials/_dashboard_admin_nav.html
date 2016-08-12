@@ -1,0 +1,19 @@
+<div id="dashboard-admin-nav" class="dashboard-admin-nav">
+  <ul>
+    {% if available_apps %}
+      {% for app in available_apps %}
+        {% for model in app.models %}
+          {% if model.admin_url %}
+            <li><a href="{{ model.admin_url }}">{{ model.name }}</a></li>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+    {% if request.user.is_finance %}
+      <li><a href="{% url 'admin:person_upload_payroll' %}">Salary upload</a></li>
+      <li><a href="{% url 'admin:project_adjustment_export' %}">Export</a></li>
+{#            <li><a href="{% url 'admin:project_intercompany_export' %}">Intercompany Export</a></li>#}
+{#            <li><a href="{% url 'admin:project_projectdetail_export' %}">Project Detail Export</a></li>#}
+    {% endif %}
+  </ul>
+</div>
