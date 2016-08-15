@@ -4,16 +4,16 @@
       {% for app in available_apps %}
         {% for model in app.models %}
           {% if model.admin_url %}
-            <li><a href="{{ model.admin_url }}">{{ model.name }}</a></li>
+            <li><a href="{{ model.admin_url }}" class="{% if request.path == model.admin_url %} active{% endif %}">{{ model.name }}</a></li>
           {% endif %}
         {% endfor %}
       {% endfor %}
     {% endif %}
     {% if request.user.is_finance %}
-      <li><a href="{% url 'admin:person_upload_payroll' %}">Salary upload</a></li>
-      <li><a href="{% url 'admin:project_adjustment_export' %}">Export</a></li>
-{#            <li><a href="{% url 'admin:project_intercompany_export' %}">Intercompany Export</a></li>#}
-{#            <li><a href="{% url 'admin:project_projectdetail_export' %}">Project Detail Export</a></li>#}
+      {% url 'admin:person_upload_payroll' as upload_url %}
+      <li><a href="{{ upload_url }}" class="{% if request.path == upload_url %} active{% endif %}">Salary upload</a></li>
+      {% url 'admin:project_export' as export_url %}
+      <li><a href="{{ export_url }}" class="{% if request.path == export_url %} active{% endif %}">Export</a></li>
     {% endif %}
   </ul>
 </div>

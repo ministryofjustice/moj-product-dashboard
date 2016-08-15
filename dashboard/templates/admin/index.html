@@ -28,17 +28,7 @@
             {% endif %}
             {% if perms.prototype.adjustmentexport_project %}
                 <tr class="model-">
-                    <th scope="row"><a href="{% url 'admin:project_adjustment_export' %}">Adjustment Export</a></th>
-                </tr>
-            {% endif %}
-            {% if perms.prototype.intercompanyexport_project %}
-                <tr class="model-">
-                    <th scope="row"><a href="{% url 'admin:project_intercompany_export' %}">Intercompany Export</a></th>
-                </tr>
-            {% endif %}
-            {% if perms.prototype.projectdetailexport_project %}
-                <tr class="model-">
-                    <th scope="row"><a href="{% url 'admin:project_projectdetail_export' %}">Project Detail Export</a></th>
+                    <th scope="row"><a href="{% url 'admin:project_export' %}">Adjustment Export</a></th>
                 </tr>
             {% endif %}
         </table>

@@ -235,12 +235,14 @@ div#toolbar div {
 }
 
 div.dashboard-admin-nav ul li a {
-    padding: 20px 20px 4px 14px;
+    padding: 10px 20px 4px 14px;
     color: #0b0c0c;
     text-decoration: none;
+    display: inline-block;
 }
 
-div.dashboard-admin-nav ul li a:hover {
+div.dashboard-admin-nav ul li a:hover,
+div.dashboard-admin-nav ul li a.active {
     border-bottom: 3px solid #005ea5;
     cursor: pointer;
 }
@@ -248,15 +250,19 @@ div.dashboard-admin-nav ul li a:hover {
 div.dashboard-admin-nav ul li {
     display:inline;
     vertical-align:middle;
+
 }
 
 div.dashboard-admin-nav ul {
     padding: 0;
-    margin: 20px 0px;
+    margin: 20px 0 0 0;
     list-style-type: none;
-    display:inline-block;
+    border-bottom: 1px solid #bfc1c3;
 }
 
 div.dashboard-admin-nav {
     width: 100%;
+
+    margin: 0;
+    padding: 0;
 }
