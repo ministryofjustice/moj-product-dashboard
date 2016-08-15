@@ -198,7 +198,7 @@ class BaseExport():
                 template = os.path.join(dir, self.template)
                 if os.path.isfile(template):
                     return template
-        raise Exception('Could not find template %s' % self.template)
+        raise Exception('Could not find template %s' % self.template)  # pragma: no cover
 
     def write(self, workbook, ws=None):
         if ws is None:  # pragma: no cover

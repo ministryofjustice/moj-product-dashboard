@@ -8,13 +8,7 @@ from model_mommy import mommy
 
 from ..models import Project, Client, Person, PersonCost, Rate, Task
 from ..constants import COST_TYPES
-
-
-EXPORT_URLS = [
-    '/admin/prototype/project/export/adjustment/',
-    '/admin/prototype/project/export/intercompany/',
-    '/admin/prototype/project/export/projectdetail/',
-]
+from ..forms import EXPORTS
 
 
 class ExportTestCase(TestCase):
@@ -79,8 +73,9 @@ class ExportTestCase(TestCase):
 
     def test_can_export_files(self):
         self.client.login(username='test_finance', password='Admin123')
-        for url in EXPORT_URLS:
+        for export in dict(EXPORTS).keys():
             response = self.client.post(
-                url,
-                {'date': date(2015, 1, 1), 'project': self.project.pk})
+                '/admin/prototype/project/export/',
+                {'date': date(2015, 1, 1), 'project': self.project.pk,
+                 'export_type': export})
             self.assertEqual(response.status_code, 200)

@@ -108,15 +108,7 @@ class TaskTimeSpentTestCase(TestCase):
 
             self.assertRaises(
                 PermissionDenied,
-                model_admin.adjustment_export_view,
-                mock_request)
-            self.assertRaises(
-                PermissionDenied,
-                model_admin.intercompany_export_view,
-                mock_request)
-            self.assertRaises(
-                PermissionDenied,
-                model_admin.project_detail_export_view,
+                model_admin.export_view,
                 mock_request)
 
     def test_finance_users_can_access_exports(self):
@@ -124,11 +116,5 @@ class TaskTimeSpentTestCase(TestCase):
         mock_request = mock.Mock(spec=Request, user=self.finance_admin,
                                  method='GET', COOKIES={}, META={})
 
-        resp = model_admin.adjustment_export_view(mock_request)
-        self.assertEqual(resp.status_code, 200)
-
-        resp = model_admin.intercompany_export_view(mock_request)
-        self.assertEqual(resp.status_code, 200)
-
-        resp = model_admin.project_detail_export_view(mock_request)
+        resp = model_admin.export_view(mock_request)
         self.assertEqual(resp.status_code, 200)
