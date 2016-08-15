@@ -15,8 +15,7 @@ from django.utils.decorators import method_decorator
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup,
                      Saving)
-from .forms import (PayrollUploadForm, AdjustmentExportForm,
-                    IntercompanyExportForm, ProjectDetailExportForm)
+from .forms import (PayrollUploadForm, ExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 
 
@@ -148,13 +147,16 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         else:
             form = PayrollUploadForm()
 
+        context = self.admin_site.each_context(request)
+        context.update({
+            'opts': self.model._meta,
+            'has_permission': self.has_upload_permission(request),
+            'form': form,
+        })
+
         return render_to_response(
             'admin/prototype/upload.html',
-            {
-                'opts': self.model._meta,
-                'has_permission': self.has_upload_permission(request),
-                'form': form,
-            },
+            context,
             context_instance=RequestContext(request))
 
 
@@ -215,29 +217,25 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     def get_urls(self):
         urls = [
             url(
-                r'^export/adjustment/$',
-                self.admin_site.admin_view(self.adjustment_export_view),
-                name='project_adjustment_export'),
-            url(
-                r'^export/intercompany/$',
-                self.admin_site.admin_view(self.intercompany_export_view),
-                name='project_intercompany_export'),
-            url(
-                r'^export/projectdetail/$',
-                self.admin_site.admin_view(self.project_detail_export_view),
-                name='project_projectdetail_export'),
+                r'^export/$',
+                self.admin_site.admin_view(self.export_view),
+                name='project_export'),
         ]
         return urls + super(ProjectAdmin, self).get_urls()
 
-    def _export_view(self, request, form_class, file_name):
+    @csrf_protect_m
+    @transaction.atomic
+    @method_decorator(permission_required('prototype.adjustmentexport_project',
+                                          raise_exception=True))
+    def export_view(self, request):
         if not self.is_finance(request.user):  # pragma: no cover
             raise PermissionDenied
 
         if request.method == 'POST':
-            form = form_class(data=request.POST, files=request.FILES)
+            form = ExportForm(data=request.POST, files=request.FILES)
             if form.is_valid():
                 fname = '%s_%s_%s-%s.xlsm' % (
-                    file_name,
+                    form.cleaned_data['export_type'],
                     re.sub(
                         '[^0-9a-zA-Z]+',
                         '-',
@@ -252,40 +250,19 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
                 workbook.save(response)
                 return response
         else:
-            form = form_class()
+            form = ExportForm()
+
+        context = self.admin_site.each_context(request)
+        context.update({
+            'opts': self.model._meta,
+            'has_permission': self.is_finance(request.user),
+            'form': form,
+        })
 
         return render_to_response(
             'admin/prototype/export.html',
-            {
-                'opts': self.model._meta,
-                'has_permission': self.is_finance(request.user),
-                'form': form,
-            },
+            context,
             context_instance=RequestContext(request))
-
-    @csrf_protect_m
-    @transaction.atomic
-    @method_decorator(permission_required('prototype.adjustmentexport_project',
-                                          raise_exception=True))
-    def adjustment_export_view(self, request, *args, **kwargs):
-        return self._export_view(request, AdjustmentExportForm,
-                                 'Adjustment_Journal')
-
-    @csrf_protect_m
-    @transaction.atomic
-    @method_decorator(permission_required('prototype.intercompanyexport_project',
-                                          raise_exception=True))
-    def intercompany_export_view(self, request, *args, **kwargs):
-        return self._export_view(request, IntercompanyExportForm,
-                                 'Intercompany_Journal')
-
-    @csrf_protect_m
-    @transaction.atomic
-    @method_decorator(permission_required('prototype.projectdetailexport_project',
-                                          raise_exception=True))
-    def project_detail_export_view(self, request, *args, **kwargs):
-        return self._export_view(request, ProjectDetailExportForm,
-                                 'Project_Detail')
 
 
 class TaskAdmin(ReadOnlyAdmin):

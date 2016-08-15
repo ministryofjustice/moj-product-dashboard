@@ -119,6 +119,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = (
+    'dashboard_auth.backends.ModelBackend',
+)
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 

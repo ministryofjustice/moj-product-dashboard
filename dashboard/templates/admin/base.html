@@ -60,7 +60,11 @@
 {% endblock %}
 
 {% block main %}
-    <div class="admin-wrapper">
+  <div class="admin-wrapper">
+
+    {% block dashboard_admin_nav %}
+      {% include 'admin/partials/_dashboard_admin_nav.html' %}
+    {% endblock %}
 
     {% block breadcrumbs %}
         <div class="breadcrumbs">
@@ -68,31 +72,31 @@
             {% if title %} &rsaquo; {{ title }}{% endif %}
         </div>
     {% endblock %}
-        {% block messages %}
-            {% if messages %}
-                <ul class="messagelist">{% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
-                {% endfor %}</ul>
-            {% endif %}
-        {% endblock messages %}
+    {% block messages %}
+        {% if messages %}
+            <ul class="messagelist">{% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+            {% endfor %}</ul>
+        {% endif %}
+    {% endblock messages %}
 
 
-        <div class="main-section">
-            <!-- Content -->
-            <div class="{% block coltype %}colM{% endblock %}">
-                {% block pretitle %}{% endblock %}
-                {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
-                {% block content %}
-                    {% block object-tools %}{% endblock %}
-                    {{ content }}
-                {% endblock %}
-                {% block sidebar %}{% endblock %}
-                <br class="clear"/>
-            </div>
-
+    <div class="main-section">
+        <!-- Content -->
+        <div class="{% block coltype %}colM{% endblock %}">
+            {% block pretitle %}{% endblock %}
+            {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+            {% block content %}
+                {% block object-tools %}{% endblock %}
+                {{ content }}
+            {% endblock %}
+            {% block sidebar %}{% endblock %}
+            <br class="clear"/>
         </div>
 
     </div>
+
+  </div>
 {% endblock %}
 
 {% block javascripts %}{% endblock %}

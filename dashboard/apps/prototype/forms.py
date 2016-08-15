@@ -159,15 +159,33 @@ class PayrollUploadForm(forms.Form):
                 additional.save()
 
 
-class ExportForm(forms.Form):
-    template = 'xls/Journal_Template.xltm'
+EXPORTS = (
+    ('Adjustment_Journal', 'Adjustment Export'),
+    ('Intercompany_Journal', 'Intercompany Export'),
+    ('Project_Detail', 'Project Detail Export'),
+)
 
+
+class ExportForm(forms.Form):
     date = forms.DateField(required=True, widget=MonthYearWidget(
         years=year_range(backward=4, forward=3)
     ))
     project = forms.ModelChoiceField(
         queryset=Project.objects.visible(),
         required=True)
+    export_type = forms.ChoiceField(choices=EXPORTS, widget=forms.RadioSelect())
+
+    def export(self):
+        ExportClass = EXPORT_CLASSES.get(self.cleaned_data['export_type'])
+        export = ExportClass(cleaned_data=self.cleaned_data)
+        return export.export()
+
+
+class BaseExport():
+    template = 'xls/Journal_Template.xltm'
+
+    def __init__(self, cleaned_data):
+        self.cleaned_data = cleaned_data
 
     def export(self):
         wb = load_workbook(self._get_template(), keep_vba=True)
@@ -237,23 +255,21 @@ class ExportForm(forms.Form):
         ws.cell(row=166, column=9).value = project.people_costs(start_date, end_date)
 
 
-class AdjustmentExportForm(ExportForm):
-
+class AdjustmentExport(BaseExport):
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
-        super(AdjustmentExportForm, self).write(workbook, ws=ws)
+        super(AdjustmentExport, self).write(workbook, ws=ws)
         ws.cell(row=8, column=9).value = 'Adjustment'
 
 
-class IntercompanyExportForm(ExportForm):
-
+class IntercompanyExport(BaseExport):
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
-        super(IntercompanyExportForm, self).write(workbook, ws=ws)
+        super(IntercompanyExport, self).write(workbook, ws=ws)
         ws.cell(row=8, column=9).value = 'Intercompany Transfer'
 
 
-class ProjectDetailExportForm(ExportForm):
+class ProjectDetailExport(BaseExport):
     template = 'xls/ProjectDetail.xlsx'
 
     def write(self, workbook, ws=None):
@@ -327,6 +343,13 @@ class ProjectDetailExportForm(ExportForm):
         cell = ws.cell(coordinate=coordinate)
         cell.set_explicit_value(
             value='=SUM(%s)' % ','.join(cells), data_type=cell.TYPE_FORMULA)
+
+
+EXPORT_CLASSES = {
+    'Adjustment_Journal': AdjustmentExport,
+    'Intercompany_Journal': IntercompanyExport,
+    'Project_Detail': ProjectDetailExport,
+}
 
 
 def insert_rows(ws, row_idx, cnt, above=False, copy_style=True,

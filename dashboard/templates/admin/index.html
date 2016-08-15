@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/base.html" %}
 {% load i18n admin_static %}
 
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
@@ -12,7 +12,10 @@
 {% block content %}
 <div id="content-main">
 
-{% if perms.prototype.upload_person %}
+{% block dashboard_admin_nav %}
+{% endblock %}
+
+{% if request.user.is_finance %}
     <div class="module">
         <table width="100%">
             <caption>
@@ -25,17 +28,7 @@
             {% endif %}
             {% if perms.prototype.adjustmentexport_project %}
                 <tr class="model-">
-                    <th scope="row"><a href="{% url 'admin:project_adjustment_export' %}">Adjustment Export</a></th>
-                </tr>
-            {% endif %}
-            {% if perms.prototype.intercompanyexport_project %}
-                <tr class="model-">
-                    <th scope="row"><a href="{% url 'admin:project_intercompany_export' %}">Intercompany Export</a></th>
-                </tr>
-            {% endif %}
-            {% if perms.prototype.projectdetailexport_project %}
-                <tr class="model-">
-                    <th scope="row"><a href="{% url 'admin:project_projectdetail_export' %}">Project Detail Export</a></th>
+                    <th scope="row"><a href="{% url 'admin:project_export' %}">Adjustment Export</a></th>
                 </tr>
             {% endif %}
         </table>
