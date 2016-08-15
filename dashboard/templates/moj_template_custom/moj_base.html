@@ -145,8 +145,14 @@
         <div class="nav-bar">
             <ul>
               <li class="portfolio"><a href="{% url 'portfolio_html' %}">Portfolio Summary</a></li>
-                <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
-                <li class="user-menu"><a>{{ request.user.username }}</a></li>
+              <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
+              <li class="user-menu">
+                <a>{{ request.user.username }}</a>
+                <ul>
+                  <li><a href="/logout">Log out</a></li>
+                  <li><a href="/password_change">Change Password</a></li>
+                </ul>
+              </li>
             </ul>
         </div>
     </div>

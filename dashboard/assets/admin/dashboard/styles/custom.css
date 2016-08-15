@@ -266,3 +266,40 @@ div.dashboard-admin-nav {
     margin: 0;
     padding: 0;
 }
+
+li.user-menu {
+    position: relative;
+    white-space: nowrap;
+}
+
+li.user-menu ul li a {
+    cursor: pointer;
+    width: 100%;
+}
+
+li.user-menu ul li a:hover {
+    cursor: pointer;
+}
+
+li.user-menu ul {
+    display: none;
+    position: absolute;
+    right: 0;
+    margin: 0;
+    padding: 0;
+}
+
+li.user-menu ul li {
+    display: block;
+    margin:0;
+    padding: 3px;
+    border: none;
+    border-right: 1px solid #dee0e2;
+    border-left: 1px solid #dee0e2;
+    border-bottom: 1px solid #dee0e2;
+    text-align: right;
+}
+
+li.user-menu:hover ul {
+    display: block;
+}
