@@ -2,7 +2,7 @@ import Plotly from './plotly-custom';
 import moment from 'moment';
 
 import { parseProjectFinancials } from './project';
-import { endOfMonth, round } from './utils';
+import { endOfMonth, round, monthRange } from './utils';
 
 /**
  * work out the date labels for the xaxis
@@ -25,7 +25,6 @@ function tickFormat(range) {
  * phases
  * */
 function backgroundForPhases(project, range) {
-
   const discovery = project['discovery_date'];
   const alpha = project['alpha_date'];
   const beta = project['beta_date'];
@@ -40,7 +39,7 @@ function backgroundForPhases(project, range) {
     'alpha': {
       start: alpha,
       end: beta,
-      fillcolor: '#de397f'
+      fillcolor: '#d53880'
     },
     'beta': {
       start: beta,
@@ -49,7 +48,6 @@ function backgroundForPhases(project, range) {
     },
     'live': {
       start: live,
-      end: range[1].format('YYYY-MM-DD'),
       fillcolor: '#839951'
     }
   }
@@ -58,13 +56,14 @@ function backgroundForPhases(project, range) {
 
   Object.keys(phases).map( phase => {
     const {start, end, fillcolor} = phases[phase];
-    if (start && end) {
+    if (start) {
+      const x1 = end ? end : range[1].format('YYYY-MM-DD');
       shapes.push({
         type: 'rect',
         xref: 'x',
         yref: 'paper',
         x0: start,
-        x1: end,
+        x1: x1,
         y0: 0,
         y1: 1,
         fillcolor: fillcolor,
@@ -73,13 +72,13 @@ function backgroundForPhases(project, range) {
           width: 0
         }
       });
-      const l = moment(start) > range[0] ? moment(start ): range[0];
-      const h = moment(end) < range[1] ? moment(end) : range[1];
+      const l = moment(start) > range[0] ? moment(start): range[0];
+      const h = moment(x1) < range[1] ? moment(x1) : range[1];
       annotations.push({
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
-        text: phase,
+        text: phase.toUpperCase(),
         showarrow: false,
         bgcolor: fillcolor,
         font: {
@@ -134,8 +133,12 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
   const monthly = parseProjectFinancials(project.financial);
   const months = Object.keys(monthly).sort();
+  const finalMonth = months.slice(-1)[0];
+  const remainingMonths = monthRange(finalMonth, endDate, 'end');
+  const monthsExtended = months.concat(remainingMonths);
   const pastMonths = months.filter(m => m < currentMonth);
   const lastPlusFutureMonths = months.filter(m => m >= lastMonth);
+  const lastPlusFutureMonthsExtended = lastPlusFutureMonths.concat(remainingMonths);
 
   const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
 
@@ -180,8 +183,13 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
   const forecastRemainingTrace = {
-    x: lastPlusFutureMonths.map(toLabel),
-    y: lastPlusFutureMonths.map(m => round(monthly[m].remaining)),
+    x: lastPlusFutureMonthsExtended.map(toLabel),
+    y: lastPlusFutureMonthsExtended.map(m => {
+      if (m in monthly) {
+        return round(monthly[m].remaining);
+      }
+      return round(monthly[finalMonth].remaining);
+    }),
     name: 'Forecast spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -196,8 +204,13 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   };
 
   const budgetTrace = {
-    x: months.map(toLabel),
-    y: months.map(m => round(monthly[m].budget)),
+    x: monthsExtended.map(toLabel),
+    y: monthsExtended.map(m => {
+      if (m in monthly) {
+        return round(monthly[m].budget);
+      }
+      return round(monthly[finalMonth].budget);
+    }),
     name: 'Budget',
     type: 'scatter',
     mode: 'lines+markers',

@@ -37,7 +37,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'prototype_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -61,7 +60,6 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'dashboard.apps.moj_admin.intercept.InterceptMiddleware',
 
 ]
 
@@ -140,6 +138,9 @@ USE_TZ = True
 
 STATIC_ROOT = location('static')
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    location('assets'),
+)
 
 PING_JSON_KEYS = {
     'build_date_key': 'APP_BUILD_DATE',

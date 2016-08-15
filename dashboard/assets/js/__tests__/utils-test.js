@@ -25,6 +25,12 @@ describe('monthRange', () => {
 
     expect(monthRange('2016-01', '2016-01', 'end'))
       .toEqual([ '2016-01-31' ]);
+
+    expect(monthRange('2016-02', '2016-01', 'start'))
+      .toEqual([ ]);
+
+    expect(monthRange('2016-02', '2016-01', 'end'))
+      .toEqual([ ]);
   });
 });
 

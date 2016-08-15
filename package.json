@@ -7,7 +7,6 @@
     "jquery": "^2.2.4",
     "js-cookie": "^2.1.1",
     "plotly.js": "^1.11.0",
-    "select2": "^4.0.3",
     "whatwg-fetch": "^1.0.0"
   },
   "devDependencies": {
@@ -27,6 +26,7 @@
     "react": "^15.3.0",
     "react-dom": "^15.1.0",
     "react-spinkit": "^1.1.7",
+    "react-tabs": "^0.7.0",
     "rebass": "^0.3.0",
     "style-loader": "^0.13.1",
     "webpack": "^1.13.0"
@@ -40,7 +40,7 @@
   "jest": {
     "automock": false,
     "moduleNameMapper": {
-      "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS)$": "<rootDir>/dashboard/apps/prototype/static/js/EmptyModule.js"
+      "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS)$": "<rootDir>/dashboard/assets/js/EmptyModule.js"
     }
   },
   "scripts": {

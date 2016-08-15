@@ -3,7 +3,8 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
-import { Select, Radio, config } from 'rebass';
+import { Select } from 'rebass';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import Plotly from './plotly-custom';
 import { monthRange, thisCalendarYear,
@@ -85,6 +86,7 @@ export class ProjectContainer extends Component {
       minStartDate: null,
       maxEndDate: null
     };
+    Tabs.setUseDefaultStyles(false);
   }
 
   get timeFrames() {
@@ -296,23 +298,39 @@ export class ProjectContainer extends Component {
 
     return (
       <div>
-        <h1 className="heading-xlarge">{this.state.project.name}</h1>
-        <hr />
-        <KeyStats
-          budget={this.state.project.budget}
-          costToDate={this.state.project['cost_to_date']}
-          savings={this.state.project.savings}
-        />
-        <hr/>
-        <h3 className="heading-medium">Total expenditure and budget</h3>
-        { timeFrameSelector }
-        <ProjectGraph
-          onChange={(e) => this.handleBurnDownChange(e)}
-          project={this.state.project}
-          showBurnDown={this.state.showBurnDown}
-          startDate={this.state.startDate}
-          endDate={this.state.endDate}
-        />
+        <h1 className="heading-xlarge">
+          <div className="banner">
+            <PhaseTag phase={this.state.project.phase} />
+            <RagTag rag={this.state.project['financial_rag']} />
+          </div>
+          {this.state.project.name}
+        </h1>
+        <Tabs className="product-tabs">
+          <TabList>
+            <Tab>Overview</Tab>
+            <Tab>Product information</Tab>
+          </TabList>
+          <TabPanel>
+            <KeyStats
+              budget={this.state.project.budget}
+              costToDate={this.state.project['cost_to_date']}
+              savings={this.state.project.savings}
+            />
+            <hr/>
+            <h3 className="heading-medium">Total expenditure and budget</h3>
+            { timeFrameSelector }
+            <ProjectGraph
+              onChange={(e) => this.handleBurnDownChange(e)}
+              project={this.state.project}
+              showBurnDown={this.state.showBurnDown}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+            />
+          </TabPanel>
+          <TabPanel>
+            <p>{ this.state.project.description }</p>
+          </TabPanel>
+        </Tabs>
       </div>
     );
   }
@@ -430,22 +448,28 @@ class ProjectGraph extends Component {
   render() {
     return (
       <div>
-        <Radio
-          checked={!this.props.showBurnDown}
-          circle
-          label="Show burn up"
-          name="burn-up-burn-down"
-          value="burn-up"
-          onChange={this.props.onChange}
-        />
-        <Radio
-          checked={this.props.showBurnDown}
-          circle
-          label="Show burn down"
-          name="burn-up-burn-down"
-          value="burn-down"
-          onChange={this.props.onChange}
-        />
+        <fieldset className="inline">
+          <label className="block-label" htmlFor="radio-burn-up">
+            <input
+              id="radio-burn-up"
+              type="radio"
+              value="burn-up"
+              checked={!this.props.showBurnDown}
+              onChange={this.props.onChange}
+            />
+            Burn up
+          </label>
+          <label className="block-label" htmlFor="radio-burn-down">
+            <input
+              id="radio-burn-down"
+              type="radio"
+              value="burn-down"
+              checked={this.props.showBurnDown}
+              onChange={this.props.onChange}
+            />
+            Burn down
+          </label>
+        </fieldset>
         <div ref={(elem) => this.container1=elem} />
         <div ref={(elem) => this.container2=elem} />
       </div>
@@ -636,4 +660,41 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       showFilter={showFilter}
     />
   );
+}
+
+function PhaseTag({phase}) {
+  const classNameMapping = {
+    Discovery: 'phase-tag-discovery',
+    Alpha: 'phase-tag-alpha',
+    Beta: 'phase-tag-beta',
+    Live: 'phase-tag-live',
+    Ended: 'phase-tag-ended'
+  };
+  const className = classNameMapping[phase];
+  if (className) {
+    return (
+      <strong className={`phase-tag ${className}`}>
+        { phase }
+      </strong>
+    );
+  };
+  return null;
+}
+
+
+function RagTag({rag}) {
+  const classNameMapping = {
+    RED: 'rag-tag-red',
+    AMBER: 'rag-tag-amber',
+    GREEN: 'rag-tag-green'
+  };
+  const className = classNameMapping[rag];
+  if (className) {
+    return (
+      <strong className={`rag-tag ${className}`}>
+        RAG
+      </strong>
+    );
+  };
+  return null;
 }

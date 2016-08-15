@@ -12,6 +12,7 @@ from datetime import datetime
 import re
 
 from django import forms
+from django.conf import settings
 
 from openpyxl import load_workbook
 from xlrd import open_workbook
@@ -174,11 +175,12 @@ class ExportForm(forms.Form):
         return wb
 
     def _get_template(self):
-        return os.path.join(
-            os.path.realpath(os.path.dirname(__file__)),
-            'templates',
-            self.template
-        )
+        for template_setting in settings.TEMPLATES:
+            for dir in template_setting['DIRS']:
+                template = os.path.join(dir, self.template)
+                if os.path.isfile(template):
+                    return template
+        raise Exception('Could not find template %s' % self.template)
 
     def write(self, workbook, ws=None):
         if ws is None:  # pragma: no cover

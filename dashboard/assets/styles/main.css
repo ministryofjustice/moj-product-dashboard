@@ -1,0 +1,118 @@
+strong {
+    font-weight: bold;
+}
+
+@media (min-width: 641px) {
+  select#projects, select#services {
+    width: 450px;
+  }
+}
+
+button.update-from-float {
+    float: right;
+}
+
+.spinkit, .projects-spinkit, .graph-spinkit {
+  position: relative;
+  left: 45%;
+  z-index: 9999;
+}
+
+.projects-spinkit {
+  top: 200px;
+}
+
+.graph-spinkit {
+  top: 40px;
+}
+
+.griddle-body th span {
+  color: #005ea5;
+  text-decoration: underline;
+}
+
+.griddle-body th span:hover {
+  color: #2b8cc4;
+  cursor: pointer;
+}
+
+img.rag {
+  height: 26px;
+}
+
+img.status {
+  height: 21px;
+}
+
+.banner .phase-tag,
+.banner .rag-tag {
+  display: -moz-inline-stack;
+  display: inline-block;
+  margin: 0 8px 0 0;
+  padding: 2px 5px 0;
+  font-family: "nta", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.1428571429;
+  font-weight: 700;
+  text-transform: none;
+  font-size-adjust: 0.525;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+  color: #fff;
+}
+
+.phase-tag-discovery {
+  background-color: #972c86;
+}
+
+.phase-tag-alpha {
+  background-color: #d53880;
+}
+
+.phase-tag-beta {
+  background-color: #f47738;
+}
+
+.phase-tag-live {
+  background-color: #839951;
+}
+
+.phase-tag-ended {
+  background-color: #c0c0c0;
+}
+
+.rag-tag-red {
+  background-color: red;
+}
+
+.rag-tag-amber {
+  background-color: #FFBF00;
+}
+
+.rag-tag-green {
+  background-color: green;
+}
+
+/* tabs */
+.product-tabs [role=tablist] {
+  border-bottom: 1px solid #aaa;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.product-tabs [role=tab] {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-bottom: none;
+  bottom: -1px;
+  position: relative;
+  list-style: none;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.product-tabs [role=tab][aria-selected=true] {
+  border-style: solid;
+  border-bottom-color: #005ea5;
+}

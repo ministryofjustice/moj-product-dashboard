@@ -1,6 +1,6 @@
 var path = require('path');
 
-var directory = path.resolve(__dirname, "dashboard/apps/prototype/static");
+var directory = path.resolve(__dirname, "dashboard/assets");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
@@ -32,13 +32,7 @@ module.exports = {
         test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$/,
         loader: "file-loader"
       }
-    ],
-    resolve: {
-      alias: {
-        'jquery': 'jquery/src/jquery',
-        'select2': 'select2/src/js/jquery.select2'
-      }
-    }
+    ]
   },
   plugins: [
     new ExtractTextPlugin("prototype.css")
