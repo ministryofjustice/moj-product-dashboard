@@ -173,7 +173,7 @@ class ExportForm(forms.Form):
     project = forms.ModelChoiceField(
         queryset=Project.objects.visible(),
         required=True)
-    export_type = forms.ChoiceField(choices=EXPORTS)
+    export_type = forms.ChoiceField(choices=EXPORTS, widget=forms.RadioSelect())
 
     def export(self):
         ExportClass = EXPORT_CLASSES.get(self.cleaned_data['export_type'])
