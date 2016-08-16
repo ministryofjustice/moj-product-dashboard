@@ -244,7 +244,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     annotations.push(todayMarkings.annotation);
   }
   const layout = {
-    title: 'Total expenditure and budget',
+    // title: 'Total expenditure and budget',
     font: {
       family: 'nta'
     },
@@ -260,7 +260,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       tickprefix: '\u00a3'
     },
     legend: {
-      yanchor: 'bottom'
+      yanchor: 'top'
     },
     shapes: shapes,
     annotations: annotations

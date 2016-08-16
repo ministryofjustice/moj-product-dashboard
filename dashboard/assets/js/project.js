@@ -322,14 +322,12 @@ export class ProjectContainer extends Component {
             <Tab>Product information</Tab>
           </TabList>
           <TabPanel>
+            { timeFrameSelector }
             <KeyStats
               budget={this.state.project.budget}
               costToDate={this.state.project['cost_to_date']}
               savings={this.state.project.savings}
             />
-            <hr/>
-            <h3 className="heading-medium">Total expenditure and budget</h3>
-            { timeFrameSelector }
             <ProjectGraph
               onChange={(e) => this.handleBurnDownChange(e)}
               project={this.state.project}
@@ -376,7 +374,7 @@ function TimeFrameSelector({
           options={startDateOpts}
           value={selectedStartDate}
           onChange={onSelectedStartDateChange}
-          label="from"
+          label="From"
         />
       </div>
       <div className="column-one-quarter">
@@ -385,7 +383,7 @@ function TimeFrameSelector({
           options={endDateOpts}
           value={selectedEndDate}
           onChange={onSelectedEndDateChange}
-          label="to"
+          label="To"
         />
       </div>
     </div>
@@ -397,6 +395,7 @@ function KeyStats({budget, costToDate, savings}) {
 
   const Data = ({data, label}) => (
     <div className="column-one-third">
+      <hr/>
       <div className="data">
         <h2 className="bold-xlarge">{data}</h2>
         <p className="bold-xsmall">{label}</p>
@@ -408,7 +407,7 @@ function KeyStats({budget, costToDate, savings}) {
 
   return (
     <div>
-      <h3 className="heading-medium">Key statistics</h3>
+      <h4 className="heading-small">Key statistics</h4>
       <div className="grid-row">
         <Data
           data={format(budget)}
@@ -459,7 +458,10 @@ class ProjectGraph extends Component {
   render() {
     return (
       <div>
-        <fieldset className="inline">
+        <h4 className="heading-small">Total expenditure and budget</h4>
+        <hr/>
+        <span>Show</span>
+        <fieldset className="inline burn-down-toggle">
           <label className="block-label" htmlFor="radio-burn-up">
             <input
               id="radio-burn-up"
@@ -482,6 +484,8 @@ class ProjectGraph extends Component {
           </label>
         </fieldset>
         <div ref={(elem) => this.container1=elem} />
+        <h4 className="heading-small">Monthly expenditure</h4>
+        <hr/>
         <div ref={(elem) => this.container2=elem} />
       </div>
     );
@@ -529,7 +533,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
     }
   };
   const layout = {
-    title: 'Monthly expenditure',
+    // title: 'Monthly expenditure',
     font: {
       family: 'nta'
     },
@@ -538,7 +542,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
       tickprefix: '\u00a3'
     },
     legend: {
-      yanchor: 'bottom'
+      yanchor: 'top'
     }
   };
   const data = [ actualTrace, forecastTrace ];
