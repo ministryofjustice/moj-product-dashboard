@@ -207,6 +207,16 @@ BROKER_TRANSPORT_OPTIONS = {
 
 BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'sqs://')
 
+if all([os.environ.get('SMTP_USER'),
+        os.environ.get('SMTP_PASS'),
+        os.environ.get('SMTP_HOST')]):
+    EMAIL_BACKEND = 'cla_backend.apps.core.mail.backends.TimeoutEmailBackend'
+    EMAIL_HOST = os.environ.get('SMTP_HOST')
+    EMAIL_HOST_USER = os.environ.get('SMTP_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASS')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # .local.py overrides all the common settings.
 try:
     from .local import *
