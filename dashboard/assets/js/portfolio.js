@@ -49,9 +49,9 @@ export class PortfolioContainer extends Component {
     };
     return (
       <div>
-        <label className="heading-medium">
-          <strong>Portfolio</strong>
-        </label>
+        <h1 className="heading-xlarge">
+          MoJ Digital Portfolio
+        </h1>
         <ProjectsTable
           projects={this.state.projects}
           showService={true}

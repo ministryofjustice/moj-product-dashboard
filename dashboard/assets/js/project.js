@@ -20,6 +20,7 @@ import GreenImg from '../img/green.png';
 import OKImg from '../img/ok.png';
 import AtRiskImg from '../img/at-risk.png';
 import InTroubleImg from '../img/in-trouble.png';
+import SeparatorImg from '../img/separator.png';
 
 /**
  * send a POST request to the backend to retrieve project profile
@@ -298,6 +299,16 @@ export class ProjectContainer extends Component {
 
     return (
       <div>
+        <div className="breadcrumbs">
+          <ol>
+            <li>
+              <a href="/">Digital portfolio</a>
+            </li>
+            <li style={{ backgroundImage: `url(${SeparatorImg})` }}>
+              { this.state.project.name }
+            </li>
+          </ol>
+        </div>
         <h1 className="heading-xlarge">
           <div className="banner">
             <PhaseTag phase={this.state.project.phase} />
