@@ -8,7 +8,7 @@ from unittest.mock import patch
 from django.test import Client
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
-from django.contrib.auth import views as auth_views
+from django.conf import settings
 from django.contrib.auth.models import User
 import pytest
 from faker import Faker
@@ -45,7 +45,7 @@ def test_login_required(view):
     client = Client()
     rsp = client.get(reverse(view))
     assert rsp.status_code == 302
-    assert rsp.url.startswith(reverse(auth_views.login))
+    assert rsp.url.startswith(settings.LOGIN_URL)
 
 
 @pytest.mark.django_db
