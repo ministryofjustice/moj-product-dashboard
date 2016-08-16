@@ -35,23 +35,26 @@ describe('parseProjectFinancials', () => {
     expect(parsed['2016-01']).toEqual({
       budget: 500,
       total: 351.5,
-      cumulative: 351.5,
+      spendCumulative: 351.5,
       remaining: 148.5,
-      savings: 800.25
+      savings: 800.25,
+      savingsCumulative: 800.25
     });
     expect(parsed['2016-02']).toEqual({
       budget: 800,
       total: 369.9,
-      cumulative: 721.4,
+      spendCumulative: 721.4,
       remaining: 800 - 721.4,  // float is not exactly 78.6
-      savings: 800.25
+      savings: 0,
+      savingsCumulative: 800.25
     });
     expect(parsed['2016-03']).toEqual({
       budget: 900,
       total: 309.9,
-      cumulative: 1031.3,
+      spendCumulative: 1031.3,
       remaining: 900 - 1031.3,  // float is not exactly 131.3
-      savings: 1452.56
+      savings: 652.31,
+      savingsCumulative: 1452.56
     });
   });
 });

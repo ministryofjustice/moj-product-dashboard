@@ -49,8 +49,8 @@ export function getProjectData(type, id, startDate, endDate, csrftoken) {
  */
 export function parseProjectFinancials(financial) {
   const result = {};
-  let cumulative = 0;
-  let savings = 0;
+  let spendCumulative = 0;
+  let savingsCumulative = 0;
 
   Object.keys(financial).sort().map(month => {
     const mf = financial[month];
@@ -58,13 +58,13 @@ export function parseProjectFinancials(financial) {
     const total = parseFloat(mf['contractor']) +
                   parseFloat(mf['non-contractor']) +
                   parseFloat(mf['additional']);
+    const savings = parseFloat(mf['savings']);
 
-    savings += parseFloat(mf['savings']);
-
-    cumulative += total;
-    const remaining = budget - cumulative;
+    spendCumulative += total;
+    savingsCumulative += savings;
+    const remaining = budget - spendCumulative;
     const ms = moment(month, 'YYYY-MM').format('YYYY-MM');
-    result[ms] = { total, cumulative, budget, remaining, savings };
+    result[ms] = { total, spendCumulative, budget, remaining, savings, savingsCumulative };
   });
 
   return result;
@@ -324,13 +324,13 @@ export class ProjectContainer extends Component {
           <TabPanel>
             { timeFrameSelector }
             <KeyStats
-              budget={this.state.project.budget}
-              costToDate={this.state.project['cost_to_date']}
-              savings={this.state.project.savings}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+              project={this.state.project}
             />
             <ProjectGraph
-              onChange={(e) => this.handleBurnDownChange(e)}
               project={this.state.project}
+              onBurnDownChange={(e) => this.handleBurnDownChange(e)}
               showBurnDown={this.state.showBurnDown}
               startDate={this.state.startDate}
               endDate={this.state.endDate}
@@ -374,7 +374,7 @@ function TimeFrameSelector({
           options={startDateOpts}
           value={selectedStartDate}
           onChange={onSelectedStartDateChange}
-          label="From"
+          label="From beginning of"
         />
       </div>
       <div className="column-one-quarter">
@@ -383,7 +383,7 @@ function TimeFrameSelector({
           options={endDateOpts}
           value={selectedEndDate}
           onChange={onSelectedEndDateChange}
-          label="To"
+          label="To end of"
         />
       </div>
     </div>
@@ -391,7 +391,27 @@ function TimeFrameSelector({
 }
 
 
-function KeyStats({budget, costToDate, savings}) {
+function KeyStats({project, startDate, endDate}) {
+
+  const monthly = parseProjectFinancials(project.financial);
+  const months = Object.keys(monthly).sort();
+  const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
+  const firstMonth = months[0];
+  const minMonth = startMonth > firstMonth ? startMonth : firstMonth;
+  const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
+  const finalMonth = months.slice(-1)[0];
+  const maxMonth = endMonth > finalMonth ? finalMonth : endMonth;
+
+  const budget = monthly[maxMonth].budget;
+  const spend = monthly[maxMonth].spendCumulative
+    - monthly[minMonth].spendCumulative
+    + monthly[minMonth].total;
+  const savings = monthly[maxMonth].savingsCumulative
+    - monthly[minMonth].savingsCumulative
+    + monthly[minMonth].savings;
+
+  const endMonthLabel = moment(endDate, 'YYYY-MM-DD').format('MMM YY');
+  const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
   const Data = ({data, label}) => (
     <div className="column-one-third">
@@ -403,23 +423,21 @@ function KeyStats({budget, costToDate, savings}) {
     </div>
   );
 
-  const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
-
   return (
     <div>
       <h4 className="heading-small">Key statistics</h4>
       <div className="grid-row">
         <Data
           data={format(budget)}
-          label="Budget"
+          label={`Budget as of end ${endMonthLabel}`}
         />
         <Data
-          data={format(costToDate)}
-          label="Total spend to date"
+          data={format(spend)}
+          label="Spend for this period"
         />
         <Data
           data={format(savings)}
-          label="Savings enabled"
+          label="Savings enabled for this period"
         />
       </div>
     </div>
@@ -468,7 +486,7 @@ class ProjectGraph extends Component {
               type="radio"
               value="burn-up"
               checked={!this.props.showBurnDown}
-              onChange={this.props.onChange}
+              onChange={this.props.onBurnDownChange}
             />
             Burn up
           </label>
@@ -478,7 +496,7 @@ class ProjectGraph extends Component {
               type="radio"
               value="burn-down"
               checked={this.props.showBurnDown}
-              onChange={this.props.onChange}
+              onChange={this.props.onBurnDownChange}
             />
             Burn down
           </label>
