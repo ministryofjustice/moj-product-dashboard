@@ -214,6 +214,7 @@ if all([os.environ.get('SMTP_USER'),
     EMAIL_HOST = os.environ.get('SMTP_HOST')
     EMAIL_HOST_USER = os.environ.get('SMTP_USER')
     EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASS')
+    EMAIL_PORT = 587
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
