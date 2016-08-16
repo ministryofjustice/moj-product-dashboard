@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.conf import settings
 from django.contrib import admin
 from moj_irat.views import PingJsonView, HealthcheckView
@@ -36,6 +36,7 @@ urlpatterns = [
     url(r'^project-group.json', project_group_json, name='project_group_json'),
     url(r'^portfolio.json', portfolio_json, name='portfolio_json'),
     url(r'^admin/', admin.site.urls),
+    url('^', include('django.contrib.auth.urls')),
     url(r'^login/', auth_views.login),
     url(r'^ping.json$', PingJsonView.as_view(**settings.PING_JSON_KEYS),
         name='ping_json'),
