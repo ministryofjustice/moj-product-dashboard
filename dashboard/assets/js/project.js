@@ -78,7 +78,7 @@ export class ProjectContainer extends Component {
     this.state = {
       showBurnDown: false,
       hasData: false,
-      project: {},
+      project: new Project({}),
       timeFrame: 'entire-time-span',
       startDate: null,
       endDate: null,
@@ -91,8 +91,8 @@ export class ProjectContainer extends Component {
     return {
       'entire-time-span': {
         label: 'Entire project life time',
-        startDate: this.state.startDate,
-        endDate: this.state.endDate
+        startDate: this.state.project.startDate,
+        endDate: this.state.project.endDate
       },
       'this-year': {
         label: 'This calendar year',
@@ -140,19 +140,19 @@ export class ProjectContainer extends Component {
       }))
   }
 
-  getMinStartDate(startDate) {
+  get minStartDate() {
     const candidates = values(this.timeFrames)
       .map(tf => tf.startDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(startDate));
+    candidates.push(startOfMonth(this.state.startDate));
     return min(candidates);
   }
 
-  getMaxEndDate(endDate) {
+  get maxEndDate() {
     const candidates = values(this.timeFrames)
       .map(tf => tf.endDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(endDate));
+    candidates.push(startOfMonth(this.state.endDate));
     return max(candidates);
   }
 
@@ -172,13 +172,12 @@ export class ProjectContainer extends Component {
     const { startDate, endDate } = this.timeFrames[this.state.timeFrame];
     getProjectData(this.props.type, this.props.id, startDate,
                    endDate, this.props.csrftoken)
-      .then(project => {
-        const startDate = startOfMonth(project['first_date']);
-        const endDate = endOfMonth(project['last_date']);
+      .then(projectJSON => {
+        const project = new Project(projectJSON);
         this.setState({
           project: project,
-          startDate: startDate,
-          endDate: endDate,
+          startDate: project.startDate,
+          endDate: project.endDate,
           hasData: true
         });
       });
@@ -188,8 +187,9 @@ export class ProjectContainer extends Component {
     this.setState({showBurnDown: e.target.value == 'burn-down'});
   }
 
+
   get startDateOpts() {
-    return monthRange(this.getMinStartDate(this.state.startDate), this.getMaxEndDate(this.state.endDate), 'start')
+    return monthRange(this.minStartDate, this.maxEndDate, 'start')
       .map(m => ({
         value: m,
         children: moment(m).format('MMM YY'),
@@ -197,7 +197,7 @@ export class ProjectContainer extends Component {
   }
 
   get endDateOpts() {
-    return monthRange(this.getMinStartDate(this.state.startDate), this.getMaxEndDate(this.state.endDate), 'end')
+    return monthRange(this.minStartDate, this.maxEndDate, 'end')
       .filter(m => moment(m) >= moment(this.state.startDate) || m == this.state.endDate)
       .map(m => ({
         value: m,
@@ -278,7 +278,7 @@ export class ProjectContainer extends Component {
         onSelectedEndDateChange={evt => this.handleEndDateChange(evt)}
       />);
 
-    if (! this.state.hasData) {
+    if (typeof this.state.project.name === 'undefined') {
       return (
         <div>
           { timeFrameSelector }
@@ -303,8 +303,8 @@ export class ProjectContainer extends Component {
         </div>
         <h1 className="heading-xlarge">
           <div className="banner">
-            <PhaseTag phase={this.state.project.phase} />
-            <RagTag rag={this.state.project['financial_rag']} />
+            <PhaseTag phase={this.state.project.phase } />
+            <RagTag rag={this.state.project.rag} />
           </div>
           {this.state.project.name}
         </h1>
@@ -384,25 +384,34 @@ function TimeFrameSelector({
 
 
 function KeyStats({project, startDate, endDate}) {
-
-  const monthly = parseProjectFinancials(project.financial);
+  let budget = 0;
+  let spend= 0;
+  let savings = 0;
+  const monthly = project.monthlyFinancials;
   const months = Object.keys(monthly).sort();
-  const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
-  const firstMonth = months[0];
-  const minMonth = startMonth > firstMonth ? startMonth : firstMonth;
-  const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
-  const finalMonth = months.slice(-1)[0];
-  const maxMonth = endMonth > finalMonth ? finalMonth : endMonth;
+  if (months.length > 0) {
+    const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
+    const firstMonth = months[0];
+    const minMonth = startMonth > firstMonth ? startMonth : firstMonth;
+    const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
+    const finalMonth = months.slice(-1)[0];
+    const maxMonth = endMonth > finalMonth ? finalMonth : endMonth;
 
-  const budget = monthly[maxMonth].budget;
-  const spend = monthly[maxMonth].spendCumulative
-    - monthly[minMonth].spendCumulative
-    + monthly[minMonth].total;
-  const savings = monthly[maxMonth].savingsCumulative
-    - monthly[minMonth].savingsCumulative
-    + monthly[minMonth].savings;
+    budget = monthly[maxMonth].budget;
+    spend = monthly[maxMonth].spendCumulative
+      - monthly[minMonth].spendCumulative
+      + monthly[minMonth].total;
+    savings = monthly[maxMonth].savingsCumulative
+      - monthly[minMonth].savingsCumulative
+      + monthly[minMonth].savings;
+  }
 
-  const endMonthLabel = moment(endDate, 'YYYY-MM-DD').format('MMM YY');
+  const budgetLabel = (endDate) => {
+    if (endDate === null) {
+      return 'Budget';
+    }
+    return `Budget as of end ${moment(endDate, 'YYYY-MM-DD').format('MMM YY')}`;
+  }
   const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
   const Data = ({data, label}) => (
@@ -421,7 +430,7 @@ function KeyStats({project, startDate, endDate}) {
       <div className="grid-row">
         <Data
           data={format(budget)}
-          label={`Budget as of end ${endMonthLabel}`}
+          label={budgetLabel(endDate)}
         />
         <Data
           data={format(spend)}
@@ -439,9 +448,6 @@ function KeyStats({project, startDate, endDate}) {
 class ProjectGraph extends Component {
 
   plot() {
-    if (Object.keys(this.props.project).length === 0) {
-      return;
-    }
     plotCumulativeSpendings(
       this.props.project,
       this.props.showBurnDown,
@@ -507,7 +513,7 @@ class ProjectGraph extends Component {
  * plot the graph for a project's monthly spendings
  */
 function plotMonthlySpendings(project, startDate, endDate, elem) {
-  const monthly = parseProjectFinancials(project.financial);
+  const monthly = project.monthlyFinancials;
   const months = Object.keys(monthly).sort()
     .filter(m => endOfMonth(m) >= startDate && endOfMonth(m) <= endDate);
 
@@ -722,4 +728,57 @@ function RagTag({rag}) {
     );
   };
   return null;
+}
+
+
+class Project {
+  constructor(projectJSON) {
+    this.data = projectJSON;
+  }
+
+  get name() {
+    return this.data.name;
+  }
+
+  get description() {
+    return this.data.description;
+  }
+
+  get phase() {
+    return this.data.phase;
+  }
+
+  get rag() {
+    return this.data['financial_rag'];
+  }
+
+  get startDate() {
+    const firstDate = this.data['first_date'];
+    return firstDate ? startOfMonth(firstDate) : null;
+  }
+
+  get endDate() {
+    const lastDate = this.data['last_date'];
+    return lastDate? endOfMonth(lastDate) : null;
+  }
+
+  get discoveryStart() {
+    return this.data['discovery_date'];
+  }
+
+  get alphaStart() {
+    return this.data['alpha_date'];
+  }
+
+  get betaStart() {
+    return this.data['beta_date'];
+  }
+
+  get liveStart() {
+    return this.data['live_date'];
+  }
+
+  get monthlyFinancials() {
+    return parseProjectFinancials(this.data.financial);
+  }
 }

@@ -10,10 +10,10 @@ import { startOfMonth, round, monthRange } from './utils';
  * phases
  * */
 function backgroundForPhases(project, range) {
-  const discovery = project['discovery_date'];
-  const alpha = project['alpha_date'];
-  const beta = project['beta_date'];
-  const live = project['live_date'];
+  const discovery = project.discoveryStart;
+  const alpha = project.alphaStart;
+  const beta = project.betaStart;
+  const live = project.liveStart;
 
   const phases = {
     'discovery': {
@@ -116,7 +116,7 @@ function markingsForToday(range) {
 export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem) {
   const currentMonth = moment().format('YYYY-MM');
   const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
-  const monthly = parseProjectFinancials(project.financial);
+  const monthly = project.monthlyFinancials;
   const months = Object.keys(monthly).sort();
   const finalMonth = months.slice(-1)[0];
   const remainingMonths = monthRange(finalMonth, endDate, 'end');
