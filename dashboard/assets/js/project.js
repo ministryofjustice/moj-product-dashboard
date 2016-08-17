@@ -80,12 +80,8 @@ export class ProjectContainer extends Component {
       hasData: false,
       project: {},
       timeFrame: 'entire-time-span',
-      startDate: '',
-      endDate: '',
-      firstDate: null,
-      lastDate: null,
-      minStartDate: null,
-      maxEndDate: null
+      startDate: null,
+      endDate: null,
     };
     Tabs.setUseDefaultStyles(false);
   }
@@ -95,8 +91,8 @@ export class ProjectContainer extends Component {
     return {
       'entire-time-span': {
         label: 'Entire project life time',
-        startDate: this.state.firstDate,
-        endDate: this.state.lastDate
+        startDate: this.state.startDate,
+        endDate: this.state.endDate
       },
       'this-year': {
         label: 'This calendar year',
@@ -144,19 +140,19 @@ export class ProjectContainer extends Component {
       }))
   }
 
-  getMinStartDate(firstDate) {
+  getMinStartDate(startDate) {
     const candidates = values(this.timeFrames)
       .map(tf => tf.startDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(firstDate));
+    candidates.push(startOfMonth(startDate));
     return min(candidates);
   }
 
-  getMaxEndDate(lastDate) {
+  getMaxEndDate(endDate) {
     const candidates = values(this.timeFrames)
       .map(tf => tf.endDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(lastDate));
+    candidates.push(startOfMonth(endDate));
     return max(candidates);
   }
 
@@ -177,16 +173,12 @@ export class ProjectContainer extends Component {
     getProjectData(this.props.type, this.props.id, startDate,
                    endDate, this.props.csrftoken)
       .then(project => {
-        const firstDate = project['first_date'];
-        const lastDate = project['last_date'];
+        const startDate = startOfMonth(project['first_date']);
+        const endDate = endOfMonth(project['last_date']);
         this.setState({
           project: project,
-          firstDate: startOfMonth(firstDate),
-          lastDate: endOfMonth(lastDate),
-          minStartDate: this.getMinStartDate(firstDate),
-          maxEndDate: this.getMaxEndDate(lastDate),
-          startDate: startOfMonth(firstDate),
-          endDate: endOfMonth(lastDate),
+          startDate: startDate,
+          endDate: endDate,
           hasData: true
         });
       });
@@ -197,7 +189,7 @@ export class ProjectContainer extends Component {
   }
 
   get startDateOpts() {
-    return monthRange(this.state.minStartDate, this.state.maxEndDate, 'start')
+    return monthRange(this.getMinStartDate(this.state.startDate), this.getMaxEndDate(this.state.endDate), 'start')
       .map(m => ({
         value: m,
         children: moment(m).format('MMM YY'),
@@ -205,7 +197,7 @@ export class ProjectContainer extends Component {
   }
 
   get endDateOpts() {
-    return monthRange(this.state.minStartDate, this.state.maxEndDate, 'end')
+    return monthRange(this.getMinStartDate(this.state.startDate), this.getMaxEndDate(this.state.endDate), 'end')
       .filter(m => moment(m) >= moment(this.state.startDate) || m == this.state.endDate)
       .map(m => ({
         value: m,
@@ -372,7 +364,7 @@ function TimeFrameSelector({
         <Select
           name="start-date"
           options={startDateOpts}
-          value={selectedStartDate}
+          value={selectedStartDate || ''}
           onChange={onSelectedStartDateChange}
           label="From beginning of"
         />
@@ -381,7 +373,7 @@ function TimeFrameSelector({
         <Select
           name="end-date"
           options={endDateOpts}
-          value={selectedEndDate}
+          value={selectedEndDate || ''}
           onChange={onSelectedEndDateChange}
           label="To end of"
         />
