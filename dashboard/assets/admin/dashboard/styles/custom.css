@@ -63,6 +63,10 @@ div#changelist-filter {
     /*margin-right: 140px;*/
 }
 
+#changelist th.sorted {
+    font-weight: bold;
+}
+
 p {
     font-family: "nta", Arial, sans-serif;
     font-size: 16px;
@@ -204,7 +208,7 @@ ul.object-tools {
 }
 
 table#result_list thead th {
-
+    vertical-align: top;
     min-height: 40px;
 }
 
@@ -227,8 +231,15 @@ img[alt="Search"] {
 }
 
 
-div.sortoptions {
-    visibility: hidden;
+.sortoptions {
+    white-space: nowrap;
+}
+
+.sortpriority {
+    font-weight: normal;
+    font-size: 80%;
+    vertical-align: super;
+    text-decoration: none;
 }
 
 div#toolbar div {
