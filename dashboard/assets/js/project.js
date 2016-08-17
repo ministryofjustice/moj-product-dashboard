@@ -49,8 +49,8 @@ export function getProjectData(type, id, startDate, endDate, csrftoken) {
  */
 export function parseProjectFinancials(financial) {
   const result = {};
-  let cumulative = 0;
-  let savings = 0;
+  let spendCumulative = 0;
+  let savingsCumulative = 0;
 
   Object.keys(financial).sort().map(month => {
     const mf = financial[month];
@@ -58,13 +58,13 @@ export function parseProjectFinancials(financial) {
     const total = parseFloat(mf['contractor']) +
                   parseFloat(mf['non-contractor']) +
                   parseFloat(mf['additional']);
+    const savings = parseFloat(mf['savings']);
 
-    savings += parseFloat(mf['savings']);
-
-    cumulative += total;
-    const remaining = budget - cumulative;
+    spendCumulative += total;
+    savingsCumulative += savings;
+    const remaining = budget - spendCumulative;
     const ms = moment(month, 'YYYY-MM').format('YYYY-MM');
-    result[ms] = { total, cumulative, budget, remaining, savings };
+    result[ms] = { total, spendCumulative, budget, remaining, savings, savingsCumulative };
   });
 
   return result;
@@ -78,14 +78,10 @@ export class ProjectContainer extends Component {
     this.state = {
       showBurnDown: false,
       hasData: false,
-      project: {},
+      project: new Project({}),
       timeFrame: 'entire-time-span',
-      startDate: '',
-      endDate: '',
-      firstDate: null,
-      lastDate: null,
-      minStartDate: null,
-      maxEndDate: null
+      startDate: null,
+      endDate: null,
     };
     Tabs.setUseDefaultStyles(false);
   }
@@ -95,8 +91,8 @@ export class ProjectContainer extends Component {
     return {
       'entire-time-span': {
         label: 'Entire project life time',
-        startDate: this.state.firstDate,
-        endDate: this.state.lastDate
+        startDate: this.state.project.startDate,
+        endDate: this.state.project.endDate
       },
       'this-year': {
         label: 'This calendar year',
@@ -144,19 +140,19 @@ export class ProjectContainer extends Component {
       }))
   }
 
-  getMinStartDate(firstDate) {
+  get minStartDate() {
     const candidates = values(this.timeFrames)
       .map(tf => tf.startDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(firstDate));
+    candidates.push(startOfMonth(this.state.startDate));
     return min(candidates);
   }
 
-  getMaxEndDate(lastDate) {
+  get maxEndDate() {
     const candidates = values(this.timeFrames)
       .map(tf => tf.endDate)
       .filter(date => date != null);
-    candidates.push(startOfMonth(lastDate));
+    candidates.push(startOfMonth(this.state.endDate));
     return max(candidates);
   }
 
@@ -176,17 +172,12 @@ export class ProjectContainer extends Component {
     const { startDate, endDate } = this.timeFrames[this.state.timeFrame];
     getProjectData(this.props.type, this.props.id, startDate,
                    endDate, this.props.csrftoken)
-      .then(project => {
-        const firstDate = project['first_date'];
-        const lastDate = project['last_date'];
+      .then(projectJSON => {
+        const project = new Project(projectJSON);
         this.setState({
           project: project,
-          firstDate: startOfMonth(firstDate),
-          lastDate: endOfMonth(lastDate),
-          minStartDate: this.getMinStartDate(firstDate),
-          maxEndDate: this.getMaxEndDate(lastDate),
-          startDate: startOfMonth(firstDate),
-          endDate: endOfMonth(lastDate),
+          startDate: project.startDate,
+          endDate: project.endDate,
           hasData: true
         });
       });
@@ -196,8 +187,9 @@ export class ProjectContainer extends Component {
     this.setState({showBurnDown: e.target.value == 'burn-down'});
   }
 
+
   get startDateOpts() {
-    return monthRange(this.state.minStartDate, this.state.maxEndDate, 'start')
+    return monthRange(this.minStartDate, this.maxEndDate, 'start')
       .map(m => ({
         value: m,
         children: moment(m).format('MMM YY'),
@@ -205,7 +197,7 @@ export class ProjectContainer extends Component {
   }
 
   get endDateOpts() {
-    return monthRange(this.state.minStartDate, this.state.maxEndDate, 'end')
+    return monthRange(this.minStartDate, this.maxEndDate, 'end')
       .filter(m => moment(m) >= moment(this.state.startDate) || m == this.state.endDate)
       .map(m => ({
         value: m,
@@ -286,7 +278,7 @@ export class ProjectContainer extends Component {
         onSelectedEndDateChange={evt => this.handleEndDateChange(evt)}
       />);
 
-    if (! this.state.hasData) {
+    if (typeof this.state.project.name === 'undefined') {
       return (
         <div>
           { timeFrameSelector }
@@ -311,8 +303,8 @@ export class ProjectContainer extends Component {
         </div>
         <h1 className="heading-xlarge">
           <div className="banner">
-            <PhaseTag phase={this.state.project.phase} />
-            <RagTag rag={this.state.project['financial_rag']} />
+            <PhaseTag phase={this.state.project.phase } />
+            <RagTag rag={this.state.project.rag} />
           </div>
           {this.state.project.name}
         </h1>
@@ -322,17 +314,15 @@ export class ProjectContainer extends Component {
             <Tab>Product information</Tab>
           </TabList>
           <TabPanel>
-            <KeyStats
-              budget={this.state.project.budget}
-              costToDate={this.state.project['cost_to_date']}
-              savings={this.state.project.savings}
-            />
-            <hr/>
-            <h3 className="heading-medium">Total expenditure and budget</h3>
             { timeFrameSelector }
-            <ProjectGraph
-              onChange={(e) => this.handleBurnDownChange(e)}
+            <KeyStats
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
               project={this.state.project}
+            />
+            <ProjectGraph
+              project={this.state.project}
+              onBurnDownChange={(e) => this.handleBurnDownChange(e)}
               showBurnDown={this.state.showBurnDown}
               startDate={this.state.startDate}
               endDate={this.state.endDate}
@@ -374,18 +364,18 @@ function TimeFrameSelector({
         <Select
           name="start-date"
           options={startDateOpts}
-          value={selectedStartDate}
+          value={selectedStartDate || ''}
           onChange={onSelectedStartDateChange}
-          label="from"
+          label="From beginning of"
         />
       </div>
       <div className="column-one-quarter">
         <Select
           name="end-date"
           options={endDateOpts}
-          value={selectedEndDate}
+          value={selectedEndDate || ''}
           onChange={onSelectedEndDateChange}
-          label="to"
+          label="To end of"
         />
       </div>
     </div>
@@ -393,10 +383,40 @@ function TimeFrameSelector({
 }
 
 
-function KeyStats({budget, costToDate, savings}) {
+function KeyStats({project, startDate, endDate}) {
+  let budget = 0;
+  let spend= 0;
+  let savings = 0;
+  const monthly = project.monthlyFinancials;
+  const months = Object.keys(monthly).sort();
+  if (months.length > 0) {
+    const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
+    const firstMonth = months[0];
+    const minMonth = startMonth > firstMonth ? startMonth : firstMonth;
+    const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
+    const finalMonth = months.slice(-1)[0];
+    const maxMonth = endMonth > finalMonth ? finalMonth : endMonth;
+
+    budget = monthly[maxMonth].budget;
+    spend = monthly[maxMonth].spendCumulative
+      - monthly[minMonth].spendCumulative
+      + monthly[minMonth].total;
+    savings = monthly[maxMonth].savingsCumulative
+      - monthly[minMonth].savingsCumulative
+      + monthly[minMonth].savings;
+  }
+
+  const budgetLabel = (endDate) => {
+    if (endDate === null) {
+      return 'Budget';
+    }
+    return `Budget as of end ${moment(endDate, 'YYYY-MM-DD').format('MMM YY')}`;
+  }
+  const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
   const Data = ({data, label}) => (
     <div className="column-one-third">
+      <hr/>
       <div className="data">
         <h2 className="bold-xlarge">{data}</h2>
         <p className="bold-xsmall">{label}</p>
@@ -404,23 +424,21 @@ function KeyStats({budget, costToDate, savings}) {
     </div>
   );
 
-  const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
-
   return (
     <div>
-      <h3 className="heading-medium">Key statistics</h3>
+      <h4 className="heading-small">Key statistics</h4>
       <div className="grid-row">
         <Data
           data={format(budget)}
-          label="Budget"
+          label={budgetLabel(endDate)}
         />
         <Data
-          data={format(costToDate)}
-          label="Total spend to date"
+          data={format(spend)}
+          label="Spend for this period"
         />
         <Data
           data={format(savings)}
-          label="Savings enabled"
+          label="Savings enabled for this period"
         />
       </div>
     </div>
@@ -430,9 +448,6 @@ function KeyStats({budget, costToDate, savings}) {
 class ProjectGraph extends Component {
 
   plot() {
-    if (Object.keys(this.props.project).length === 0) {
-      return;
-    }
     plotCumulativeSpendings(
       this.props.project,
       this.props.showBurnDown,
@@ -459,14 +474,17 @@ class ProjectGraph extends Component {
   render() {
     return (
       <div>
-        <fieldset className="inline">
+        <h4 className="heading-small">Total expenditure and budget</h4>
+        <hr/>
+        <span>Show</span>
+        <fieldset className="inline burn-down-toggle">
           <label className="block-label" htmlFor="radio-burn-up">
             <input
               id="radio-burn-up"
               type="radio"
               value="burn-up"
               checked={!this.props.showBurnDown}
-              onChange={this.props.onChange}
+              onChange={this.props.onBurnDownChange}
             />
             Burn up
           </label>
@@ -476,12 +494,14 @@ class ProjectGraph extends Component {
               type="radio"
               value="burn-down"
               checked={this.props.showBurnDown}
-              onChange={this.props.onChange}
+              onChange={this.props.onBurnDownChange}
             />
             Burn down
           </label>
         </fieldset>
         <div ref={(elem) => this.container1=elem} />
+        <h4 className="heading-small">Monthly expenditure</h4>
+        <hr/>
         <div ref={(elem) => this.container2=elem} />
       </div>
     );
@@ -493,7 +513,7 @@ class ProjectGraph extends Component {
  * plot the graph for a project's monthly spendings
  */
 function plotMonthlySpendings(project, startDate, endDate, elem) {
-  const monthly = parseProjectFinancials(project.financial);
+  const monthly = project.monthlyFinancials;
   const months = Object.keys(monthly).sort()
     .filter(m => endOfMonth(m) >= startDate && endOfMonth(m) <= endDate);
 
@@ -529,7 +549,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
     }
   };
   const layout = {
-    title: 'Monthly expenditure',
+    // title: 'Monthly expenditure',
     font: {
       family: 'nta'
     },
@@ -538,7 +558,7 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
       tickprefix: '\u00a3'
     },
     legend: {
-      yanchor: 'bottom'
+      yanchor: 'top'
     }
   };
   const data = [ actualTrace, forecastTrace ];
@@ -708,4 +728,57 @@ function RagTag({rag}) {
     );
   };
   return null;
+}
+
+
+class Project {
+  constructor(projectJSON) {
+    this.data = projectJSON;
+  }
+
+  get name() {
+    return this.data.name;
+  }
+
+  get description() {
+    return this.data.description;
+  }
+
+  get phase() {
+    return this.data.phase;
+  }
+
+  get rag() {
+    return this.data['financial_rag'];
+  }
+
+  get startDate() {
+    const firstDate = this.data['first_date'];
+    return firstDate ? startOfMonth(firstDate) : null;
+  }
+
+  get endDate() {
+    const lastDate = this.data['last_date'];
+    return lastDate? endOfMonth(lastDate) : null;
+  }
+
+  get discoveryStart() {
+    return this.data['discovery_date'];
+  }
+
+  get alphaStart() {
+    return this.data['alpha_date'];
+  }
+
+  get betaStart() {
+    return this.data['beta_date'];
+  }
+
+  get liveStart() {
+    return this.data['live_date'];
+  }
+
+  get monthlyFinancials() {
+    return parseProjectFinancials(this.data.financial);
+  }
 }

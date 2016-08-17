@@ -2,22 +2,7 @@ import Plotly from './plotly-custom';
 import moment from 'moment';
 
 import { parseProjectFinancials } from './project';
-import { endOfMonth, round, monthRange } from './utils';
-
-/**
- * work out the date labels for the xaxis
- * depending on the length of the time frame.
- * if the duration is less than 11 months
- * show the day month and year otherwise
- * just show the month and year
- **/
-function tickFormat(range) {
-  const duration = moment.duration(range[1] - range[0]).asMonths();
-  if (duration > 11) {
-    return '%b %y';
-  };
-  return '%-d %b %y';
-}
+import { startOfMonth, round, monthRange } from './utils';
 
 /**
  * work out the shapes and annotations for
@@ -25,10 +10,10 @@ function tickFormat(range) {
  * phases
  * */
 function backgroundForPhases(project, range) {
-  const discovery = project['discovery_date'];
-  const alpha = project['alpha_date'];
-  const beta = project['beta_date'];
-  const live = project['live_date'];
+  const discovery = project.discoveryStart;
+  const alpha = project.alphaStart;
+  const beta = project.betaStart;
+  const live = project.liveStart;
 
   const phases = {
     'discovery': {
@@ -131,7 +116,7 @@ function markingsForToday(range) {
 export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem) {
   const currentMonth = moment().format('YYYY-MM');
   const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
-  const monthly = parseProjectFinancials(project.financial);
+  const monthly = project.monthlyFinancials;
   const months = Object.keys(monthly).sort();
   const finalMonth = months.slice(-1)[0];
   const remainingMonths = monthRange(finalMonth, endDate, 'end');
@@ -140,11 +125,11 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   const lastPlusFutureMonths = months.filter(m => m >= lastMonth);
   const lastPlusFutureMonthsExtended = lastPlusFutureMonths.concat(remainingMonths);
 
-  const toLabel = m => endOfMonth(moment(m, 'YYYY-MM'));
+  const toLabel = m => startOfMonth(moment(m, 'YYYY-MM').add(1, 'months'));
 
   const actualCumulativeTrace = {
     x: pastMonths.map(toLabel),
-    y: pastMonths.map(m => round(monthly[m].cumulative)),
+    y: pastMonths.map(m => round(monthly[m].spendCumulative)),
     name: 'Actual spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -169,7 +154,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
 
   const forecastCumulativeTrace = {
     x: lastPlusFutureMonths.map(toLabel),
-    y: lastPlusFutureMonths.map(m => round(monthly[m].cumulative)),
+    y: lastPlusFutureMonths.map(m => round(monthly[m].spendCumulative)),
     name: 'Forecast spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -244,7 +229,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     annotations.push(todayMarkings.annotation);
   }
   const layout = {
-    title: 'Total expenditure and budget',
+    // title: 'Total expenditure and budget',
     font: {
       family: 'nta'
     },
@@ -252,7 +237,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       type: 'date',
       range: range.map(m => m.valueOf()),
       nticks: 18,
-      tickformat: tickFormat(range),
+      tickformat: '%-d %b %y',
       hoverformat: '%-d %b %y'
     },
     yaxis: {
@@ -260,7 +245,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       tickprefix: '\u00a3'
     },
     legend: {
-      yanchor: 'bottom'
+      yanchor: 'top'
     },
     shapes: shapes,
     annotations: annotations

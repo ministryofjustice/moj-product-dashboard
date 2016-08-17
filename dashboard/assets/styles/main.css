@@ -112,7 +112,13 @@ img.status {
   cursor: pointer;
 }
 
-.product-tabs [role=tab][aria-selected=true] {
+.product-tabs [role=tab][aria-selected=true],
+.product-tabs [role=tab]:hover {
   border-style: solid;
   border-bottom-color: #005ea5;
+}
+
+/* TODO: find a better way to align the graphs */
+div.js-plotly-plot {
+  margin-left: -50px;
 }
