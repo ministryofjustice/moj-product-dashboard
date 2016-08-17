@@ -54,6 +54,7 @@ div#changelist-filter {
 
 #changelist table thead th {
     padding-left: 5px;
+    white-space: inherit;
 }
 
 #changelist table {
