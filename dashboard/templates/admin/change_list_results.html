@@ -18,8 +18,8 @@
         {% if header.sort_priority > 0 and num_sorted_fields > 1 %}<span class="sortpriority" title="{% blocktrans with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktrans %}">{{ header.sort_priority }}</span>{% endif %}
         {% if header.sort_priority > 0 %}
             <span class="sortoptions">
-                <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}">x</a>
                 <a href="{{ header.url_toggle }}" class="toggle {% if header.ascending %}ascending{% else %}descending{% endif %}" title="{% trans "Toggle sort order" %}">{% trans "Toggle sort order" %}</a>
+                <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}">&times;</a>
             </span>
         {% endif %}
     {% else %}
