@@ -43,8 +43,13 @@
     padding-left: 0;
 }
 
+#changelist .actions {
+    margin-bottom: 15px;
+}
+
 #changelist .actions .button {
     padding: 4px 8px;
+    height: auto;
 }
 
 div#changelist-filter {
@@ -54,12 +59,17 @@ div#changelist-filter {
 
 #changelist table thead th {
     padding-left: 5px;
+    white-space: inherit;
 }
 
 #changelist table {
     /*width: 1140px;*/
     margin-left: 0;
     /*margin-right: 140px;*/
+}
+
+#changelist th.sorted {
+    font-weight: bold;
 }
 
 p {
@@ -203,8 +213,15 @@ ul.object-tools {
 }
 
 table#result_list thead th {
+    vertical-align: top;
+    padding: 0.6315789474em 1.0526315789em 0.4736842105em 5px;
+    background-color: #f8f8f8;
+    border-top: 1px solid #bfc1c3;
+}
 
-    min-height: 40px;
+table#result_list th,
+table#result_list td {
+    padding: 0.6315789474em 1.0526315789em 0.4736842105em 5px;
 }
 
 
@@ -225,9 +242,57 @@ img[alt="Search"] {
     margin: 5px;
 }
 
+.sortoptions {
+    white-space: nowrap;
+    position: relative;
+}
 
-div.sortoptions {
-    visibility: hidden;
+.sortoptions a.toggle {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    background: url(../img/sorting-icons.svg) 0 0 no-repeat;
+    background-size: 14px auto;
+    text-indent: -999em;
+    overflow: hidden;
+}
+
+.sortoptions a.sortremove {
+    background: none;
+    color: #999;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.sortoptions a.sortremove:hover {
+    color: #447e9b;
+}
+
+.sortoptions a.ascending {
+    background-position: 0 -28px;
+}
+
+.sortoptions a.ascending:focus,
+.sortoptions a.ascending:hover {
+    background-position: 0 -42px;
+}
+
+.sortoptions a.descending {
+    top: 1px;
+    background-position: 0 -56px;
+}
+
+.sortoptions a.descending:focus,
+.sortoptions a.descending:hover {
+    background-position: 0 -70px;
+}
+
+.sortpriority {
+    font-weight: normal;
+    font-size: 80%;
+    vertical-align: super;
+    text-decoration: none;
 }
 
 div#toolbar div {
