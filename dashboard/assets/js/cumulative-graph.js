@@ -10,37 +10,12 @@ import { startOfMonth, round, monthRange } from './utils';
  * phases
  * */
 function backgroundForPhases(project, range) {
-  const discovery = project.discoveryStart;
-  const alpha = project.alphaStart;
-  const beta = project.betaStart;
-  const live = project.liveStart;
-
-  const phases = {
-    'discovery': {
-      start: discovery,
-      end: alpha,
-      fillcolor: '#972c86'
-    },
-    'alpha': {
-      start: alpha,
-      end: beta,
-      fillcolor: '#d53880'
-    },
-    'beta': {
-      start: beta,
-      end: live,
-      fillcolor: '#fd7743'
-    },
-    'live': {
-      start: live,
-      fillcolor: '#839951'
-    }
-  }
+  const phases = project.phases;
   const shapes = [];
   const annotations = [];
 
-  Object.keys(phases).map( phase => {
-    const {start, end, fillcolor} = phases[phase];
+  Object.keys(phases).map(name => {
+    const {start, end, color} = phases[name];
     if (start) {
       const x1 = end ? end : range[1].format('YYYY-MM-DD');
       shapes.push({
@@ -51,7 +26,7 @@ function backgroundForPhases(project, range) {
         x1: x1,
         y0: 0,
         y1: 1,
-        fillcolor: fillcolor,
+        fillcolor: color,
         opacity: 0.3,
         line: {
           width: 0
@@ -63,9 +38,9 @@ function backgroundForPhases(project, range) {
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
-        text: phase.toUpperCase(),
+        text: name.toUpperCase(),
         showarrow: false,
-        bgcolor: fillcolor,
+        bgcolor: color,
         font: {
           color: '#ffffff',
           size: 16
@@ -220,7 +195,10 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     data.push(budgetTrace);
   };
 
-  const range =  [ moment(startDate, 'YYYY-MM-DD'), moment(endDate, 'YYYY-MM-DD') ];
+  const range =  [
+    moment(startDate, 'YYYY-MM-DD'),
+    moment(endDate, 'YYYY-MM-DD').add(1, 'day')
+  ];
 
   const {shapes, annotations} = backgroundForPhases(project, range);
   const todayMarkings = markingsForToday(range);

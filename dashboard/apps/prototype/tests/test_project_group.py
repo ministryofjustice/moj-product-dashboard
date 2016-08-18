@@ -35,7 +35,7 @@ def test_project_group():
             'savings': Decimal('0')
         }
     }
-    assert profile['financial'] == financial
+    assert profile['financial']['timeframes'] == financial
     assert profile['name'] == 'PG1'
     assert profile['service_area'] == {'id': client1.id, 'name': client1.name}
 

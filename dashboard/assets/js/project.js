@@ -10,7 +10,7 @@ import Plotly from './plotly-custom';
 import { monthRange, thisCalendarYear,
          thisFinancialYear, thisQuarter, lastCalendarYear,
          lastFinancialYear, lastQuarter,
-         startOfMonth, endOfMonth,
+         startOfMonth, endOfMonth, oneDayBefore,
          min, max, values, round, numberWithCommas } from './utils';
 import { plotCumulativeSpendings } from './cumulative-graph';
 
@@ -88,7 +88,7 @@ export class ProjectContainer extends Component {
 
   get timeFrames() {
     const now = moment();
-    return {
+    const result = {
       'entire-time-span': {
         label: 'Entire project life time',
         startDate: this.state.project.startDate,
@@ -123,13 +123,25 @@ export class ProjectContainer extends Component {
         label: 'Last quarter',
         startDate: lastQuarter(now).startDate,
         endDate: lastQuarter(now).endDate
-      },
-      'custom-range': {
-        label: 'Custom date range',
-        startDate: null,
-        endDate: null
-      },
-    }
+      }
+    };
+    const phases = this.state.project.phases;
+    Object.keys(phases).map(name => {
+      const {start, end } = phases[name];
+      if (start && end ) {
+        result[name.toLowerCase()] = {
+          label: name,
+          startDate: startOfMonth(start),
+          endDate: endOfMonth(oneDayBefore(end))
+        }
+      }
+    });
+    result['custom-range'] = {
+      label: 'Custom date range',
+      startDate: null,
+      endDate: null
+    };
+    return result;
   }
 
   get timeFrameOpts() {
@@ -779,6 +791,30 @@ class Project {
   }
 
   get monthlyFinancials() {
-    return parseProjectFinancials(this.data.financial);
+    return parseProjectFinancials(this.data.financial['timeframes']);
   }
+
+  get phases() {
+    return {
+      'Discovery': {
+        start: this.discoveryStart,
+        end: this.alphaStart,
+        color: '#972c86'
+      },
+      'Alpha': {
+        start: this.alphaStart,
+        end: this.betaStart,
+        color: '#d53880'
+      },
+      'Beta': {
+        start: this.betaStart,
+        end: this.liveStart,
+        color: '#fd7743'
+      },
+      'Live': {
+        start: this.liveStart,
+        color: '#839951'
+      }
+    }
+  };
 }

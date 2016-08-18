@@ -84,8 +84,8 @@ def test_project_without_tasks():
         start_date=start_date, end_date=end_date, freq='MS')
     assert 'name' in profile
     assert 'description' in profile
-    assert len(profile['financial']) == 1
-    assert next(iter(profile['financial'].values())) == {
+    assert len(profile['financial']['timeframes']) == 1
+    assert next(iter(profile['financial']['timeframes'].values())) == {
         'additional': Decimal('0'),
         'budget': Decimal('0'),
         'contractor': Decimal('0'),
@@ -110,7 +110,7 @@ def test_project_profiles_without_frequency():
         'savings': Decimal('0')
     }
     key = '2016-01-01~2016-01-20'
-    assert profile['financial'] == {key: financial}
+    assert profile['financial']['timeframes'] == {key: financial}
 
 
 @pytest.mark.django_db
@@ -129,11 +129,11 @@ def test_project_profiles_with_frequency():
         '2016-01-10~2016-01-16',
         '2016-01-17~2016-01-23',
     ]
-    assert sorted(list(profile['financial'].keys())) == keys
+    assert sorted(list(profile['financial']['timeframes'].keys())) == keys
 
     for key in ['contractor', 'non-contractor', 'additional']:
         expected = financial[key]
-        assert sum(v[key] for v in profile['financial'].values()) == expected
+        assert sum(v[key] for v in profile['financial']['timeframes'].values()) == expected
 
 
 @pytest.mark.django_db

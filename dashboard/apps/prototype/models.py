@@ -580,29 +580,30 @@ class Project(BaseProject, AditionalCostsMixin):
         return max(candidates)
 
     def financial(self, start_date, end_date, freq):
+        result = {'timeframes': {}}
         if not start_date:
             try:
                 start_date = self.default_start_date
             except ValueError:
-                return {}
+                return result
         if not end_date:
             try:
                 end_date = self.default_end_date
             except ValueError:
-                return {}
+                return result
         if freq:
             time_windows = slice_time_window(
                 start_date, end_date, freq, extend=True)
         else:
             time_windows = [(start_date, end_date)]
-        result = {}
+        timeframes = result['timeframes']
         for sdate, edate in time_windows:
             # use '{sdate}~{edate}' as the dictionary key.
             # this is perhaps not the best way to do it.
             # leave it open to change when a better way emerges.
             key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
                                  edate.strftime('%Y-%m-%d'))
-            result[key] = self.spendings_between(sdate, edate)
+            timeframes[key] = self.spendings_between(sdate, edate)
         return result
 
     def __str__(self):
@@ -852,13 +853,15 @@ class ProjectGroup(BaseProject):
     def financial(self, start_date, end_date, freq):
         projects = self.projects.filter(visible=True)
         project_to_financial = {
-            project.id: project.profile(start_date, end_date, freq)['financial']
+            project.id: project.profile(
+                start_date, end_date, freq
+            )['financial']['timeframes']
             for project in projects
         }
         result = {}
         for profile in project_to_financial.values():
             result = self.merge_financial(result, profile)
-        return result
+        return {'timeframes': result}
 
     @staticmethod
     def merge_financial(financial1, financial2):
