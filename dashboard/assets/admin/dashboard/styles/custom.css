@@ -331,3 +331,39 @@ div.dashboard-admin-nav {
     margin: 0;
     padding: 0;
 }
+
+.inline-group {
+    margin: 30px 0;
+}
+
+.inline-group .form-row {
+    vertical-align: top;
+}
+
+.inline-group .form-row input[type="text"],
+.inline-group .form-row input[type="number"],
+.inline-group .form-row textarea,
+.inline-group .form-row select {
+    font-size: 16px;
+}
+
+.inline-group .form-row .vTextField {
+    width: 200px;
+}
+
+.datetimeshortcuts {
+    display: block;
+}
+
+.inline-group .form-row .vLargeTextField {
+    width: 400px;
+    height: 75px;
+}
+
+.field-cost input[type=number]::-webkit-inner-spin-button,
+.field-cost input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
