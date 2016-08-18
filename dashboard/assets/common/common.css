@@ -141,3 +141,9 @@ li.user-menu:hover ul {
 }
 
 
+.lockout-message {
+    width: 200px;
+    margin-top: 100px;
+    margin-right: auto;
+    margin-left: auto;
+}
