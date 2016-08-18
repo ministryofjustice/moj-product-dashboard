@@ -87,17 +87,12 @@ class IsCurrentStaffFilter(admin.SimpleListFilter):
 class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     inlines = [RateInline]
     ordering = ('name',)
-    readonly_fields = ('avatar_tag', )
-    list_display = ('avatar_tag', 'name', 'job_title',
+    list_display = ('name', 'job_title',
                     'contractor_civil_servant', 'is_current')
     search_fields = ('name', 'job_title')
     list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
-    exclude = ['raw_data']
-
-    def avatar_tag(self, obj):  # pragma: no cover
-        return '<img src="{}" style="height:40px;"/>'.format(obj.avatar)
-    avatar_tag.allow_tags = True
-    avatar_tag.short_description = 'image'
+    fields = ['name', 'staff_number', 'job_title', 'email',
+              'is_contractor', 'is_current']
 
     def contractor_civil_servant(self, obj):
         if obj.is_contractor:
