@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     'djcelery',
     'moj_template',
+    'axes',
 
     'dashboard.apps.prototype',
 ]
@@ -123,6 +124,11 @@ AUTHENTICATION_BACKENDS = (
     'dashboard_auth.backends.ModelBackend',
 )
 
+
+# Django Axes settings
+
+AXES_LOGIN_FAILURE_LIMIT = 5
+AXES_LOCK_OUT_AT_FAILURE = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
