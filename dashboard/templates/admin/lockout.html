@@ -1,0 +1,29 @@
+{% extends 'moj_template_custom/moj_base.html' %}
+
+{% load staticfiles %}
+
+{% block page_title %}
+
+    MoJ Product Dashboard
+
+{% endblock %}
+
+{% block head %}
+    {% block blockbots %}
+        <meta name="robots" content="NONE,NOARCHIVE"/>
+    {% endblock %}
+
+    {% block extrahead %}
+
+        <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/custom.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "common/common.css" %}"/>
+
+    {% endblock %}
+{% endblock %}
+
+{% block main %}
+
+    <div class="lockout-message">Account locked: too many login attempts. Contact an admin to unlock your account.</div>
+
+{% endblock %}
+
