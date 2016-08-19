@@ -19,7 +19,7 @@ coverage/*
 
 # Dist assets
 dashboard/assets/dist
-dashboard/apps/prototype/static/dist/
+
 
 # Celery
 celerybeat-schedule
