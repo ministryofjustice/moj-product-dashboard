@@ -35,10 +35,6 @@
     font-size: 16px;
 }
 
-#changelist .actions {
-    padding-left: 0;
-}
-
 #changelist #toolbar {
     padding-left: 0;
 }
@@ -203,7 +199,7 @@ ul.object-tools li {
 }
 
 ul.object-tools {
-    padding-left: 0;
+    padding-left: 15px;
 
 }
 
@@ -235,7 +231,7 @@ caption {
 
 
 .paginator {
-    width: 1020px;
+    padding-left: 15px;
 }
 
 img[alt="Search"] {
@@ -296,7 +292,31 @@ img[alt="Search"] {
 }
 
 div#toolbar div {
-    background-color: #FFFFFF;
+    display: table;
+    vertical-align: middle;
+}
+
+div#toolbar div > * {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+#changelist #toolbar form #searchbar {
+    vertical-align: middle;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#changelist #toolbar form label {
+    padding-left: 10px;
+}
+
+div#toolbar div span {
+    padding-left: 10px;
+}
+
+div.flex > h1 {
+    margin-left: 15px;
 }
 
 div.dashboard-admin-nav ul li a {

@@ -18,13 +18,12 @@
     padding-right: 0;
 }
 
-@media (min-width: 641px) {
-    #global-header-bar .inner-block {
 
-        padding-left: 0;
-        padding-right: 0;
-    }
+#global-header-bar .inner-block {
+    padding-left: 0;
+    padding-right: 0;
 }
+
 
 div.header-wrapper {
     text-align: center;
