@@ -84,13 +84,15 @@ def test_project_without_tasks():
         start_date=start_date, end_date=end_date, freq='MS')
     assert 'name' in profile
     assert 'description' in profile
-    assert len(profile['financial']['timeframes']) == 1
-    assert next(iter(profile['financial']['timeframes'].values())) == {
+    assert len(profile['financial']['time_frames']) == 1
+    assert next(iter(profile['financial']['time_frames'].values())) == {
         'additional': Decimal('0'),
         'budget': Decimal('0'),
         'contractor': Decimal('0'),
         'non-contractor': Decimal('0'),
-        'savings': Decimal('0')
+        'savings': Decimal('0'),
+        'remaining': Decimal('0'),
+        'total': Decimal('0')
     }
     assert project.time_spent() == 0
     assert project.current_fte() == 0
@@ -102,15 +104,19 @@ def test_project_without_tasks():
 @pytest.mark.django_db
 def test_project_profiles_without_frequency():
     profile = make_project().profile()
+    contractor = contractor_rate * man_days
+    non_contractor = non_contractor_rate * man_days
     financial = {
-        'contractor': contractor_rate * man_days,
-        'non-contractor': non_contractor_rate * man_days,
+        'contractor': contractor,
+        'non-contractor': non_contractor,
         'additional': Decimal('0'),
         'budget': Decimal('0'),
-        'savings': Decimal('0')
+        'savings': Decimal('0'),
+        'total': contractor + non_contractor,
+        'remaining': Decimal('0') - contractor - non_contractor
     }
     key = '2016-01-01~2016-01-20'
-    assert profile['financial']['timeframes'] == {key: financial}
+    assert profile['financial']['time_frames'] == {key: financial}
 
 
 @pytest.mark.django_db
@@ -129,11 +135,11 @@ def test_project_profiles_with_frequency():
         '2016-01-10~2016-01-16',
         '2016-01-17~2016-01-23',
     ]
-    assert sorted(list(profile['financial']['timeframes'].keys())) == keys
+    assert sorted(list(profile['financial']['time_frames'].keys())) == keys
 
     for key in ['contractor', 'non-contractor', 'additional']:
         expected = financial[key]
-        assert sum(v[key] for v in profile['financial']['timeframes'].values()) == expected
+        assert sum(v[key] for v in profile['financial']['time_frames'].values()) == expected
 
 
 @pytest.mark.django_db
@@ -429,14 +435,14 @@ def test_project_phase():
 
 
 @pytest.mark.django_db
-def test_default_start_date():
+def test_first_date():
     project = make_project()
 
     first_task_start_date = parse_date(task_time_ranges[0][0])
 
     # without budget or cost, the first task start date
     # is the default start date.
-    assert project.default_start_date == first_task_start_date
+    assert project.first_date == first_task_start_date
 
     # with a cost after the first task, the first task start date
     # is still the default start date.
@@ -448,7 +454,7 @@ def test_default_start_date():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('50')
     )
-    assert project.default_start_date == first_task_start_date
+    assert project.first_date == first_task_start_date
 
     # with a cost before the first task, the first cost start date
     # is the default start date.
@@ -460,7 +466,7 @@ def test_default_start_date():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('50')
     )
-    assert project.default_start_date == first_cost_start_date
+    assert project.first_date == first_cost_start_date
 
     # with a budget allocated after the first cost, the first cost
     # start date is the default start date
@@ -468,29 +474,29 @@ def test_default_start_date():
         Budget,
         project=project,
         budget=1000,
-        start_date=project.default_start_date + timedelta(days=2))
-    assert project.default_start_date == first_cost_start_date
+        start_date=project.first_date + timedelta(days=2))
+    assert project.first_date == first_cost_start_date
 
     # with a budget allocated before the first cost, the budget
     # start date is the default start date
-    first_budget_start_date = project.default_start_date - timedelta(days=2)
+    first_budget_start_date = project.first_date - timedelta(days=2)
     mommy.make(
         Budget,
         project=project,
         budget=1000,
         start_date=first_budget_start_date)
-    assert project.default_start_date == first_budget_start_date
+    assert project.first_date == first_budget_start_date
 
 
 @pytest.mark.django_db
-def test_default_end_date():
+def test_last_date():
     project = make_project()
 
     last_task_end_date = parse_date(task_time_ranges[-1][-1])
 
     # without budget or cost, the last task end date
     # is the default start date.
-    assert project.default_end_date == last_task_end_date
+    assert project.last_date == last_task_end_date
 
     # with a cost before the last task, the last task end date
     # is still the default start date.
@@ -510,7 +516,7 @@ def test_default_end_date():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('50')
     )
-    assert project.default_end_date == last_task_end_date
+    assert project.last_date == last_task_end_date
 
     # with a cost after the last task, the last cost start date
     # is the default end date.
@@ -522,7 +528,7 @@ def test_default_end_date():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('50')
     )
-    assert project.default_end_date == last_cost_start_date
+    assert project.last_date == last_cost_start_date
 
     # with an end date for the last cost, the end date of the
     # last cost is the default end date.
@@ -535,7 +541,7 @@ def test_default_end_date():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('50')
     )
-    assert project.default_end_date == last_cost_end_date
+    assert project.last_date == last_cost_end_date
 
     # with a budget allocated before the last cost, the cost
     # start date is the default end date
@@ -544,24 +550,24 @@ def test_default_end_date():
         project=project,
         budget=1000,
         start_date=last_cost_start_date - timedelta(days=2))
-    assert project.default_end_date == last_cost_end_date
+    assert project.last_date == last_cost_end_date
 
     # with a budget allocated after the last cost, the budget
     # start date is the default end date
-    last_budget_start_date = project.default_end_date + timedelta(days=2)
+    last_budget_start_date = project.last_date + timedelta(days=2)
     mommy.make(
         Budget,
         project=project,
         budget=1000,
         start_date=last_budget_start_date)
-    assert project.default_end_date == last_budget_start_date
+    assert project.last_date == last_budget_start_date
 
 
 @pytest.mark.django_db
-def test_default_end_date_no_dates():
+def test_last_date_no_dates():
     project = mommy.make(Project)
     with pytest.raises(ValueError):
-        project.default_end_date
+        project.last_date
 
 
 @pytest.mark.django_db

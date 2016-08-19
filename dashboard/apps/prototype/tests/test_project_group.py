@@ -28,76 +28,18 @@ def test_project_group():
     profile = pg.profile(freq='MS')
     financial = {
         '2016-01-01~2016-01-31': {
-            'non-contractor': Decimal('2800.0000000'),
-            'contractor': Decimal('3200.0000000'),
+            'non-contractor': Decimal('2800'),
+            'contractor': Decimal('3200'),
             'budget': Decimal('0'),
             'additional': Decimal('0'),
-            'savings': Decimal('0')
+            'savings': Decimal('0'),
+            'remaining': Decimal('-6000'),
+            'total': Decimal('6000')
         }
     }
-    assert profile['financial']['timeframes'] == financial
+    assert profile['financial']['time_frames'] == financial
     assert profile['name'] == 'PG1'
     assert profile['service_area'] == {'id': client1.id, 'name': client1.name}
-
-
-@pytest.mark.django_db
-def test_merge_financial():
-    financial1 = {
-        '2016-01-01~2016-01-31': {
-            'contractor': 1600,
-            'non-contractor': 1400,
-            'additional': 1000,
-            'budget': 5000,
-            'savings': Decimal('0')
-        }
-    }
-    assert ProjectGroup.merge_financial(financial1, {}) == financial1
-    financial2 = {
-        '2016-01-01~2016-01-31': {
-            'contractor': 1600,
-            'non-contractor': 1400,
-            'additional': 500,
-            'budget': 4000,
-            'savings': Decimal('0')
-        }
-    }
-    expected = {
-        '2016-01-01~2016-01-31': {
-            'contractor': 3200,
-            'non-contractor': 2800,
-            'additional': 1500,
-            'budget': 9000,
-            'savings': Decimal('0')
-        }
-    }
-    assert ProjectGroup.merge_financial(financial1, financial2) == expected
-
-    financial2 = {
-        '2016-02-01~2016-02-28': {
-            'contractor': 1600,
-            'non-contractor': 1400,
-            'additional': 500,
-            'budget': 4000,
-            'savings': Decimal('0')
-        }
-    }
-    expected = {
-        '2016-01-01~2016-01-31': {
-            'contractor': 1600,
-            'non-contractor': 1400,
-            'additional': 1000,
-            'budget': 5000,
-            'savings': Decimal('0')
-        },
-        '2016-02-01~2016-02-28': {
-            'contractor': 1600,
-            'non-contractor': 1400,
-            'additional': 500,
-            'budget': 4000,
-            'savings': Decimal('0')
-        }
-    }
-    assert ProjectGroup.merge_financial(financial1, financial2) == expected
 
 
 @pytest.mark.django_db
