@@ -36,13 +36,11 @@ div.header-wrapper {
 div.header-wrapper div.header-proposition {
     margin-left: auto;
     margin-right: auto;
-    width: 600px;
 }
 
 @media (min-width: 769px) {
     #global-header.with-proposition .header-wrapper .header-proposition {
-    float: none;
-    width: 600px;
+        float: none;
     }
 }
 
@@ -58,10 +56,10 @@ div.header-global {
     margin: 0;
     background-color: #dee0e2;
     color: #000000;
-    height: 30px;
+    height: 28px;
     padding-top: 3px;
-    padding-bottom: 3px;
-    padding-left: 8px;
+    padding-bottom: 0;
+    padding-left: 0;
     padding-right: 8px;
     font-family: "nta", Arial, sans-serif;
 }
@@ -69,27 +67,31 @@ div.header-global {
 .nav-bar ul {
     margin-top: 3px;
     margin-bottom: 3px;
-    padding-left: 3px;
+    padding-left: 0;
+    padding-bottom: 0;
 }
 
 .nav-bar ul li {
-
     display: inline;
-    margin-right: 20px;
-    border-style: solid;
-    border-color: #dee0e2;
-
+    border: none;
 }
 
-body.admin li.admin, body.product li.product, body.portfolio li.portfolio, body.service li.service {
-
-    border-bottom-color: #005ea5;
-
+body.admin li.admin a,
+body.product li.product a,
+body.portfolio li.portfolio a,
+body.service li.service a {
+    border-bottom: 3px solid #005ea5;
 }
 
 .nav-bar ul li a {
     color: #000000;
     text-decoration: none;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.nav-bar ul li:not(.user-menu) a:hover {
+    border-bottom: 3px solid #005ea5;
 }
 
 .nav-bar ul li a:visited {
@@ -99,7 +101,6 @@ body.admin li.admin, body.product li.product, body.portfolio li.portfolio, body.
 
 ul li.user-menu {
     float: right;
-
 }
 
 li.user-menu {
@@ -129,6 +130,7 @@ li.user-menu ul li {
     margin:0;
     padding: 3px;
     border: none;
+    background: #fff;
     border-right: 1px solid #dee0e2;
     border-left: 1px solid #dee0e2;
     border-bottom: 1px solid #dee0e2;

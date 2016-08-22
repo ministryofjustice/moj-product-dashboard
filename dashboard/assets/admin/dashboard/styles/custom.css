@@ -1,20 +1,4 @@
-#global-header-bar .header-bar {
-    height: auto;
-    background-color: #005ea5;
-    color: #FFFFFF;
-}
 
-.header-bar {
-    padding-top: 3px;
-    padding-bottom: 3px;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-.header-bar a {
-    color: #FFFFFF;
-    text-decoration: none;
-}
 
 #user-name {
     font-weight: bold;
@@ -320,7 +304,7 @@ div.flex > h1 {
 }
 
 div.dashboard-admin-nav ul li a {
-    padding: 10px 20px 4px 14px;
+    padding: 5px 15px 0;
     color: #0b0c0c;
     text-decoration: none;
     display: inline-block;
