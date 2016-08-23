@@ -217,10 +217,11 @@ BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'sqs://')
 if all([os.environ.get('SMTP_USER'),
         os.environ.get('SMTP_PASS'),
         os.environ.get('SMTP_HOST')]):
-    EMAIL_BACKEND = 'mail.backends.TimeoutEmailBackend'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = os.environ.get('SMTP_HOST')
     EMAIL_HOST_USER = os.environ.get('SMTP_USER')
     EMAIL_HOST_PASSWORD = os.environ.get('SMTP_PASS')
+    EMAIL_USE_TLS = True
     EMAIL_PORT = 587
     EMAIL_TIMEOUT = 10
 else:
