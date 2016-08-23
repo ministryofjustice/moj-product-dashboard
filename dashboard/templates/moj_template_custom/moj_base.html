@@ -145,7 +145,11 @@
         <div class="nav-bar">
             <ul>
               <li class="portfolio"><a href="{% url 'portfolio_html' %}">Portfolio Summary</a></li>
-              <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
+              {% if perms.prototype.change_project %}
+                <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
+              {% else %}
+                <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
+              {% endif %}
               <li class="user-menu">
                 <a>{{ request.user.username }}</a>
                 <ul>
