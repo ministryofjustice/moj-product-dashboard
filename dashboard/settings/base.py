@@ -214,6 +214,8 @@ BROKER_TRANSPORT_OPTIONS = {
 
 BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'sqs://')
 
+DEFAULT_FROM_EMAIL = 'mojdsd-product-dashboard@digital.justice.gov.uk'
+
 if all([os.environ.get('SMTP_USER'),
         os.environ.get('SMTP_PASS'),
         os.environ.get('SMTP_HOST')]):
