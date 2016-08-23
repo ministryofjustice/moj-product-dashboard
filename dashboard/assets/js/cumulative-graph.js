@@ -173,7 +173,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     mode: 'lines+markers',
     yaxis: 'y',
     marker: {
-      color: '#FFBF47',
+      color: '#274028',
       line: {width: 0}  // for ie9 only
     },
     line: {
