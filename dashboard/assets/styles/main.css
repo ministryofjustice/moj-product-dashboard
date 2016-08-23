@@ -122,3 +122,8 @@ img.status {
 div.js-plotly-plot {
   margin-left: -50px;
 }
+
+h1 a.button {
+  float: right;
+  font-size: 16px;
+}

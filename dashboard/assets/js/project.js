@@ -279,6 +279,7 @@ export class ProjectContainer extends Component {
   }
 
   render() {
+    const project = this.state.project;
     const timeFrameSelector = (
       <TimeFrameSelector rangeOptions={this.timeFrameOpts}
         selectedRange={this.state.timeFrame}
@@ -291,7 +292,7 @@ export class ProjectContainer extends Component {
         onSelectedEndDateChange={evt => this.handleEndDateChange(evt)}
       />);
 
-    if (typeof this.state.project.name === 'undefined') {
+    if (typeof project.name === 'undefined') {
       return (
         <div>
           { timeFrameSelector }
@@ -307,19 +308,22 @@ export class ProjectContainer extends Component {
         <div className="breadcrumbs">
           <ol>
             <li>
-              <a href="/">Digital portfolio</a>
+              <a href="/">Portfolio Summary</a>
             </li>
             <li style={{ backgroundImage: `url(${SeparatorImg})` }}>
-              { this.state.project.name }
+              { project.name }
             </li>
           </ol>
         </div>
         <h1 className="heading-xlarge">
           <div className="banner">
-            <PhaseTag phase={this.state.project.phase } />
-            <RagTag rag={this.state.project.rag} />
+            <PhaseTag phase={ project.phase } />
+            <RagTag rag={ project.rag } />
           </div>
-          {this.state.project.name}
+          {project.name}
+          <a className="button" href={ `/admin/prototype/project/${project.id}/change/` }>
+            Edit product details
+          </a>
         </h1>
         <Tabs className="product-tabs">
           <TabList>
@@ -329,21 +333,21 @@ export class ProjectContainer extends Component {
           <TabPanel>
             { timeFrameSelector }
             <KeyStats
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-              project={this.state.project}
-              timeFrame={this.state.timeFrame}
+              startDate={ this.state.startDate }
+              endDate={ this.state.endDate }
+              project={ project }
+              timeFrame={ this.state.timeFrame }
             />
             <ProjectGraph
-              project={this.state.project}
-              onBurnDownChange={(e) => this.handleBurnDownChange(e)}
-              showBurnDown={this.state.showBurnDown}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
+              project={ project }
+              onBurnDownChange={ (e) => this.handleBurnDownChange(e) }
+              showBurnDown={ this.state.showBurnDown }
+              startDate={ this.state.startDate }
+              endDate={ this.state.endDate }
             />
           </TabPanel>
           <TabPanel>
-            <p>{ this.state.project.description }</p>
+            <p>{ project.description }</p>
           </TabPanel>
         </Tabs>
       </div>
@@ -763,6 +767,10 @@ function RagTag({rag}) {
 class Project {
   constructor(projectJSON) {
     this.data = projectJSON;
+  }
+
+  get id() {
+    return this.data.id;
   }
 
   get name() {
