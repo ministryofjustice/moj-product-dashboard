@@ -10,7 +10,7 @@ import Plotly from './plotly-custom';
 import { monthRange, thisCalendarYear,
          thisFinancialYear, thisQuarter, lastCalendarYear,
          lastFinancialYear, lastQuarter,
-         startOfMonth, endOfMonth,
+         startOfMonth, endOfMonth, oneDayBefore,
          min, max, values, round, numberWithCommas } from './utils';
 import { plotCumulativeSpendings } from './cumulative-graph';
 
@@ -88,7 +88,7 @@ export class ProjectContainer extends Component {
 
   get timeFrames() {
     const now = moment();
-    return {
+    const result = {
       'entire-time-span': {
         label: 'Entire project life time',
         startDate: this.state.project.startDate,
@@ -123,13 +123,26 @@ export class ProjectContainer extends Component {
         label: 'Last quarter',
         startDate: lastQuarter(now).startDate,
         endDate: lastQuarter(now).endDate
-      },
-      'custom-range': {
-        label: 'Custom date range',
-        startDate: null,
-        endDate: null
-      },
-    }
+      }
+    };
+    const phases = this.state.project.phases;
+    Object.keys(phases).map(id => {
+      const {start, end, name} = phases[id];
+      const formatDate = (date) => moment(date).format('D MMM YY');
+      if (start && end ) {
+        result[id] = {
+          label: `${name} (${formatDate(start)} - ${formatDate(end)})`,
+          startDate: startOfMonth(start),
+          endDate: endOfMonth(oneDayBefore(end))
+        }
+      }
+    });
+    result['custom-range'] = {
+      label: 'Custom date range',
+      startDate: null,
+      endDate: null
+    };
+    return result;
   }
 
   get timeFrameOpts() {
@@ -319,6 +332,7 @@ export class ProjectContainer extends Component {
               startDate={this.state.startDate}
               endDate={this.state.endDate}
               project={this.state.project}
+              timeFrame={this.state.timeFrame}
             />
             <ProjectGraph
               project={this.state.project}
@@ -383,32 +397,47 @@ function TimeFrameSelector({
 }
 
 
-function KeyStats({project, startDate, endDate}) {
+function KeyStats({project, timeFrame, startDate, endDate}) {
   let budget = 0;
   let spend= 0;
   let savings = 0;
-  const monthly = project.monthlyFinancials;
-  const months = Object.keys(monthly).sort();
-  if (months.length > 0) {
-    const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
-    const firstMonth = months[0];
-    const minMonth = startMonth > firstMonth ? startMonth : firstMonth;
-    const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
-    const finalMonth = months.slice(-1)[0];
-    const maxMonth = endMonth > finalMonth ? finalMonth : endMonth;
+  let phaseName = null
+  if (timeFrame in project.phases) {
+    const { name, start, end }= project.phases[timeFrame];
+    phaseName = name;
+    const startFinancials = project.keyDatesFinancials[start];
+    const endFinancials = project.keyDatesFinancials[end];
+    budget = endFinancials.budget;
+    spend = endFinancials.total - startFinancials.total;
+    savings = endFinancials.savings - startFinancials.savings;
+  } else {
+    const monthly = project.monthlyFinancials;
+    const months = Object.keys(monthly).sort();
+    if (months.length > 0) {
+      const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
+      const firstMonth = months[0];
+      const minMonth = startMonth > firstMonth ? startMonth : firstMonth;
+      const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
+      const finalMonth = months.slice(-1)[0];
+      const maxMonth = endMonth > finalMonth ? finalMonth : endMonth;
 
-    budget = monthly[maxMonth].budget;
-    spend = monthly[maxMonth].spendCumulative
-      - monthly[minMonth].spendCumulative
-      + monthly[minMonth].total;
-    savings = monthly[maxMonth].savingsCumulative
-      - monthly[minMonth].savingsCumulative
-      + monthly[minMonth].savings;
+      budget = monthly[maxMonth].budget;
+      spend = monthly[maxMonth].spendCumulative
+        - monthly[minMonth].spendCumulative
+        + monthly[minMonth].total;
+      savings = monthly[maxMonth].savingsCumulative
+        - monthly[minMonth].savingsCumulative
+        + monthly[minMonth].savings;
+    }
   }
 
-  const budgetLabel = (endDate) => {
+  const budgetLabel = (endDate, phaseName) => {
+    // when there is no data
     if (endDate === null) {
       return 'Budget';
+    }
+    if (phaseName !== null) {
+      return `Budget as of end ${phaseName}`;
     }
     return `Budget as of end ${moment(endDate, 'YYYY-MM-DD').format('MMM YY')}`;
   }
@@ -430,15 +459,15 @@ function KeyStats({project, startDate, endDate}) {
       <div className="grid-row">
         <Data
           data={format(budget)}
-          label={budgetLabel(endDate)}
+          label={budgetLabel(endDate, phaseName)}
         />
         <Data
           data={format(spend)}
-          label="Spend for this period"
+          label={phaseName ? `Spend for ${phaseName}` : "Spend for this period"}
         />
         <Data
           data={format(savings)}
-          label="Savings enabled for this period"
+          label={phaseName ? `Savings enabled for ${phaseName}` : "Savings enabled for this period"}
         />
       </div>
     </div>
@@ -779,6 +808,41 @@ class Project {
   }
 
   get monthlyFinancials() {
-    return parseProjectFinancials(this.data.financial);
+    return parseProjectFinancials(this.data.financial['time_frames']);
   }
+
+  get keyDatesFinancials() {
+    const result = {};
+    values(this.data.financial['key_dates'])
+      .map(val => result[val.date] = val.stats);
+    return result;
+  }
+
+  get phases() {
+    return {
+      'discovery': {
+        start: this.discoveryStart,
+        end: this.alphaStart,
+        name: 'Discovery',
+        color: '#972c86'
+      },
+      'alpha': {
+        start: this.alphaStart,
+        end: this.betaStart,
+        name: 'Alpha',
+        color: '#d53880'
+      },
+      'beta': {
+        start: this.betaStart,
+        end: this.liveStart,
+        name: 'Beta',
+        color: '#fd7743'
+      },
+      'live': {
+        start: this.liveStart,
+        name: 'Live',
+        color: '#839951'
+      }
+    }
+  };
 }

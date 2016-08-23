@@ -172,6 +172,11 @@ export function endOfMonth(date) {
 }
 
 
+export function oneDayBefore(date) {
+  return moment(date, 'YYYY-MM-DD').subtract(1, 'day').format('YYYY-MM-DD');
+}
+
+
 export function min(items) {
   return items.reduce((x, y) => x < y ? x : y)
 }

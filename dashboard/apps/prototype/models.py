@@ -391,6 +391,150 @@ class BaseProject(models.Model):
             start_date__lte=on).order_by('-start_date').first()
         return status
 
+    def stats_on(self, on):
+        """
+        key statistics snapshot on a given date
+        :param on: date when the snapsot is taken
+        """
+        try:
+            return self.stats_between(
+                self.first_date, on - timedelta(days=1))
+        except ValueError:  # when no first_date
+            return {
+                'contractor': Decimal('0'),
+                'non-contractor': Decimal('0'),
+                'additional': Decimal('0'),
+                'budget': Decimal('0'),
+                'savings': Decimal('0'),
+                'total': Decimal('0'),
+                'remaining': Decimal('0')
+            }
+
+    def stats_between(self, start_date, end_date):
+        """
+        key statistics in a time window
+        :param start_date: start date of time window, a date object
+        :param end_date: start date of time window, a date object
+        :return a dictionary
+        """
+        contractor_cost = self.people_costs(
+            start_date, end_date, contractor_only=True)
+        non_contractor_cost = self.people_costs(
+            start_date, end_date, non_contractor_only=True)
+        additional_costs = self.additional_costs(start_date, end_date)
+        total = contractor_cost + non_contractor_cost + additional_costs
+        # technically the budget is for 23:59:59 of end_date,
+        # which rounded to next day at 00:00:00
+        budget = self.budget(end_date + timedelta(days=1))
+        remaining = budget - total
+        savings = self.savings_between(start_date, end_date)
+        stats = {
+            'contractor': contractor_cost,
+            'non-contractor': non_contractor_cost,
+            'additional': additional_costs,
+            'budget': budget,
+            'savings': savings,
+            'total': total,
+            'remaining': remaining
+        }
+        return stats
+
+    def key_dates(self, freq=None):
+        """
+        snapshots on key dates of the project. these include the start of
+        phases, today and end of time frames defined by frequency.
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :return: a dictionary
+        """
+        phases = {
+            '{}-{}'.format('-'.join(name.split(' ')),
+                           date.strftime('%Y%m%d')): {
+                'name': name,
+                'date': date,
+                'stats': self.stats_on(date)
+            }
+            for (name, date) in [
+                ('discovery start', self.discovery_date),
+                ('alpha start', self.alpha_date),
+                ('beta start', self.beta_date),
+                ('live start', self.live_date),
+                ('today', date.today()),
+                ('end', self.end_date)
+            ]
+            if date
+        }
+        budget_start_dates = {
+            'new-budget-{}'.format(bgt.start_date.strftime('%Y%m%d')): {
+                'name': 'new budget start',
+                'date': bgt.start_date,
+                'stats': self.stats_on(bgt.start_date)
+            }
+            for bgt in self.budgets.all()
+        }
+
+        if not freq:
+            return {**phases, **budget_start_dates}
+
+        try:
+            time_windows = slice_time_window(
+                self.first_date,
+                self.last_date,
+                freq, extend=True)
+        except ValueError:  # when no first_date
+            time_windows = []
+
+        def _key(sdate, edate):
+            return 'end-of-{}-{}'.format(
+                sdate.strftime('%Y%m%d'), edate.strftime('%Y%m%d'))
+        time_window_end_dates = {
+            _key(sdate, edate): {
+                'name': 'end of a time window',
+                # technically the date should be 23:59:59 of edate,
+                # which rounded to next day at 00:00:00
+                'date': edate + timedelta(days=1),
+                'stats': self.stats_on(edate)
+            }
+            for sdate, edate in time_windows
+        }
+        return {**phases, **budget_start_dates, **time_window_end_dates}
+
+    def time_frames(self, start_date, end_date, freq):
+        """
+        cumulative stats of time frames sliced by freq
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :return: a dictionary
+        """
+        if not start_date:
+            try:
+                start_date = self.first_date
+            except ValueError:
+                return {}
+        if not end_date:
+            try:
+                end_date = self.last_date
+            except ValueError:
+                return {}
+        if freq:
+            time_windows = slice_time_window(
+                start_date, end_date, freq, extend=True)
+        else:
+            time_windows = [(start_date, end_date)]
+        result = {}
+        for sdate, edate in time_windows:
+            # use '{sdate}~{edate}' as the dictionary key.
+            # this is perhaps not the best way to do it.
+            # leave it open to change when a better way emerges.
+            key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
+                                 edate.strftime('%Y-%m-%d'))
+            result[key] = self.stats_between(sdate, edate)
+        return result
+
     def profile(self, start_date=None, end_date=None, freq=None):
         """
         get the profile of a project group in a time window.
@@ -410,6 +554,14 @@ class BaseProject(models.Model):
             }
         else:
             service_area = {}
+        try:
+            first_date = self.first_date
+        except ValueError:
+            first_date = None
+        try:
+            last_date = self.last_date
+        except ValueError:
+            last_date = None
         result = {
             'id': self.id,
             'name': self.name,
@@ -422,9 +574,12 @@ class BaseProject(models.Model):
             'beta_date': self.beta_date,
             'live_date': self.live_date,
             'end_date': self.end_date,
-            'first_date': self.first_date,
-            'last_date': self.last_date,
-            'financial': self.financial(start_date, end_date, freq),
+            'first_date': first_date,
+            'last_date': last_date,
+            'financial': {
+                'time_frames': self.time_frames(start_date, end_date, freq),
+                'key_dates': self.key_dates(freq)
+            },
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
             'savings': self.savings_between(start_date, end_date),
@@ -458,38 +613,6 @@ class Project(BaseProject, AditionalCostsMixin):
         return urlresolvers.reverse(name, args=(self.id,))
 
     @property
-    def first_date(self):
-        """
-        first day in the project lifetime. it's the lesser of
-        the discovery date and default start date.
-        """
-        candidates = []
-        try:
-            candidates.append(self.default_start_date)
-        except ValueError:
-            pass
-        if self.discovery_date:
-            candidates.append(self.discovery_date)
-        if candidates:
-            return min(candidates)
-
-    @property
-    def last_date(self):
-        """
-        last day in the project lifetime. it's the greater of
-        the project end date and default end date.
-        """
-        candidates = []
-        try:
-            candidates.append(self.default_end_date)
-        except ValueError:
-            pass
-        if self.end_date:
-            candidates.append(self.end_date)
-        if candidates:
-            return max(candidates)
-
-    @property
     def first_task(self):
         return self.tasks.order_by('start_date').first()
 
@@ -519,32 +642,15 @@ class Project(BaseProject, AditionalCostsMixin):
             return by_end_date
         return by_start_date
 
-    def spendings_between(self, start_date, end_date):
-        contractor_cost = self.people_costs(
-            start_date, end_date, contractor_only=True)
-        non_contractor_cost = self.people_costs(
-            start_date, end_date, non_contractor_only=True)
-        additional_costs = self.additional_costs(start_date, end_date)
-        savings = self.savings_between(start_date, end_date)
-        value = {
-            'contractor': contractor_cost,
-            'non-contractor': non_contractor_cost,
-            'additional': additional_costs,
-            'budget': self.budget(end_date),
-            'savings': savings,
-        }
-        return value
-
     @property
-    def default_start_date(self):
+    def first_date(self):
         """
-        default start date is the date when the first spend occurs or
-        the first budget allocated to the project.
-        it is the smallest of these three start dates:
-        first task, first budget, first cost.
+        default start date is the date when the first spend occurs or the
+        first budget allocated to the project or the specified discovery date
+        it is the smallest of these four start dates:
+        first task, first budget, first cost, discovery date
         :return: a date object
-        :raises: ValueError when none of the three dates
-        are present.
+        :raises: ValueError when none of the dates are present.
         """
         candidates = []
         if self.first_task:
@@ -553,19 +659,20 @@ class Project(BaseProject, AditionalCostsMixin):
             candidates.append(self.first_budget.start_date)
         if self.first_cost:
             candidates.append(self.first_cost.start_date)
+        if self.discovery_date:
+            candidates.append(self.discovery_date)
         return min(candidates)
 
     @property
-    def default_end_date(self):
+    def last_date(self):
         """
         default end date is the date when the last spend occurs or
-        the last budget allocated to the project.
+        the last budget allocated to the project or the specified end date
         it is the greatest of these dates in the project:
         end date of the last task, start date of the last budget,
-        the start date and end date of the last cost.
+        the start date and end date of the last cost, end date of the project
         :return: a date object
-        :raises: ValueError when none of the three dates
-        are present.
+        :raises: ValueError when none of the dates are present.
         """
         candidates = []
         if self.last_task:
@@ -577,33 +684,9 @@ class Project(BaseProject, AditionalCostsMixin):
                 candidates.append(self.last_cost.end_date)
             else:
                 candidates.append(self.last_cost.start_date)
+        if self.end_date:
+            candidates.append(self.end_date)
         return max(candidates)
-
-    def financial(self, start_date, end_date, freq):
-        if not start_date:
-            try:
-                start_date = self.default_start_date
-            except ValueError:
-                return {}
-        if not end_date:
-            try:
-                end_date = self.default_end_date
-            except ValueError:
-                return {}
-        if freq:
-            time_windows = slice_time_window(
-                start_date, end_date, freq, extend=True)
-        else:
-            time_windows = [(start_date, end_date)]
-        result = {}
-        for sdate, edate in time_windows:
-            # use '{sdate}~{edate}' as the dictionary key.
-            # this is perhaps not the best way to do it.
-            # leave it open to change when a better way emerges.
-            key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
-                                 edate.strftime('%Y-%m-%d'))
-            result[key] = self.spendings_between(sdate, edate)
-        return result
 
     def __str__(self):
         return self.name
@@ -652,26 +735,20 @@ class Project(BaseProject, AditionalCostsMixin):
         """
         cost of the project from the start to today
         """
-        try:
-            spendings = self.spendings_between(
-                self.default_start_date, date.today())
-        except ValueError:
-            return Decimal('0')
-        return sum(spendings[item] for item in
+        stats = self.stats_on(date.today())
+        return sum(stats[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
     @property
     def total_cost(self):
         """
-        cost of the project from the beginning to the end
+        cost of the project from the beginning to the end of the end date
         """
         try:
-            spendings = self.spendings_between(
-                self.default_start_date,
-                self.default_end_date)
-        except ValueError:
+            stats = self.stats_on(self.last_date + timedelta(days=1))
+        except ValueError:  # when no last_date
             return Decimal('0')
-        return sum(spendings[item] for item in
+        return sum(stats[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
     def budget(self, on=None):
@@ -692,7 +769,7 @@ class Project(BaseProject, AditionalCostsMixin):
         budget on the default end date
         """
         try:
-            return self.budget(on=self.default_end_date)
+            return self.budget(on=self.last_date)
         except ValueError:
             return Decimal('0')
 
@@ -802,24 +879,23 @@ class ProjectGroup(BaseProject):
     )
 
     @property
+    def budgets(self):
+        return Budget.objects.filter(
+            project_id__in=[p.id for p in self.projects.all()])
+
+    @property
     def first_date(self):
-        try:
-            return min([p.first_date for p in self.projects.all()])
-        except ValueError:  # when there is no project
-            return None
+        return min([p.first_date for p in self.projects.all()])
 
     @property
     def last_date(self):
-        try:
-            return max([p.last_date for p in self.projects.all()])
-        except ValueError:  # when there is no project
-            return None
+        return max([p.last_date for p in self.projects.all()])
 
     def budget(self, on=None):
         return sum([p.budget(on) for p in self.projects.all()])
 
     @property
-    def cost_to_date(self, on=None):
+    def cost_to_date(self):
         return sum([p.cost_to_date for p in self.projects.all()])
 
     @property
@@ -849,33 +925,24 @@ class ProjectGroup(BaseProject):
         return sum(p.current_fte(start_date, end_date)
                    for p in self.projects.all())
 
-    def financial(self, start_date, end_date, freq):
-        projects = self.projects.filter(visible=True)
-        project_to_financial = {
-            project.id: project.profile(start_date, end_date, freq)['financial']
-            for project in projects
-        }
-        result = {}
-        for profile in project_to_financial.values():
-            result = self.merge_financial(result, profile)
-        return result
+    def people_costs(self, start_date, end_date, contractor_only=False,
+                     non_contractor_only=False):
+        """
+        get money spent in a time window
+        :param start_date: start date of time window, a date object
+        :param end_date: end date of time window, a date object
+        :param contractor_only: True to return only money spent on contractors
+        :param non_contractor_only: True to return only money spent on
+        non-contractors
+        :return: a decimal for total spending
+        """
+        return sum(p.people_costs(start_date, end_date, contractor_only,
+                                  non_contractor_only)
+                   for p in self.projects.filter(visible=True))
 
-    @staticmethod
-    def merge_financial(financial1, financial2):
-        """
-        static method for merging the 'financial' of
-        the two project profiles.
-        """
-        result = {}
-        timeframes = set(financial1.keys()) | set(financial2.keys())
-        for timeframe in timeframes:
-            f1 = financial1.get(timeframe, {})
-            f2 = financial2.get(timeframe, {})
-            result[timeframe] = {
-                key: f1.get(key, Decimal('0')) + f2.get(key, Decimal('0'))
-                for key in set(f1.keys()) | set(f2.keys())
-            }
-        return result
+    def additional_costs(self, start_date, end_date):
+        return sum(p.additional_costs(start_date, end_date) for p in
+                   self.projects.filter(visible=True))
 
     def savings_between(self, start_date=None, end_date=None):
         """

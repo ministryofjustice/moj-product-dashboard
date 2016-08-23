@@ -2,7 +2,7 @@ import Plotly from './plotly-custom';
 import moment from 'moment';
 
 import { parseProjectFinancials } from './project';
-import { startOfMonth, round, monthRange } from './utils';
+import { values, startOfMonth, round, monthRange } from './utils';
 
 /**
  * work out the shapes and annotations for
@@ -10,48 +10,24 @@ import { startOfMonth, round, monthRange } from './utils';
  * phases
  * */
 function backgroundForPhases(project, range) {
-  const discovery = project.discoveryStart;
-  const alpha = project.alphaStart;
-  const beta = project.betaStart;
-  const live = project.liveStart;
-
-  const phases = {
-    'discovery': {
-      start: discovery,
-      end: alpha,
-      fillcolor: '#972c86'
-    },
-    'alpha': {
-      start: alpha,
-      end: beta,
-      fillcolor: '#d53880'
-    },
-    'beta': {
-      start: beta,
-      end: live,
-      fillcolor: '#fd7743'
-    },
-    'live': {
-      start: live,
-      fillcolor: '#839951'
-    }
-  }
+  const phases = project.phases;
   const shapes = [];
   const annotations = [];
 
-  Object.keys(phases).map( phase => {
-    const {start, end, fillcolor} = phases[phase];
+  Object.keys(phases).map(name => {
+    const {start, end, color} = phases[name];
     if (start) {
       const x1 = end ? end : range[1].format('YYYY-MM-DD');
       shapes.push({
         type: 'rect',
+        layer: 'below',
         xref: 'x',
         yref: 'paper',
         x0: start,
         x1: x1,
         y0: 0,
         y1: 1,
-        fillcolor: fillcolor,
+        fillcolor: color,
         opacity: 0.3,
         line: {
           width: 0
@@ -63,9 +39,9 @@ function backgroundForPhases(project, range) {
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
-        text: phase.toUpperCase(),
+        text: name.toUpperCase(),
         showarrow: false,
-        bgcolor: fillcolor,
+        bgcolor: color,
         font: {
           color: '#ffffff',
           size: 16
@@ -114,22 +90,18 @@ function markingsForToday(range) {
 
 
 export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem) {
-  const currentMonth = moment().format('YYYY-MM');
-  const lastMonth = moment().subtract(1, 'month').format('YYYY-MM');
-  const monthly = project.monthlyFinancials;
-  const months = Object.keys(monthly).sort();
-  const finalMonth = months.slice(-1)[0];
-  const remainingMonths = monthRange(finalMonth, endDate, 'end');
-  const monthsExtended = months.concat(remainingMonths);
-  const pastMonths = months.filter(m => m < currentMonth);
-  const lastPlusFutureMonths = months.filter(m => m >= lastMonth);
-  const lastPlusFutureMonthsExtended = lastPlusFutureMonths.concat(remainingMonths);
-
-  const toLabel = m => startOfMonth(moment(m, 'YYYY-MM').add(1, 'months'));
+  const today = moment().format('YYYY-MM-DD');
+  const keyDatesFinancials = project.keyDatesFinancials;
+  const keyDates = Object.keys(keyDatesFinancials).sort();
+  const pastDates = keyDates.filter(d => d <= today).sort();
+  const futureDates = keyDates.filter(d => d >= today).sort();
+  const finalKeyDate = keyDates.slice(-1)[0];
+  const remainingDates = monthRange(finalKeyDate, endDate, 'end');
+  const datesExtended = keyDates.concat(remainingDates);
 
   const actualCumulativeTrace = {
-    x: pastMonths.map(toLabel),
-    y: pastMonths.map(m => round(monthly[m].spendCumulative)),
+    x: pastDates,
+    y: pastDates.map(d => round(keyDatesFinancials[d].total)),
     name: 'Actual spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -140,8 +112,8 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
   const actualRemainingTrace = {
-    x: pastMonths.map(toLabel),
-    y: pastMonths.map(m => round(monthly[m].remaining)),
+    x: pastDates,
+    y: pastDates.map(d => round(keyDatesFinancials[d].remaining)),
     name: 'Actual spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -153,8 +125,8 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   };
 
   const forecastCumulativeTrace = {
-    x: lastPlusFutureMonths.map(toLabel),
-    y: lastPlusFutureMonths.map(m => round(monthly[m].spendCumulative)),
+    x: futureDates,
+    y: futureDates.map(d => round(keyDatesFinancials[d].total)),
     name: 'Forecast spend',
     type: 'scatter',
     mode: 'lines+markers',
@@ -168,12 +140,12 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
   const forecastRemainingTrace = {
-    x: lastPlusFutureMonthsExtended.map(toLabel),
-    y: lastPlusFutureMonthsExtended.map(m => {
-      if (m in monthly) {
-        return round(monthly[m].remaining);
-      }
-      return round(monthly[finalMonth].remaining);
+    x: datesExtended.filter(d => d >= today),
+    y: datesExtended.filter(d => d >= today).map(d => {
+      if (d in keyDatesFinancials) {
+        return round(keyDatesFinancials[d].remaining)
+      };
+      return round(keyDatesFinancials[finalKeyDate].remaining);
     }),
     name: 'Forecast spend',
     type: 'scatter',
@@ -189,12 +161,12 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   };
 
   const budgetTrace = {
-    x: monthsExtended.map(toLabel),
-    y: monthsExtended.map(m => {
-      if (m in monthly) {
-        return round(monthly[m].budget);
-      }
-      return round(monthly[finalMonth].budget);
+    x: datesExtended,
+    y: datesExtended.map(d => {
+      if (d in keyDatesFinancials) {
+        return round(keyDatesFinancials[d].budget);
+      };
+      return round(keyDatesFinancials[finalKeyDate].budget);
     }),
     name: 'Budget',
     type: 'scatter',
@@ -205,7 +177,8 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       line: {width: 0}  // for ie9 only
     },
     line: {
-      dash: 'dot'
+      dash: 'dot',
+      shape: 'hv'
     }
   };
 
@@ -220,7 +193,10 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     data.push(budgetTrace);
   };
 
-  const range =  [ moment(startDate, 'YYYY-MM-DD'), moment(endDate, 'YYYY-MM-DD') ];
+  const range =  [
+    moment(startDate, 'YYYY-MM-DD'),
+    moment(endDate, 'YYYY-MM-DD').add(1, 'day')
+  ];
 
   const {shapes, annotations} = backgroundForPhases(project, range);
   const todayMarkings = markingsForToday(range);
