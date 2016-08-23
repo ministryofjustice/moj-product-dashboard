@@ -6,6 +6,12 @@
       - ['change_user', 'auth', 'user']
       - ['add_user', 'auth', 'user']
       - ['delete_user', 'auth', 'user']
+      - ['change_accessattempt', 'axes', 'accessattempt']
+      - ['add_accessattempt', 'axes', 'accessattempt']
+      - ['delete_accessattempt', 'axes', 'accessattempt']
+      - ['change_accesslog', 'axes', 'accesslog']
+      - ['add_accesslog', 'axes', 'accesslog']
+      - ['delete_accesslog', 'axes', 'accesslog']
 - model: auth.group
   pk: 2
   fields:
