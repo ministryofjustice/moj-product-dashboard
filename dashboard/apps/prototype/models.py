@@ -89,6 +89,18 @@ class BaseCost(models.Model):
         elif self.type == COST_TYPES.ANNUALLY:
             return YEARLY
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'note': self.note,
+            'cost': self.cost,
+            'project_id': self.project_id,
+            'freq': dict(COST_TYPES.choices)[self.type]
+        }
+
     class Meta:
         abstract = True
 
@@ -272,6 +284,8 @@ class Client(models.Model):
     name = models.CharField(max_length=128)
     float_id = models.CharField(max_length=128, unique=True)
     visible = models.BooleanField(default=True)
+    manager = models.ForeignKey(
+        'Person', related_name='+', verbose_name='service manager', null=True)
     raw_data = JSONField(null=True)
 
     class Meta:
@@ -333,6 +347,8 @@ class ProjectManager(models.Manager):
 class BaseProject(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(null=True, blank=True)
+    product_manager = models.ForeignKey('Person', related_name='+', null=True)
+    delivery_manager = models.ForeignKey('Person', related_name='+', null=True)
     discovery_date = models.DateField(null=True, blank=True,
                                       verbose_name='discovery start')
     alpha_date = models.DateField(null=True, blank=True,
@@ -451,9 +467,10 @@ class BaseProject(models.Model):
         phases = {
             '{}-{}'.format('-'.join(name.split(' ')),
                            date.strftime('%Y%m%d')): {
-                'name': name,
-                'date': date,
-                'stats': self.stats_on(date)
+               'name': name,
+               'date': date,
+               'type': 'phase start',
+               'stats': self.stats_on(date),
             }
             for (name, date) in [
                 ('discovery start', self.discovery_date),
@@ -467,9 +484,10 @@ class BaseProject(models.Model):
         }
         budget_start_dates = {
             'new-budget-{}'.format(bgt.start_date.strftime('%Y%m%d')): {
-                'name': 'new budget start',
+                'name': 'new budget {}'.format(bgt.budget),
                 'date': bgt.start_date,
-                'stats': self.stats_on(bgt.start_date)
+                'stats': self.stats_on(bgt.start_date),
+                'type': 'new budget set'
             }
             for bgt in self.budgets.all()
         }
@@ -490,11 +508,12 @@ class BaseProject(models.Model):
                 sdate.strftime('%Y%m%d'), edate.strftime('%Y%m%d'))
         time_window_end_dates = {
             _key(sdate, edate): {
-                'name': 'end of a time window',
+                'name': _key(sdate, edate),
                 # technically the date should be 23:59:59 of edate,
                 # which rounded to next day at 00:00:00
                 'date': edate + timedelta(days=1),
-                'stats': self.stats_on(edate)
+                'stats': self.stats_on(edate),
+                'type': 'end of a time window'
             }
             for sdate, edate in time_windows
         }
@@ -535,6 +554,22 @@ class BaseProject(models.Model):
             result[key] = self.stats_between(sdate, edate)
         return result
 
+    @property
+    def managers(self):
+        """
+        get the product manager, delivery manager and service manager
+        of the product
+        :return: a dictionary
+        """
+        result = {}
+        if self.product_manager:
+            result['product_manager'] = self.product_manager.name
+        if self.delivery_manager:
+            result['delivery_manager'] = self.delivery_manager.name
+        if self.client and self.client.manager:
+            result['service_manager'] = self.client.manager.name
+        return result
+
     def profile(self, start_date=None, end_date=None, freq=None):
         """
         get the profile of a project group in a time window.
@@ -569,6 +604,7 @@ class BaseProject(models.Model):
             'type': self.__class__.__name__,
             'service_area': service_area,
             'description': self.description,
+            'managers': self.managers,
             'discovery_date': self.discovery_date,
             'alpha_date': self.alpha_date,
             'beta_date': self.beta_date,
@@ -586,6 +622,7 @@ class BaseProject(models.Model):
             'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,
+            'costs': {c.id: c.to_dict() for c in self.costs.all()}
         }
         return result
 
@@ -597,9 +634,8 @@ class Project(BaseProject, AditionalCostsMixin):
     hr_id = models.CharField(max_length=12, unique=True, null=True)
     float_id = models.CharField(max_length=128, unique=True)
     is_billable = models.BooleanField(default=True)
-    project_manager = models.ForeignKey(
-        'Person', related_name='projects', null=True)
-    client = models.ForeignKey('Client', related_name='projects', null=True)
+    client = models.ForeignKey('Client', related_name='projects',
+                               verbose_name='service area', null=True)
     visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
 
@@ -849,6 +885,9 @@ class Status(models.Model):
     status = models.PositiveSmallIntegerField(
         choices=STATUS_TYPES, default=STATUS_TYPES.OK)
 
+    def __str__(self):
+        return str(self.get_status_display())
+
     class Meta:
         abstract = True
         verbose_name_plural = "statuses"
@@ -893,6 +932,11 @@ class ProjectGroup(BaseProject):
 
     def budget(self, on=None):
         return sum([p.budget(on) for p in self.projects.all()])
+
+    @property
+    def costs(self):
+        return Cost.objects.filter(
+            project_id__in=[p.id for p in self.projects.all()])
 
     @property
     def cost_to_date(self):

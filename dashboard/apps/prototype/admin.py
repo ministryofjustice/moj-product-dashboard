@@ -6,6 +6,7 @@ from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.checks import messages
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
@@ -161,7 +162,7 @@ class RateAdmin(FinancePermissions, admin.ModelAdmin):
 
 class ClientAdmin(admin.ModelAdmin):
     search_fields = ('name', 'float_id')
-    fields = ['id', 'name', 'float_id', 'visible']
+    fields = ['id', 'name', 'float_id', 'manager', 'visible']
     readonly_fields = ['id', 'name', 'float_id']
     exclude = ['raw_data']
 
@@ -197,17 +198,29 @@ class SavingInline(admin.TabularInline):
 
 
 class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
-    fields = ['name', 'description', 'float_id', 'is_billable',
-              'project_manager', 'client', 'discovery_date', 'alpha_date',
-              'beta_date', 'live_date', 'end_date', 'visible']
+    fields = ['name', 'description', 'float_id', 'service_area',
+              'product_manager', 'delivery_manager',
+              'discovery_date', 'alpha_date', 'beta_date', 'live_date',
+              'end_date', 'visible']
     exclude = ['raw_data']
     inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
                NoteInline]
-    readonly_fields = ('name', 'description', 'float_id', 'is_billable',
-                       'project_manager', 'client')
-    list_display = ('name', 'status', 'phase', 'client', 'discovery_date',
-                    'budget')
+    readonly_fields = ('name', 'description', 'float_id', 'service_area')
+    list_display = ('name', 'status', 'phase', 'service_area',
+                    'discovery_date', 'budget')
     search_fields = ('name', 'float_id')
+
+    def service_area(self, obj):  # pragma: no cover
+        client = obj.client
+        if not client:
+            return ''
+        client_url = reverse(
+            'admin:{}_{}_change'.format(
+                client._meta.app_label, client._meta.model_name),
+            args=(client.id,))
+        return '<a href="{}"/>{}</a>'.format(client_url, client.name)
+    service_area.short_description = 'service area'
+    service_area.allow_tags = True
 
     def get_urls(self):
         urls = [

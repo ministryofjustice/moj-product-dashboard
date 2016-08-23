@@ -17,10 +17,13 @@ import { plotCumulativeSpendings } from './cumulative-graph';
 import RedImg from '../img/red.png';
 import AmberImg from '../img/amber.png';
 import GreenImg from '../img/green.png';
-import OKImg from '../img/ok.png';
-import AtRiskImg from '../img/at-risk.png';
-import InTroubleImg from '../img/in-trouble.png';
 import SeparatorImg from '../img/separator.png';
+
+const statusMapping = {
+  'OK': 'status-green',
+  'At risk': 'status-amber',
+  'In trouble': 'status-red'
+};
 
 /**
  * send a POST request to the backend to retrieve project profile
@@ -302,7 +305,7 @@ export class ProjectContainer extends Component {
         </div>
       );
     };
-
+    const adminUrl = `/admin/prototype/${project.type}/${project.id}/change/`.toLowerCase();
     return (
       <div>
         <div className="breadcrumbs">
@@ -321,7 +324,7 @@ export class ProjectContainer extends Component {
             <RagTag rag={ project.rag } />
           </div>
           {project.name}
-          <a className="button" href={ `/admin/prototype/project/${project.id}/change/` }>
+          <a className="button" href={ adminUrl }>
             Edit product details
           </a>
         </h1>
@@ -347,7 +350,7 @@ export class ProjectContainer extends Component {
             />
           </TabPanel>
           <TabPanel>
-            <p>{ project.description }</p>
+            <ProjectDetails project={ project } />
           </TabPanel>
         </Tabs>
       </div>
@@ -642,14 +645,13 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'order': 4,
       'displayName': 'Status',
       'customComponent': (props) => {
-        const mapping = {
-          'OK': OKImg,
-          'At risk': AtRiskImg,
-          'In trouble': InTroubleImg
+        if (props.data in statusMapping) {
+          return (
+            <strong className={statusMapping[props.data]}>{props.data}</strong>
+          );
         };
-        return (
-            <img src={ mapping[props.data] } className="status" alt={props.data} />
-          )}
+        return null;
+      }
     },
     {
       'columnName': 'current_fte',
@@ -769,6 +771,10 @@ class Project {
     this.data = projectJSON;
   }
 
+  get type() {
+    return this.data.type;
+  }
+
   get id() {
     return this.data.id;
   }
@@ -787,6 +793,10 @@ class Project {
 
   get rag() {
     return this.data['financial_rag'];
+  }
+
+  get status() {
+    return this.data.status;
   }
 
   get startDate() {
@@ -813,6 +823,22 @@ class Project {
 
   get liveStart() {
     return this.data['live_date'];
+  }
+
+  get serviceArea() {
+    return this.data['service_area'].name;
+  }
+
+  get productManager() {
+    return this.data.managers['product_manager'];
+  }
+
+  get deliveryManager() {
+    return this.data.managers['delivery_manager'];
+  }
+
+  get serviceManager() {
+    return this.data.managers['service_manager'];
   }
 
   get monthlyFinancials() {
@@ -853,4 +879,264 @@ class Project {
       }
     }
   };
+
+  get oneOffCosts() {
+    return values(this.data.costs).filter(cost => cost.freq == 'One off');
+  };
+
+  get recurringCosts() {
+    return values(this.data.costs)
+      .filter(cost => cost.freq == 'Monthly' || cost.freq == 'Yearly');
+  };
+
+  get budgets() {
+    const returned = values(this.data.financial['key_dates'])
+      .filter(data => data.type == 'new budget set')
+      .map(data => ({
+        name: data.name,
+        date: data.date,
+        budget: data.stats.budget
+      }));
+    return returned;
+  }
+
+  static compareDate(key, order) {
+    return function(obj1, obj2) {
+      const v1 = obj1[key];
+      const v2 = obj2[key];
+      if (v1 > v2) {
+        return order == 'desc' ? -1 : 1;
+      };
+      if (v1 < v2) {
+        return order == 'desc' ? 1 : -1;
+      };
+      return 0;
+    }
+  };
+}
+
+class ProjectDetails extends Component {
+
+  dateInEnglish(date) {
+    return moment(date, 'YYYY-MM-DD').format('Do MMM YYYY');
+  }
+
+  dateInNum(date) {
+    return moment(date, 'YYYY-MM-DD').format('DD/MM/YYYY');
+  }
+
+  Status() {
+    const status = this.props.project.status;
+    let className = 'bold-xlarge';
+    if (status in statusMapping) {
+      className = `${className} ${statusMapping[status]}`;
+    }
+    return (
+      <div>
+        <span className={ className }>{ status || '-' }</span>
+        <p className="bold-medium">Product status</p>
+      </div>
+    );
+  }
+
+  PhaseDates() {
+    const { discoveryStart, alphaStart,
+            betaStart, liveStart, endDate } = this.props.project;
+    return (
+      <div>
+        <div className="grid-row">
+          <div className="column-one-quarter">
+            <p className="heading-small">Discovery started</p>
+            <p>{ discoveryStart ? this.dateInEnglish(discoveryStart) : '-' }</p>
+          </div>
+          <div className="column-one-quarter">
+            <p className="heading-small">Alpha started</p>
+            <p>{ alphaStart ? this.dateInEnglish(alphaStart) : '-' }</p>
+          </div>
+          <div className="column-one-quarter">
+            <p className="heading-small">Beta started</p>
+            <p>{ betaStart ? this.dateInEnglish(betaStart) : '-' }</p>
+          </div>
+          <div className="column-one-quarter">
+            <p className="heading-small">Live started</p>
+            <p>{ liveStart? this.dateInEnglish(liveStart) : '-' }</p>
+          </div>
+        </div>
+        <div className="grid-row">
+          <div className="column-one-quarter">
+            <p className="heading-small">Estimated end date</p>
+            <p>{ endDate ? this.dateInEnglish(endDate) : '-' }</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  RecurringCosts() {
+    const recurringCosts = this.props.project.recurringCosts
+      .sort(Project.compareDate('start_date', 'desc'));
+
+    const Amount = () => {
+      if (recurringCosts.length == 0) {
+        return (<p>-</p>);
+      };
+      return (
+        recurringCosts.map(cost => {
+          const unit = {'Monthly' : 'month', 'Yearly': 'year'}[cost.freq];
+          const label = `${cost.name} \u00a3${numberWithCommas(cost.cost | 0)}/${unit}`;
+          return (<li key={cost.id}>{ label }</li>);
+        })
+      );
+    };
+
+    const Dates = (key) => {
+      if (recurringCosts.length == 0) {
+        return (<p>-</p>);
+      };
+      return (
+        recurringCosts.map(cost => (
+          <li key={cost.id}>{ this.dateInNum(cost[key]) }</li>)
+        )
+      );
+    };
+
+    return (
+      <div className="grid-row">
+        <div className="column-one-quarter">
+          <ul>
+            <li className="heading-small">Recurring</li>
+            { Amount() }
+          </ul>
+        </div>
+        <div className="column-one-quarter">
+          <ul>
+            <li className="heading-small">Start date</li>
+            { Dates('start_date') }
+          </ul>
+        </div>
+        <div className="column-one-quarter">
+          <ul>
+            <li className="heading-small">End date</li>
+            { Dates('end_date') }
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  OneOffCosts() {
+    const oneOffCosts = this.props.project.oneOffCosts
+      .sort(Project.compareDate('start_date', 'desc'));
+
+    const Amount = () => {
+      if (oneOffCosts.length == 0) {
+        return (<p>-</p>);
+      };
+      return (
+        oneOffCosts.map(cost => (
+          <li key={cost.id}>{ `${cost.name} \u00a3${numberWithCommas(cost.cost | 0)}` }</li>)
+        )
+      );
+    };
+
+    const Dates = () => {
+      if (oneOffCosts.length == 0) {
+        return (<p>-</p>);
+      };
+      return (
+        oneOffCosts.map(cost => (
+          <li key={cost.id}>{ this.dateInNum(cost['start_date']) }</li>)
+        )
+      );
+    };
+
+    return (
+      <div className="grid-row">
+        <div className="column-one-quarter">
+          <ul>
+            <li className="heading-small">One off</li>
+            { Amount() }
+          </ul>
+        </div>
+        <div className="column-one-quarter">
+          <p className="heading-small"></p>
+        </div>
+        <div className="column-one-quarter">
+          <ul>
+            <li className="heading-small">Date</li>
+            { Dates() }
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  Budgets() {
+    const budgets = this.props.project.budgets
+      .sort(Project.compareDate('date', 'desc'));
+    if (budgets.length == 0) {
+      return (<p>-</p>);
+    }
+    return (
+      <ul style={{marginTop: '20px'}}>
+      {
+        budgets.map(budget => (
+          <li key={budget.date}>
+            <span className="heading-small">
+              { `Set on ${ this.dateInEnglish(budget.date) }` }
+            </span>
+            <br/>
+            <span>
+              {`\u00a3${numberWithCommas(budget.budget | 0)}`}
+            </span>
+          </li>
+          )
+        )
+      }
+      </ul>
+    );
+  }
+
+  Team() {
+    const { serviceManager, productManager, deliveryManager, serviceArea } = this.props.project;
+    return (
+      <div className="grid-row">
+        <div className="column-one-quarter">
+            <p className="heading-small">Service manager</p>
+            <p>{ serviceManager || '-' }</p>
+        </div>
+        <div className="column-one-quarter">
+            <p className="heading-small">Product manager</p>
+            <p>{ productManager || '-' }</p>
+        </div>
+        <div className="column-one-quarter">
+            <p className="heading-small">Delivery manager</p>
+            <p>{ deliveryManager || '-' }</p>
+        </div>
+        <div className="column-one-quarter">
+            <p className="heading-small">Service area</p>
+            <p>{ serviceArea || '-' }</p>
+        </div>
+      </div>
+    );
+  }
+
+  render() {
+    return (
+      <div id="product-info">
+        { this.Status() }
+        <h3 className="heading-small">Product description</h3>
+        <p>{ this.props.project.description || '-' }</p>
+        <h3 className="heading-small">Phase dates</h3>
+        { this.PhaseDates() }
+        <h3 className="heading-small">Costs</h3>
+        { this.RecurringCosts() }
+        { this.OneOffCosts() }
+        <h3 className="heading-small">Budget</h3>
+        { this.Budgets() }
+        <h3 className="heading-small">Team description</h3>
+        { this.Team() }
+      </div>
+    );
+  }
 }

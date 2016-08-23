@@ -132,7 +132,6 @@ def sync_people(data_dir):
 
 def sync_projects(data_dir):
     logger.info('sync projects')
-    account_to_people = get_account_to_people_mapping(data_dir)
     source = os.path.join(data_dir, 'projects.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -142,16 +141,12 @@ def sync_projects(data_dir):
             client_id = Client.objects.get(float_id=float_client_id).id
         else:
             client_id = None
-        pm_account_id = item['project_managers'][0]['account_id']
-        project_manager_id = Person.objects.get(
-            float_id=account_to_people[pm_account_id]).id
         useful_data = {
             'name': item['project_name'],
             'float_id': item['project_id'],
             'is_billable': item['non_billable'] == '0',
             'description': item['description'],
             'client_id': client_id,
-            'project_manager_id': project_manager_id,
             'raw_data': item,
         }
         try:
