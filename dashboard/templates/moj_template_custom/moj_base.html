@@ -150,13 +150,15 @@
               {% else %}
                 <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
               {% endif %}
-              <li class="user-menu">
-                <a>{{ request.user.username }}</a>
-                <ul>
-                  <li><a href="/logout">Log out</a></li>
-                  <li><a href="/password_change">Change Password</a></li>
-                </ul>
-              </li>
+              {% if request.user.is_authenticated %}
+                <li class="user-menu">
+                  <a>{{ request.user.username }}</a>
+                  <ul>
+                    <li><a href="/logout">Log out</a></li>
+                    <li><a href="/password_change">Change Password</a></li>
+                  </ul>
+                </li>
+              {% endif %}
             </ul>
         </div>
     </div>
