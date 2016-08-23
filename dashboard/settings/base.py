@@ -214,8 +214,6 @@ BROKER_TRANSPORT_OPTIONS = {
 
 BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'sqs://')
 
-DEFAULT_FROM_EMAIL = 'mojdsd-product-dashboard@digital.justice.gov.uk'
-
 if all([os.environ.get('SMTP_USER'),
         os.environ.get('SMTP_PASS'),
         os.environ.get('SMTP_HOST')]):
@@ -226,6 +224,8 @@ if all([os.environ.get('SMTP_USER'),
     EMAIL_USE_TLS = True
     EMAIL_PORT = 587
     EMAIL_TIMEOUT = 10
+    DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_EMAIL_FROM',
+                                        'webmaster@localhost')
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
