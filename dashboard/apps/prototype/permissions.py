@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 
 
 class ReadOnlyPermissions():
@@ -21,7 +22,7 @@ class FinancePermissions():
     """
 
     def is_finance(self, user):
-        return user.groups.filter(name='Finance').exists()
+        return user.groups.filter(name=settings.FINANCE_GROUP_NAME).exists()
 
     def has_add_permission(self, request, obj=None):
         return self.is_finance(request.user)
