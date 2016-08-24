@@ -1,0 +1,42 @@
+#dropzone-box {
+  clear: both;
+  width: 600px;
+  min-height: 120px;
+  border: 2px dashed #999;
+  background: url(../img/drag-drop-upload-ico.svg) 135px 10px no-repeat;
+}
+
+#dropzone-box.dropped {
+  background-image: none;
+}
+
+#dropzone-box.over {
+  border-color: #000;
+  background-color: #f8f8f8;
+}
+
+.dropzone-message {
+  padding: 10px 10px 10px 260px;
+}
+
+.dropzone-message span,
+.dropzone-message button {
+  display: block;
+}
+
+.dz-preview {
+  clear: both;
+  position: relative;
+}
+
+.dz-image {
+  display: none;
+}
+
+.dz-details {
+  padding: 10px;
+}
+
+.file-submit {
+  clear: both;
+}

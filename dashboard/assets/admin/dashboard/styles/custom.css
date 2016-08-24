@@ -1,4 +1,6 @@
-
+.util_mt-0 {
+    margin-top: 0;
+}
 
 #user-name {
     font-weight: bold;
@@ -370,4 +372,12 @@ div.dashboard-admin-nav {
   margin: 0;
 }
 
-
+.button.secondary {
+    background-color: #DEE0E2;
+    color: #0b0c0c;
+    box-shadow: 0 2px 0 #6f777b;
+}
+.button.secondary:hover,
+.button.secondary:focus {
+    background-color: #BFC1C3;
+}
