@@ -1,23 +1,18 @@
-A user has been added to the Finance user group.
+<p>A user has been added to the Finance user group.</p>
 
-This user can acces private parts of the dashboard meant only for finance users.
+<p>This user can acces private parts of the dashboard meant only for finance users.</p>
 
-User details:
+<p>User details:</p>
 
-User Id: {{ user.pk }}
-
-Username: {{ user.username }}
-
-Email: {{ user.email }}
-
-First name: {{ user.first_name }}
-
-Last name: {{ user.last_name }}
-
-Is staff: {{ user.is_staff }}
-
-Is active: {{ user.is_active }}
-
+<p>
+User Id: {{ user.pk }}<br>
+Username: {{ user.username }}<br>
+Email: {{ user.email }}<br>
+First name: {{ user.first_name }}<br>
+Last name: {{ user.last_name }}<br>
+Is staff: {{ user.is_staff }}<br>
+Is active: {{ user.is_active }}<br>
 Is superuser: {{ user.is_superuser }}
+</p>
 
-
+<p>Please get an admin user to visit /admin/auth/user/{{ user.pk }}/change/ if this doesn't seem right.<p>

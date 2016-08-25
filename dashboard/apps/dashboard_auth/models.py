@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
-from django.template.loader import render_to_string
+from django.template.loader import get_template
+from django.utils.html import strip_tags
 
 
 class DashboardUser(User):
@@ -27,13 +29,16 @@ def send_finance_user_email(instance, pk_set, action, model, **kwargs):
                       groups__name='Finance',
                       email__isnull=False)]
 
-        text = render_to_string(
-            'email/finance_user_added.txt',
-            {'user': instance})
+        template = get_template('email/finance_user_added.txt')
+        html = template.render({
+            'user': instance,
+        })
+        text = strip_tags(html)
 
         send_mail(
             'Finance User Added: %s' % instance.email,
             text,
             settings.DEFAULT_FROM_EMAIL,
             emails,
+            html_message=html
         )
