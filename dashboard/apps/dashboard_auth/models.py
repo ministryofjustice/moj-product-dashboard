@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core.mail import send_mail
+from django.db.models import Q
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.template.loader import get_template
@@ -25,20 +25,21 @@ def send_finance_user_email(instance, pk_set, action, model, **kwargs):
 
     if action == 'post_add' and finance_group.pk in pk_set:
         emails = [u.email for u in
-                  User.objects.filter(
+                  User.objects.filter(~Q(pk=instance.pk)).filter(
                       groups__name='Finance',
-                      email__isnull=False)]
+                      email__isnull=False,) if u.email]
 
-        template = get_template('email/finance_user_added.txt')
-        html = template.render({
-            'user': instance,
-        })
-        text = strip_tags(html)
+        if emails:
+            template = get_template('email/finance_user_added.txt')
+            html = template.render({
+                'user': instance,
+            })
+            text = strip_tags(html)
 
-        send_mail(
-            'Finance User Added: %s' % instance.email,
-            text,
-            settings.DEFAULT_FROM_EMAIL,
-            emails,
-            html_message=html
-        )
+            send_mail(
+                'Finance User Added: %s' % instance.email,
+                text,
+                settings.DEFAULT_FROM_EMAIL,
+                emails,
+                html_message=html
+            )
