@@ -22,8 +22,11 @@ class DashboardUser(User):
 def send_emails_to_finance(instance):
     emails = [u.email for u in
               User.objects.filter(~Q(pk=instance.pk)).filter(
-                  groups__name='Finance',
+                  groups__name=settings.FINANCE_GROUP_NAME,
                   email__isnull=False,) if u.email]
+
+    emails += [a[1] for a in settings.ADMINS]
+    emails = set(emails)
 
     if emails:
         template = get_template('email/finance_user_added.txt')
