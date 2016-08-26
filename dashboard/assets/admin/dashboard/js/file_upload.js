@@ -67,7 +67,13 @@ window.dashboard.fileUpload = {
 
     $el.closest('form').on('submit', function(e) {
       e.preventDefault();
-      Dropzone.forElement('#dropzone-box').processQueue();
+      var dz = Dropzone.forElement('#dropzone-box');
+      dz.options.params = {
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+        date_month: $('#id_date_month option:selected').val(),
+        date_year: $('#id_date_year option:selected').val()
+      };
+      dz.processQueue();
     });
   },
 
