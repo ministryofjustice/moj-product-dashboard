@@ -16,6 +16,7 @@ window.dashboard.fileUpload = {
   setup: function($el) {
     var self = this;
 
+
     $el.dropzone({
       url: '.',
       autoProcessQueue: false,
@@ -30,6 +31,8 @@ window.dashboard.fileUpload = {
       forceFallback: false
     });
 
+    self.dz = Dropzone.forElement('#dropzone-box');
+
     self.bindEvents($el);
   },
 
@@ -42,7 +45,7 @@ window.dashboard.fileUpload = {
 
     $(document).on('click', '.js-remove-button', function(e) {
       e.preventDefault();
-      Dropzone.forElement('#dropzone-box').removeAllFiles();
+      self.dz.removeAllFiles();
       self.enableDropzone();
     });
     $el.on('dragenter', function(e) {
@@ -67,13 +70,12 @@ window.dashboard.fileUpload = {
 
     $el.closest('form').on('submit', function(e) {
       e.preventDefault();
-      var dz = Dropzone.forElement('#dropzone-box');
-      dz.options.params = {
+      self.dz.options.params = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
         date_month: $('#id_date_month option:selected').val(),
         date_year: $('#id_date_year option:selected').val()
       };
-      dz.processQueue();
+      self.dz.processQueue();
     });
   },
 
