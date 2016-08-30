@@ -152,11 +152,11 @@
               {% endif %}
               {% if request.user.is_authenticated %}
                 <li class="user-menu">
-                  <a>{{ request.user.username }}</a>
                   <ul>
-                    <li><a href="/logout">Log out</a></li>
-                    <li><a href="/password_change">Change Password</a></li>
+                    <li><a href="/password_change">Change password</a></li>
+                    <li><a href="/logout">Sign out</a></li>
                   </ul>
+                  <a>{{ request.user.username }} <i class="arrow-down"></i></a>
                 </li>
               {% endif %}
             </ul>

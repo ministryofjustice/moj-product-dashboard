@@ -90,7 +90,7 @@ body.service li.service a {
     padding-right: 15px;
 }
 
-.nav-bar ul li:not(.user-menu) a:hover {
+.nav-bar ul li:not(.user-menu) a:not(.user-menu a):hover {
     border-bottom: 3px solid #005ea5;
 }
 
@@ -102,39 +102,73 @@ body.service li.service a {
 ul li.user-menu {
     float: right;
 }
-
-li.user-menu {
+.nav-bar ul li.user-menu {
     position: relative;
     white-space: nowrap;
+    z-index: 100;
 }
 
-li.user-menu ul li a {
+li.user-menu ul li a,
+li.user-menu ul li a:hover {
     cursor: pointer;
-    width: 100%;
+    border: none;
+    display: block;
+    padding: 10px 20px;
 }
 
 li.user-menu ul li a:hover {
+    background-color: #dee0e2;
+}
+
+li.user-menu > a {
+    border: 1px solid #dee0e2;
+    border-bottom: none;
+    background-color: #dee0e2;
+    padding-top: 3px;
+    padding-bottom: 3px;
     cursor: pointer;
+}
+
+.arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #000;
+    margin: 0 5px;
+    display: inline-block;
+}
+
+li.user-menu:hover > a {
+    border-top: 1px solid #999;
+    border-left: 1px solid #999;
+    border-right: 1px solid #999;
 }
 
 li.user-menu ul {
     display: none;
     position: absolute;
-    right: 0;
+    right: 1px;
     margin: 0;
     padding: 0;
+    top: 24px;
+    z-index: -101;
 }
 
 li.user-menu ul li {
     display: block;
     margin:0;
-    padding: 3px;
+    padding: 0;
     border: none;
     background: #fff;
-    border-right: 1px solid #dee0e2;
-    border-left: 1px solid #dee0e2;
-    border-bottom: 1px solid #dee0e2;
-    text-align: right;
+    border-right: 1px solid #999;
+    border-left: 1px solid #999;
+    border-bottom: 1px solid #999;
+    text-align: left;
+}
+
+li.user-menu ul li:first-child {
+    border-top: 1px solid #999;
 }
 
 li.user-menu:hover ul {
