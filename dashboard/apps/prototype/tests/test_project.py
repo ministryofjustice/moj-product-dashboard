@@ -342,8 +342,8 @@ def test_project_cost():
         person=contractor,
         project=project,
         start_date=date.today() + timedelta(days=1),
-        end_date=date.today() + timedelta(days=3),
-        days=2
+        end_date=date.today() + timedelta(days=7),
+        days=2  # 2 working days in a future 7 day period
     )
     mommy.make(
         Cost,
