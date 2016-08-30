@@ -34,6 +34,9 @@ export class PortfolioContainer extends Component {
           .map(service => values(service.projects))
           .reduce((prev, curr) => prev.concat(curr), []);
         this.setState({projects: projects, hasData: true});
+
+        // hack to set the id of the input so that the label attaches to it
+        document.getElementsByName('filter')[0].setAttribute('id', 'filter-results');
       });
   }
 
@@ -52,6 +55,9 @@ export class PortfolioContainer extends Component {
         <h1 className="heading-xlarge">
           MoJ Digital Portfolio
         </h1>
+        <label className="form-label" htmlFor="filter-results">
+          Filter results
+        </label>
         <ProjectsTable
           projects={this.state.projects}
           showService={true}
