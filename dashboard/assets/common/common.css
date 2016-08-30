@@ -116,6 +116,10 @@ li.user-menu ul li a:hover {
     padding: 10px 20px;
 }
 
+li.user-menu ul li a {
+    min-width: 200px;
+}
+
 li.user-menu ul li a:hover {
     background-color: #dee0e2;
 }
