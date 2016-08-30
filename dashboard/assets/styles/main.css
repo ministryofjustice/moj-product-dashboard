@@ -154,7 +154,7 @@ h1 a.button {
     vertical-align: top;
 }
 
-.griddle-body td.money-value {
+.griddle-body .money-value {
     text-align: right;
 }
 
