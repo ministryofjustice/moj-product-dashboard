@@ -669,6 +669,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Cost to date',
       'customCompareFn': Number,
       'customComponent': displayMoney,
+      'cssClassName': 'money-value'
     },
     {
       'columnName': 'budget',
@@ -676,6 +677,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       'displayName': 'Budget',
       'customCompareFn': Number,
       'customComponent': displayMoney,
+      'cssClassName': 'money-value'
     },
     {
       'columnName': 'financial_rag',
@@ -724,6 +726,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       bodyHeight={800}
       resultsPerPage={100}
       showFilter={showFilter}
+      filterPlaceholderText=''
     />
   );
 }
