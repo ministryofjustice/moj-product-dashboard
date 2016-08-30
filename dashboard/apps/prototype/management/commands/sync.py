@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
-from dashboard.libs.date_tools import parse_date
+from dashboard.libs.date_tools import get_workdays, parse_date
 from .helpers import logger
 
 FLOAT_DATA_DIR = settings.location('../var/float')
@@ -178,6 +178,7 @@ def sync_tasks(data_dir):
                     'found task with start date greater than end date. skip!'
                     ' task data %s', task)
                 continue
+            workdays = get_workdays(start_date, end_date)
             useful_data = {
                 'name': task['task_name'],
                 'float_id': task['task_id'],
@@ -185,7 +186,7 @@ def sync_tasks(data_dir):
                 'project_id': project_id,
                 'start_date': start_date,
                 'end_date': end_date,
-                'days': Decimal(task['total_hours']) / 8,
+                'days': workdays * Decimal(task['hours_pd']) / Decimal('8'),
                 'raw_data': task,
             }
             try:
@@ -220,11 +221,9 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         today = date.today()
         three_month_in_the_past = today - timedelta(days=90)
-        three_month_in_future = today + timedelta(days=90)
         parser.add_argument('-s', '--start-date', type=parse_date,
                             default=three_month_in_the_past)
-        parser.add_argument('-e', '--end-date', type=parse_date,
-                            default=three_month_in_future)
+        parser.add_argument('-w', '--weeks', type=int, default=13)
         parser.add_argument('-t', '--token', type=str)
         parser.add_argument('-o', '--output-dir', type=ensure_directory,
                             default=self._default_output_dir())
@@ -258,11 +257,8 @@ class Command(BaseCommand):
         token = self._get_token(options['token'])
 
         start_date = options['start_date']
-        end_date = options['end_date']
-        if start_date > end_date:
-            raise CommandError(
-                'start_date {} is greater than end_date {}'.format(
-                    start_date, end_date))
+        weeks = options['weeks']
+        end_date = start_date + timedelta(days=weeks * 7)
 
         output_dir = options['output_dir']
         if self._has_all_files(output_dir):
@@ -271,12 +267,12 @@ class Command(BaseCommand):
                  ' skip downloading.'), output_dir)
         else:
             logger.info(
-                ('- export data from Float for date range %s to %s.'
+                ('- export data from Float from %s for %s weeks to %s.'
                  ' dump the data to directoy %s'),
-                start_date, end_date, output_dir)
+                start_date, weeks, end_date, output_dir)
 
             try:
-                export(token, start_date, end_date, output_dir)
+                export(token, start_date, weeks, output_dir)
             except HTTPError as exc:
                 raise CommandError(exc.args)
         logger.info('- sync database with exported Float data.')
