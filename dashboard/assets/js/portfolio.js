@@ -52,12 +52,14 @@ export class PortfolioContainer extends Component {
     };
     return (
       <div>
-        <h1 className="heading-xlarge">
-          MoJ Digital Portfolio
-        </h1>
-        <label className="form-label" htmlFor="filter-results">
-          Filter results
-        </label>
+        <div className="portfolio-header">
+          <h1 className="heading-xlarge">
+            MoJ Digital Portfolio
+          </h1>
+          <label className="form-label" htmlFor="filter-results">
+            Filter results
+          </label>
+        </div>
         <ProjectsTable
           projects={this.state.projects}
           showService={true}

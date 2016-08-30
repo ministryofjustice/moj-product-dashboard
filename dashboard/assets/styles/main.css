@@ -8,6 +8,10 @@ strong {
   }
 }
 
+.portfolio-header {
+  padding: 0 5px;
+}
+
 button.update-from-float {
     float: right;
 }
@@ -24,16 +28,6 @@ button.update-from-float {
 
 .graph-spinkit {
   top: 40px;
-}
-
-.griddle-body th span {
-  color: #005ea5;
-  text-decoration: underline;
-}
-
-.griddle-body th span:hover {
-  color: #2b8cc4;
-  cursor: pointer;
 }
 
 img.rag {
@@ -153,7 +147,7 @@ h1 a.button {
 }
 
 .griddle-filter {
-    padding: 0 0 30px;
+    padding: 0 0 30px 5px;
 }
 
 .griddle-body thead th {
@@ -162,4 +156,19 @@ h1 a.button {
 
 .griddle-body td.money-value {
     text-align: right;
+}
+
+.griddle-body th:first-child,
+.griddle-body td:first-child {
+  padding-left: 5px;
+}
+
+.griddle-body th span {
+  color: #005ea5;
+  text-decoration: underline;
+}
+
+.griddle-body th span:hover {
+  color: #2b8cc4;
+  cursor: pointer;
 }
