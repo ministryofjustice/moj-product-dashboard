@@ -889,7 +889,16 @@ class Project {
 
   get recurringCosts() {
     return values(this.data.costs)
-      .filter(cost => cost.freq == 'Monthly' || cost.freq == 'Yearly');
+      .filter(cost => cost.freq == 'Monthly' || cost.freq == 'Annually');
+  };
+
+  get oneOffSavings() {
+    return values(this.data.savings).filter(cost => cost.freq == 'One off');
+  };
+
+  get recurringSavings() {
+    return values(this.data.savings)
+      .filter(cost => cost.freq == 'Monthly' || cost.freq == 'Annually');
   };
 
   get budgets() {
@@ -925,6 +934,9 @@ class ProjectDetails extends Component {
   }
 
   dateInNum(date) {
+    if (date === null) {
+      return '-';
+    }
     return moment(date, 'YYYY-MM-DD').format('DD/MM/YYYY');
   }
 
@@ -975,17 +987,16 @@ class ProjectDetails extends Component {
     );
   }
 
-  RecurringCosts() {
-    const recurringCosts = this.props.project.recurringCosts
-      .sort(Project.compareDate('start_date', 'desc'));
+  Recurring(costs) {
+    const sortedCosts = costs.sort(Project.compareDate('start_date', 'desc'));
 
     const Amount = () => {
-      if (recurringCosts.length == 0) {
+      if (sortedCosts.length == 0) {
         return (<p>-</p>);
       };
       return (
-        recurringCosts.map(cost => {
-          const unit = {'Monthly' : 'month', 'Yearly': 'year'}[cost.freq];
+        sortedCosts.map(cost => {
+          const unit = {'Monthly' : 'month', 'Annually': 'year'}[cost.freq];
           const label = `${cost.name} \u00a3${numberWithCommas(cost.cost | 0)}/${unit}`;
           return (<li key={cost.id}>{ label }</li>);
         })
@@ -993,11 +1004,11 @@ class ProjectDetails extends Component {
     };
 
     const Dates = (key) => {
-      if (recurringCosts.length == 0) {
+      if (sortedCosts.length == 0) {
         return (<p>-</p>);
       };
       return (
-        recurringCosts.map(cost => (
+        sortedCosts.map(cost => (
           <li key={cost.id}>{ this.dateInNum(cost[key]) }</li>)
         )
       );
@@ -1027,27 +1038,26 @@ class ProjectDetails extends Component {
     );
   }
 
-  OneOffCosts() {
-    const oneOffCosts = this.props.project.oneOffCosts
-      .sort(Project.compareDate('start_date', 'desc'));
+  OneOff(costs) {
+    const sortedCosts = costs.sort(Project.compareDate('start_date', 'desc'));
 
     const Amount = () => {
-      if (oneOffCosts.length == 0) {
+      if (sortedCosts.length == 0) {
         return (<p>-</p>);
       };
       return (
-        oneOffCosts.map(cost => (
+        sortedCosts.map(cost => (
           <li key={cost.id}>{ `${cost.name} \u00a3${numberWithCommas(cost.cost | 0)}` }</li>)
         )
       );
     };
 
     const Dates = () => {
-      if (oneOffCosts.length == 0) {
+      if (sortedCosts.length == 0) {
         return (<p>-</p>);
       };
       return (
-        oneOffCosts.map(cost => (
+        sortedCosts.map(cost => (
           <li key={cost.id}>{ this.dateInNum(cost['start_date']) }</li>)
         )
       );
@@ -1133,10 +1143,13 @@ class ProjectDetails extends Component {
         <h3 className="heading-small">Phase dates</h3>
         { this.PhaseDates() }
         <h3 className="heading-small">Costs</h3>
-        { this.RecurringCosts() }
-        { this.OneOffCosts() }
+        { this.Recurring(this.props.project.recurringCosts) }
+        { this.OneOff(this.props.project.oneOffCosts) }
         <h3 className="heading-small">Budget</h3>
         { this.Budgets() }
+        <h3 className="heading-small">Savings enabled</h3>
+        { this.Recurring(this.props.project.recurringSavings) }
+        { this.OneOff(this.props.project.oneOffSavings) }
         <h3 className="heading-small">Team description</h3>
         { this.Team() }
       </div>

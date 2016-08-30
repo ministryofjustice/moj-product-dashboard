@@ -89,7 +89,7 @@ class BaseCost(models.Model):
         elif self.type == COST_TYPES.ANNUALLY:
             return YEARLY
 
-    def to_dict(self):
+    def as_dict(self):
         return {
             'id': self.id,
             'name': self.name,
@@ -622,7 +622,8 @@ class BaseProject(models.Model):
             'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,
-            'costs': {c.id: c.to_dict() for c in self.costs.all()}
+            'costs': {c.id: c.as_dict() for c in self.costs.all()},
+            'savings': {s.id: s.as_dict() for s in self.savings.all()}
         }
         return result
 
@@ -920,6 +921,11 @@ class ProjectGroup(BaseProject):
     @property
     def budgets(self):
         return Budget.objects.filter(
+            project_id__in=[p.id for p in self.projects.all()])
+
+    @property
+    def savings(self):
+        return Saving.objects.filter(
             project_id__in=[p.id for p in self.projects.all()])
 
     @property
