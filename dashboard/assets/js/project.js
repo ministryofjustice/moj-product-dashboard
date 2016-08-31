@@ -3,7 +3,6 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
-import { Select } from 'rebass';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import Plotly from './plotly-custom';
@@ -358,14 +357,6 @@ export class ProjectContainer extends Component {
   }
 }
 
-// <Select
-//   name="form-field-name"
-//   value={selectedRange}
-//   options={rangeOptions}
-//   onChange={onRangeChange}
-//   label="Show data for"
-// />
-
 function TimeFrameSelector({
   rangeOptions,
   selectedRange,
@@ -383,7 +374,7 @@ function TimeFrameSelector({
         <label className="form-label" htmlFor="form-field-name">
           Show data for
         </label>
-        <select className="form-control form-control-1-1" name="form-field-name" value={selectedStartDate || ''} onChange={onRangeChange}>
+        <select className="form-control form-control-1-1" id="form-field-name" name="form-field-name" value={selectedStartDate || ''} onChange={onRangeChange}>
         {
           rangeOptions.map((option, index) => (
             <option value={option.value} key={index}>{option.children}</option>)
@@ -392,22 +383,28 @@ function TimeFrameSelector({
         </select>
       </div>
       <div className="column-one-quarter">
-        <Select
-          name="start-date"
-          options={startDateOpts}
-          value={selectedStartDate || ''}
-          onChange={onSelectedStartDateChange}
-          label="From beginning of"
-        />
+        <label className="form-label" htmlFor="start-date">
+          From beginning of
+        </label>
+        <select className="form-control form-control-1-1" id="start-date" name="start-date" value={selectedStartDate || ''} onChange={onSelectedStartDateChange}>
+          {
+            startDateOpts.map((option, index) => (
+              <option value={option.value} key={index}>{option.children}</option>)
+            )
+          }
+        </select>
       </div>
       <div className="column-one-quarter">
-        <Select
-          name="end-date"
-          options={endDateOpts}
-          value={selectedEndDate || ''}
-          onChange={onSelectedEndDateChange}
-          label="To end of"
-        />
+        <label className="form-label" htmlFor="end-date">
+          To end of
+        </label>
+        <select className="form-control form-control-1-1" id="end-date" name="end-date" value={selectedEndDate || ''} onChange={onSelectedEndDateChange}>
+          {
+            endDateOpts.map((option, index) => (
+              <option value={option.value} key={index}>{option.children}</option>)
+            )
+          }
+        </select>
       </div>
     </div>
   );
