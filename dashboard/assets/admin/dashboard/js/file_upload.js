@@ -26,12 +26,15 @@ window.dashboard.fileUpload = {
       acceptedFiles: '.xls',
       paramName: 'payroll_file',
       previewTemplate: document.getElementById('preview-template').innerHTML,
-      headers: { 'X-CSRF-Token' : $('input[name="csrfmiddlewaretoken"]').val() },
 
       forceFallback: false
     });
 
     self.dz = Dropzone.forElement('#dropzone-box');
+
+    self.form = $('#id_payroll_form');
+
+    self.fileField = $('#id_payroll_file');
 
     self.bindEvents($el);
   },
@@ -68,14 +71,8 @@ window.dashboard.fileUpload = {
       }
     });
 
-    $el.closest('form').on('submit', function(e) {
-      e.preventDefault();
-      self.dz.options.params = {
-        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-        date_month: $('#id_date_month option:selected').val(),
-        date_year: $('#id_date_year option:selected').val()
-      };
-      self.dz.processQueue();
+    self.dz.on("addedfiles", function (file) {
+      self.fileField[0].files = file;
     });
   },
 
