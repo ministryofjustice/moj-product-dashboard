@@ -186,3 +186,13 @@ li.user-menu:hover ul {
     margin-right: auto;
     margin-left: auto;
 }
+
+.form-control-1-1 {
+    width: 100%;
+}
+
+@media (min-width: 641px) {
+  .form-control-1-1 {
+    width: 100%;
+  }
+}

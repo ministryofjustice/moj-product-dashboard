@@ -358,6 +358,13 @@ export class ProjectContainer extends Component {
   }
 }
 
+// <Select
+//   name="form-field-name"
+//   value={selectedRange}
+//   options={rangeOptions}
+//   onChange={onRangeChange}
+//   label="Show data for"
+// />
 
 function TimeFrameSelector({
   rangeOptions,
@@ -373,13 +380,16 @@ function TimeFrameSelector({
   return (
     <div className="grid-row">
       <div className="column-one-quarter">
-        <Select
-          name="form-field-name"
-          value={selectedRange}
-          options={rangeOptions}
-          onChange={onRangeChange}
-          label="Show data for"
-        />
+        <label className="form-label" htmlFor="form-field-name">
+          Show data for
+        </label>
+        <select className="form-control form-control-1-1" name="form-field-name" value="{selectedStartDate || ''}" onChange={onRangeChange}>
+        {
+          rangeOptions.map(function(option) {
+            return (<option value="{option.value}">{option.children}</option>);
+          })
+        }
+        </select>
       </div>
       <div className="column-one-quarter">
         <Select
