@@ -224,7 +224,12 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       yanchor: 'top'
     },
     shapes: shapes,
-    annotations: annotations
+    annotations: annotations,
+    margin: {
+      t: 10,
+      l: 50,
+      r: 50
+    }
   };
 
   Plotly.newPlot(elem, data, layout, { displayModeBar: false });

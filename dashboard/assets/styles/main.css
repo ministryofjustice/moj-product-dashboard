@@ -112,14 +112,10 @@ img.status {
   border-bottom-color: #005ea5;
 }
 
-/* TODO: find a better way to align the graphs */
-div.js-plotly-plot {
-  margin-left: -50px;
-}
-
 h1 a.button {
   float: right;
   font-size: 16px;
+  font-weight: normal;
 }
 
 #product-info h3 {
@@ -164,4 +160,20 @@ h1 a.button {
 .griddle-body th span:hover {
   color: #2b8cc4;
   cursor: pointer;
+}
+
+.date-range > div {
+  padding-top: 30px;
+}
+
+.project-row {
+  padding-top: 30px;
+}
+
+.project-row hr {
+  margin-top: 0;
+}
+
+.project-row h4 {
+  margin-bottom: 10px;
 }

@@ -369,7 +369,7 @@ function TimeFrameSelector({
   onSelectedEndDateChange}) {
 
   return (
-    <div className="grid-row">
+    <div className="grid-row date-range">
       <div className="column-one-quarter">
         <label className="form-label" htmlFor="form-field-name">
           Show data for
@@ -468,8 +468,8 @@ function KeyStats({project, timeFrame, startDate, endDate}) {
   );
 
   return (
-    <div>
-      <h4 className="heading-small">Key statistics</h4>
+    <div className="project-row">
+      <h4 className="heading-medium">Key statistics</h4>
       <div className="grid-row">
         <Data
           data={format(budget)}
@@ -516,8 +516,8 @@ class ProjectGraph extends Component {
 
   render() {
     return (
-      <div>
-        <h4 className="heading-small">Total expenditure and budget</h4>
+      <div className="project-row">
+        <h4 className="heading-medium">Total expenditure and budget</h4>
         <hr/>
         <span>Show</span>
         <fieldset className="inline burn-down-toggle">
@@ -542,8 +542,8 @@ class ProjectGraph extends Component {
             Burn down
           </label>
         </fieldset>
-        <div ref={(elem) => this.container1=elem} />
-        <h4 className="heading-small">Monthly expenditure</h4>
+        <div className="project-row" ref={(elem) => this.container1=elem} />
+        <h4 className="heading-medium">Monthly expenditure</h4>
         <hr/>
         <div ref={(elem) => this.container2=elem} />
       </div>
@@ -602,6 +602,11 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
     },
     legend: {
       yanchor: 'top'
+    },
+    margin: {
+      t: 20,
+      l: 50,
+      r: 50
     }
   };
   const data = [ actualTrace, forecastTrace ];
