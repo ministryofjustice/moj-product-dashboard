@@ -165,13 +165,6 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
     background-color: #F8F8F8;
 }
 
-
-.messagelist {
-    display: none;
-}
-
-
-
 table th, table td {
     padding-left: 5px;
 }
