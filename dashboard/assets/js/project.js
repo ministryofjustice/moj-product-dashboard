@@ -3,7 +3,6 @@ import moment from 'moment';
 import Griddle from 'griddle-react';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
-import { Select } from 'rebass';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import Plotly from './plotly-custom';
@@ -358,7 +357,6 @@ export class ProjectContainer extends Component {
   }
 }
 
-
 function TimeFrameSelector({
   rangeOptions,
   selectedRange,
@@ -371,33 +369,42 @@ function TimeFrameSelector({
   onSelectedEndDateChange}) {
 
   return (
-    <div className="grid-row">
+    <div className="grid-row date-range">
       <div className="column-one-quarter">
-        <Select
-          name="form-field-name"
-          value={selectedRange}
-          options={rangeOptions}
-          onChange={onRangeChange}
-          label="Show data for"
-        />
+        <label className="form-label" htmlFor="form-field-name">
+          Show data for
+        </label>
+        <select className="form-control form-control-1-1" id="form-field-name" name="form-field-name" value={selectedStartDate || ''} onChange={onRangeChange}>
+        {
+          rangeOptions.map((option, index) => (
+            <option value={option.value} key={index}>{option.children}</option>)
+          )
+        }
+        </select>
       </div>
       <div className="column-one-quarter">
-        <Select
-          name="start-date"
-          options={startDateOpts}
-          value={selectedStartDate || ''}
-          onChange={onSelectedStartDateChange}
-          label="From beginning of"
-        />
+        <label className="form-label" htmlFor="start-date">
+          From beginning of
+        </label>
+        <select className="form-control form-control-1-1" id="start-date" name="start-date" value={selectedStartDate || ''} onChange={onSelectedStartDateChange}>
+          {
+            startDateOpts.map((option, index) => (
+              <option value={option.value} key={index}>{option.children}</option>)
+            )
+          }
+        </select>
       </div>
       <div className="column-one-quarter">
-        <Select
-          name="end-date"
-          options={endDateOpts}
-          value={selectedEndDate || ''}
-          onChange={onSelectedEndDateChange}
-          label="To end of"
-        />
+        <label className="form-label" htmlFor="end-date">
+          To end of
+        </label>
+        <select className="form-control form-control-1-1" id="end-date" name="end-date" value={selectedEndDate || ''} onChange={onSelectedEndDateChange}>
+          {
+            endDateOpts.map((option, index) => (
+              <option value={option.value} key={index}>{option.children}</option>)
+            )
+          }
+        </select>
       </div>
     </div>
   );
@@ -461,8 +468,8 @@ function KeyStats({project, timeFrame, startDate, endDate}) {
   );
 
   return (
-    <div>
-      <h4 className="heading-small">Key statistics</h4>
+    <div className="project-row">
+      <h4 className="heading-medium">Key statistics</h4>
       <div className="grid-row">
         <Data
           data={format(budget)}
@@ -509,8 +516,8 @@ class ProjectGraph extends Component {
 
   render() {
     return (
-      <div>
-        <h4 className="heading-small">Total expenditure and budget</h4>
+      <div className="project-row">
+        <h4 className="heading-medium">Total expenditure and budget</h4>
         <hr/>
         <span>Show</span>
         <fieldset className="inline burn-down-toggle">
@@ -535,8 +542,8 @@ class ProjectGraph extends Component {
             Burn down
           </label>
         </fieldset>
-        <div ref={(elem) => this.container1=elem} />
-        <h4 className="heading-small">Monthly expenditure</h4>
+        <div className="project-row" ref={(elem) => this.container1=elem} />
+        <h4 className="heading-medium">Monthly expenditure</h4>
         <hr/>
         <div ref={(elem) => this.container2=elem} />
       </div>
@@ -595,6 +602,11 @@ function plotMonthlySpendings(project, startDate, endDate, elem) {
     },
     legend: {
       yanchor: 'top'
+    },
+    margin: {
+      t: 20,
+      l: 50,
+      r: 50
     }
   };
   const data = [ actualTrace, forecastTrace ];
