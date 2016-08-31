@@ -22,7 +22,7 @@ from dashboard.libs.rate_converter import last_date_in_month
 
 from .constants import COST_TYPES
 from .models import Person, Rate, Project, PersonCost
-from .widgets import MonthYearWidget
+from .widgets import MonthYearDateWidget
 
 
 PAYROLL_COSTS = [
@@ -47,9 +47,7 @@ def year_range(backward=0, forward=10):
 
 
 class PayrollUploadForm(forms.Form):
-    date = forms.DateField(required=True, widget=MonthYearWidget(
-        years=year_range(backward=4, forward=3)
-    ))
+    date = forms.DateField(required=True, widget=MonthYearDateWidget())
     payroll_file = forms.FileField(required=True)
 
     @property
@@ -167,9 +165,7 @@ EXPORTS = (
 
 
 class ExportForm(forms.Form):
-    date = forms.DateField(required=True, widget=MonthYearWidget(
-        years=year_range(backward=4, forward=3)
-    ))
+    date = forms.DateField(required=True, widget=MonthYearDateWidget())
     project = forms.ModelChoiceField(
         queryset=Project.objects.visible(),
         required=True)
