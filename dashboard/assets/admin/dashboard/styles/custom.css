@@ -1,4 +1,6 @@
-
+.util_mt-0 {
+    margin-top: 0;
+}
 
 #user-name {
     font-weight: bold;
@@ -162,13 +164,6 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
     width: 15%;
     background-color: #F8F8F8;
 }
-
-
-.messagelist {
-    display: none;
-}
-
-
 
 table th, table td {
     padding-left: 5px;
@@ -370,4 +365,46 @@ div.dashboard-admin-nav {
   margin: 0;
 }
 
+.button.secondary {
+    background-color: #DEE0E2;
+    color: #0b0c0c;
+    box-shadow: 0 2px 0 #6f777b;
+}
+.button.secondary:hover,
+.button.secondary:focus {
+    background-color: #BFC1C3;
+}
 
+.messagelist {
+    margin: 30px 0;
+    border: 5px solid #b10e1e;
+    padding: 15px;
+}
+
+.messagelist .error {
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    padding-left: 0;
+}
+
+ul.errorlist {
+    clear: both;
+}
+
+ul.errorlist li {
+    border-left: 5px solid #b10e1e;
+    padding-left: 15px;
+}
+
+form.dropzone .form-control {
+  display: inline;
+  margin-right: 5px;
+  width: 50px;
+}
+#id_date_month {
+    width: 50px;
+}
+#id_date_year {
+    width: 70px;
+}

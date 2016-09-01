@@ -1,12 +1,72 @@
 {% extends "admin/base.html" %}
 {% load i18n admin_modify %}
 
-{% block content %}
-  <h1>Upload payroll</h1>
+{% load staticfiles %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/gov-uk-elements.css" %}"/>
+  <!-- <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/dropzone.css" %}"/> -->
+  <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/upload.css" %}"/>
+{% endblock %}
 
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-  <input class="button" type="submit" value="Upload payroll" />
-  </form>
+{% block javascripts %}
+<script src="{% static 'admin/dashboard/js/vendor/dropzone.js' %}"></script>
+<script src="{% static 'admin/dashboard/js/vendor/attrchange.js' %}"></script>
+<script src="{% static 'admin/dashboard/js/file_upload.js' %}"></script>
+<script>
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="grid-row">
+  <div class="column-two-thirds">
+
+    <h1 class="heading-medium util_mt-0">Upload payroll</h1>
+
+    <form class="dropzone" action="." method="post" enctype="multipart/form-data" id="id_payroll_form">
+      {% csrf_token %}
+      <input id="id_payroll_file" type="file" name="payroll_file" class="hidden">
+
+      <p class = errors">{{ form.non_field_errors }}</p>
+
+      <div class="form-group">
+        <p class = errors">{{ form.date.errors }}</p>
+        <label class="form-label" for="payroll_date">
+          Enter month:
+          <span class="form-hint">For example 01 2016</span>
+        </label>
+        {{ form.date }}
+      </div>
+
+      <p class = errors">{{ form.payroll_file.errors }}</p>
+      <div id="dropzone-box" class="form-group">
+        <div class="form-group fallback">
+          <input type="file" name="payroll_file">
+        </div>
+
+        <p class="dropzone-message">Drag and drop payroll file here <span>or </span><button class="dz-clickable button secondary">Choose file</button></p>
+
+      </div>
+
+      <div class="form-group file-submit">
+        <button class="button" type="submit">Upload payroll</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<div id="preview-template" class="hidden">
+  <div class="dz-preview dz-file-preview">
+    <div class="dz-details">
+      <div class="dz-size"><span data-dz-size></span></div>
+      <div class="dz-filename"><span data-dz-name></span></div>
+
+      <div class="dz-error-message"><span data-dz-errormessage></span></div>
+
+      <button class="js-remove-button button secondary">Remove</button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

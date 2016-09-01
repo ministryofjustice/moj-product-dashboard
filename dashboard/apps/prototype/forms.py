@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 import copy
+from django.core.exceptions import ValidationError
 from openpyxl.cell import Cell
 from openpyxl.utils import get_column_letter
 import os
@@ -8,7 +9,7 @@ from calendar import monthrange
 from datetime import date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
-from datetime import datetime
+from datetime import datetime, date
 import re
 
 from django import forms
@@ -22,7 +23,7 @@ from dashboard.libs.rate_converter import last_date_in_month
 
 from .constants import COST_TYPES
 from .models import Person, Rate, Project, PersonCost
-from .widgets import MonthYearWidget
+from .widgets import MonthYearDateWidget
 
 
 PAYROLL_COSTS = [
@@ -46,15 +47,27 @@ def year_range(backward=0, forward=10):
     return range(this_year-backward, this_year+forward)
 
 
+class MonthYearField(forms.DateField):
+    widget = MonthYearDateWidget
+
+    def validate(self, value):
+        if isinstance(value, date):
+            return value
+        try:
+            return datetime.strptime(value, '%Y-%m-%d')
+        except ValueError:
+            raise ValidationError('Invalid Month or Year.')
+
+
 class PayrollUploadForm(forms.Form):
-    date = forms.DateField(required=True, widget=MonthYearWidget(
-        years=year_range(backward=4, forward=3)
-    ))
+    date = MonthYearField(required=True)
     payroll_file = forms.FileField(required=True)
 
     @property
     def month(self):
-        return self.cleaned_data['date'].strftime('%Y-%m')
+        d = self.cleaned_data.get('date', None)
+        if d:
+            return d.strftime('%Y-%m')
 
     def get_person(self, row, data):
         try:
@@ -167,9 +180,7 @@ EXPORTS = (
 
 
 class ExportForm(forms.Form):
-    date = forms.DateField(required=True, widget=MonthYearWidget(
-        years=year_range(backward=4, forward=3)
-    ))
+    date = MonthYearField(required=True)
     project = forms.ModelChoiceField(
         queryset=Project.objects.visible(),
         required=True)
