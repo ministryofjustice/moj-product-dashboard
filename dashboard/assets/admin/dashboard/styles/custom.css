@@ -374,3 +374,37 @@ div.dashboard-admin-nav {
 .button.secondary:focus {
     background-color: #BFC1C3;
 }
+
+.messagelist {
+    margin: 30px 0;
+    border: 5px solid #b10e1e;
+    padding: 15px;
+}
+
+.messagelist .error {
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    padding-left: 0;
+}
+
+ul.errorlist {
+    clear: both;
+}
+
+ul.errorlist li {
+    border-left: 5px solid #b10e1e;
+    padding-left: 15px;
+}
+
+form.dropzone .form-control {
+  display: inline;
+  margin-right: 5px;
+  width: 50px;
+}
+#id_date_month {
+    width: 50px;
+}
+#id_date_year {
+    width: 70px;
+}
