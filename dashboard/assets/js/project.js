@@ -1009,7 +1009,7 @@ class ProjectDetails extends Component {
       return (
         sortedCosts.map(cost => {
           const unit = {'Monthly' : 'month', 'Annually': 'year'}[cost.freq];
-          const label = `${cost.name} \u00a3${numberWithCommas(cost.cost | 0)}/${unit}`;
+          const label = `${cost.name || ''} \u00a3${numberWithCommas(cost.cost | 0)}/${unit}`;
           return (<li key={cost.id}>{ label }</li>);
         })
       );
@@ -1059,7 +1059,7 @@ class ProjectDetails extends Component {
       };
       return (
         sortedCosts.map(cost => (
-          <li key={cost.id}>{ `${cost.name} \u00a3${numberWithCommas(cost.cost | 0)}` }</li>)
+          <li key={cost.id}>{ `${cost.name || ''} \u00a3${numberWithCommas(cost.cost | 0)}` }</li>)
         )
       );
     };
