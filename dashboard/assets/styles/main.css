@@ -1,3 +1,8 @@
+#content {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
 strong {
     font-weight: bold;
 }
@@ -6,10 +11,6 @@ strong {
   select#projects, select#services {
     width: 450px;
   }
-}
-
-.portfolio-header {
-  padding: 0 5px;
 }
 
 button.update-from-float {
@@ -136,7 +137,7 @@ h1 a.button {
 }
 
 .griddle-filter {
-    padding: 0 0 30px 5px;
+  padding: 0 0 30px;
 }
 
 .griddle-body thead th {

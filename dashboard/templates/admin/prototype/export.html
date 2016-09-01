@@ -1,6 +1,7 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
+<div class="pad">
   <h1>Export</h1>
 
   <form method="post">
@@ -8,4 +9,5 @@
     {{ form.as_p }}
   <input class="button" type="submit" value="Export" />
   </form>
+</div>
 {% endblock %}
