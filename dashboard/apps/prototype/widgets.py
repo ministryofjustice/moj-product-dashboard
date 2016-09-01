@@ -31,20 +31,24 @@ class MonthYearDateWidget(Widget):
             id_ = 'id_%s' % name
 
         local_attrs = self.build_attrs(id=self.month_field % id_)
-        local_attrs['size'] = 3
-        local_attrs['maxlength'] = 2
-        local_attrs['placeholder'] = 'MM'
-        local_attrs['autocomplete'] = 'off'
+        local_attrs.update({
+            'size': 3,
+            'maxlength': 2,
+            'placeholder': 'MM',
+            'autocomplete': 'off',
+            'class': 'form-control',
+        })
 
         s = TextInput()
         month_html = s.render(self.month_field % name, month_val, local_attrs)
         output.append(month_html)
 
         local_attrs['id'] = self.year_field % id_
-        local_attrs['size'] = 5
-        local_attrs['maxlength'] = 4
-        local_attrs['placeholder'] = 'YYYY'
-        local_attrs['autocomplete'] = 'off'
+        local_attrs.update({
+            'size': 5,
+            'maxlength': 4,
+            'placeholder': 'YYYY',
+        })
 
         s = TextInput()
         year_html = s.render(self.year_field % name, year_val, local_attrs)
