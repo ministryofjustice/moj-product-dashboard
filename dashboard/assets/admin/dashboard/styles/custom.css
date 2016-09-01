@@ -160,6 +160,10 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
     margin: 0 15px;
 }
 
+fieldset.module h2 {
+    padding-left: 15px;
+}
+
 .admin-wrapper .admin-sidebar-wrapper {
 
     float: left;

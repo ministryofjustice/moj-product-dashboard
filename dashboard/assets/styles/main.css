@@ -1,17 +1,6 @@
 #content {
-  margin: auto;
-  max-width: 1280px;
-  width: auto;
-  _width: 1280px;
-  min-height: 400px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-@media (min-width: 641px) {
-    #content {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 strong {
@@ -23,16 +12,6 @@ strong {
     width: 450px;
   }
 }
-
-/*.portfolio-header {
-  padding: 0 15px;
-}
-@media (min-width: 641px) {
-  .portfolio-header {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
-}*/
 
 button.update-from-float {
     float: right;
