@@ -1,13 +1,136 @@
 {% extends "admin/base.html" %}
 
-{% block content %}
-<div class="pad">
-  <h1>Export</h1>
+{% load staticfiles %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/gov-uk-elements.css" %}"/>
+{% endblock %}
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-  <input class="button" type="submit" value="Export" />
-  </form>
+{% block content %}
+<div class="pad export">
+
+  <div class="grid-row">
+    <div class="column-two-thirds">
+
+      <h1 class="heading-medium util_mt-0">Export</h1>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="payroll_date">
+            Enter month:
+            <span class="form-hint">For example 01 2016</span>
+          </label>
+          <input autocomplete="off" class="form-control" id="id_date_month" maxlength="2" name="date_month" placeholder="MM" size="3" type="text">
+          <input autocomplete="off" class="form-control" id="id_date_year" maxlength="4" name="date_year" placeholder="YYYY" size="5" type="text">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_project">Project:</label>
+          <select class="form-control" id="id_project" name="project">
+            <option value="" selected="selected">---------</option>
+            <option value="1">Admin / team lead</option>
+            <option value="2">CJSM</option>
+            <option value="3">Design team</option>
+            <option value="4">Admin/Team Lead</option>
+            <option value="5">Business Analysis</option>
+            <option value="6">MOJ Performance Discovery</option>
+            <option value="7">Out Of Hours Work</option>
+            <option value="22">Divorce</option>
+            <option value="23">Family Law - Out of Court Pathway</option>
+            <option value="24">Financial Calculator (Private Family Law)</option>
+            <option value="25">Help with Fees</option>
+            <option value="26">Help with fees</option>
+            <option value="8">Security and Information Assurance</option>
+            <option value="9">Service Assessments (assessors only)</option>
+            <option value="10">Training</option>
+            <option value="11">Admin/Team Lead</option>
+            <option value="12">Digital Capability</option>
+            <option value="13">Digital Justice</option>
+            <option value="14">Notifications</option>
+            <option value="15">Offender details (digital justice/NOMS)</option>
+            <option value="16">Police.uk Strategy Discovery</option>
+            <option value="17">Admin/Team Lead</option>
+            <option value="18">Apply to an ET</option>
+            <option value="19">CFT</option>
+            <option value="20">Civil Claims</option>
+            <option value="21">Digital Case File</option>
+            <option value="27">Judicial Fees Discovery</option>
+            <option value="28">Jury Summons</option>
+            <option value="29">Make a Plea</option>
+            <option value="30">Make a Plea</option>
+            <option value="31">Out of Court Disposals</option>
+            <option value="32">Reform</option>
+            <option value="33">Sustaining Team</option>
+            <option value="40">Correspondence Tool</option>
+            <option value="41">Data visualisation</option>
+            <option value="42">Digital Policy Making</option>
+            <option value="43">HQ and ALB Migration</option>
+            <option value="44">HQ Technical Architect mentoring</option>
+            <option value="34">Tax Tribunals Fees</option>
+            <option value="35">Tribunals Database</option>
+            <option value="36">VIS Welsh Iteration</option>
+            <option value="37">Admin/Team Lead</option>
+            <option value="38">ALBs</option>
+            <option value="39">CJSE/CJSM</option>
+            <option value="45">In Hours Incident Response and Tuning</option>
+            <option value="46">Intranet</option>
+            <option value="47">Intranet</option>
+            <option value="48">MoJ Digital Blog work</option>
+            <option value="49">Out of Court Disposals</option>
+            <option value="50">Out of Hours Support</option>
+            <option value="51">Parliamentary Questions</option>
+            <option value="52">People Finder</option>
+            <option value="53">Platforms</option>
+            <option value="54">Tactical Products</option>
+            <option value="55">Transition</option>
+            <option value="56">Admin/Team Lead</option>
+            <option value="57">Advocate Defence Payments</option>
+            <option value="58">CCCD Roadmap Discovery</option>
+            <option value="59">CLA Public</option>
+            <option value="60">Claim for Crown Court Defence 2</option>
+            <option value="61">Defence Request</option>
+            <option value="62">LAA Discovery</option>
+            <option value="63">Simplification Discovery</option>
+            <option value="64">Personal Time Off</option>
+            <option value="65">Analytics platform</option>
+            <option value="66">Money to Prisoners</option>
+            <option value="67">Moving People Safely</option>
+            <option value="68">nDelius Migration</option>
+            <option value="69">NOMS digital studio</option>
+            <option value="70">PVB</option>
+            <option value="71">PVB API</option>
+            <option value="72">OPG - LPA</option>
+            <option value="73">OPG Digital Deputy Service</option>
+            <option value="74">Non Digital Services work</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <fieldset>
+            <legend>Export type:</legend>
+            <div class="options">
+              <label class="block-label" for="id_export_type_0">
+                <input id="id_export_type_0" name="export_type" type="radio" value="Adjustment_Journal">
+                Adjustment Export
+              </label>
+              <label class="block-label" for="id_export_type_1">
+                <input id="id_export_type_1" name="export_type" type="radio" value="Intercompany_Journal">
+                Intercompany Export
+              </label>
+              <label class="block-label" for="id_export_type_2">
+                <input id="id_export_type_2" name="export_type" type="radio" value="Project_Detail">
+                Project Detail Export
+              </label>
+            </div>
+          </fieldset>
+        </div>
+
+        <input class="button" type="submit" value="Export" />
+      </form>
+
+    </div>
+  </div>
+
 </div>
 {% endblock %}
