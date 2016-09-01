@@ -10,12 +10,13 @@ import functools
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 from requests.exceptions import HTTPError
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.prototype.models import Client, Person, Project, Task
-from dashboard.libs.date_tools import parse_date
+from dashboard.libs.date_tools import get_workdays, parse_date
 from .helpers import logger
 
 FLOAT_DATA_DIR = settings.location('../var/float')
@@ -159,50 +160,62 @@ def sync_projects(data_dir):
             project.save()
 
 
-def sync_tasks(data_dir):
+def sync_tasks(start_date, end_date, data_dir):
     logger.info('sync tasks')
     source = os.path.join(data_dir, 'tasks.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
+    float_ids = []
     for item in data['people']:
         float_person_id = item['people_id']
         person_id = Person.objects.get(float_id=float_person_id).id
         for task in item['tasks']:
             float_project_id = task['project_id']
             project_id = Project.objects.get(float_id=float_project_id).id
-            start_date = datetime.strptime(
+            task_start_date = datetime.strptime(
                 task['start_date'], '%Y-%m-%d').date()
-            end_date = datetime.strptime(task['end_date'], '%Y-%m-%d').date()
-            if start_date > end_date:
+            task_end_date = datetime.strptime(
+                task['end_date'], '%Y-%m-%d').date()
+            if task_start_date > task_end_date:
                 logger.warning(
                     'found task with start date greater than end date. skip!'
                     ' task data %s', task)
                 continue
+            workdays = get_workdays(task_start_date, task_end_date)
+            float_id = task['task_id']
+            float_ids.append(float_id)
             useful_data = {
                 'name': task['task_name'],
-                'float_id': task['task_id'],
+                'float_id': float_id,
                 'person_id': person_id,
                 'project_id': project_id,
-                'start_date': start_date,
-                'end_date': end_date,
-                'days': Decimal(task['total_hours']) / 8,
+                'start_date': task_start_date,
+                'end_date': task_end_date,
+                'days': workdays * Decimal(task['hours_pd']) / Decimal('8'),
                 'raw_data': task,
             }
             try:
-                task = Task.objects.get(float_id=useful_data['float_id'])
+                task = Task.objects.get(float_id=float_id)
                 diff = compare(task, useful_data)
                 update(task, diff)
             except Task.DoesNotExist:
                 task = Task.objects.create(**useful_data)
                 logger.info('new Task found "%s"', task)
                 task.save()
+    deleted_tasks = Task.objects.filter(
+        Q(start_date__gte=start_date, start_date__lt=end_date)
+    ).exclude(float_id__in=float_ids)
+    for deleted in deleted_tasks:
+        logger.info(
+            'found deleted task float_id=%s "%s"', deleted.float_id, deleted)
+        deleted.delete()
 
 
-def sync(data_dir):
+def sync(start_date, end_date, data_dir):
     sync_clients(data_dir)
     sync_people(data_dir)
     sync_projects(data_dir)
-    sync_tasks(data_dir)
+    sync_tasks(start_date, end_date, data_dir)
 
 
 def ensure_directory(d):
@@ -220,11 +233,9 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         today = date.today()
         three_month_in_the_past = today - timedelta(days=90)
-        three_month_in_future = today + timedelta(days=90)
         parser.add_argument('-s', '--start-date', type=parse_date,
                             default=three_month_in_the_past)
-        parser.add_argument('-e', '--end-date', type=parse_date,
-                            default=three_month_in_future)
+        parser.add_argument('-w', '--weeks', type=int, default=13)
         parser.add_argument('-t', '--token', type=str)
         parser.add_argument('-o', '--output-dir', type=ensure_directory,
                             default=self._default_output_dir())
@@ -258,11 +269,10 @@ class Command(BaseCommand):
         token = self._get_token(options['token'])
 
         start_date = options['start_date']
-        end_date = options['end_date']
-        if start_date > end_date:
-            raise CommandError(
-                'start_date {} is greater than end_date {}'.format(
-                    start_date, end_date))
+        # float effectively takes the prior Monday as the start_date
+        start_date = start_date - timedelta(days=start_date.weekday())
+        weeks = options['weeks']
+        end_date = start_date + timedelta(days=weeks * 7)
 
         output_dir = options['output_dir']
         if self._has_all_files(output_dir):
@@ -271,14 +281,14 @@ class Command(BaseCommand):
                  ' skip downloading.'), output_dir)
         else:
             logger.info(
-                ('- export data from Float for date range %s to %s.'
+                ('- export data from Float from %s for %s weeks to %s.'
                  ' dump the data to directoy %s'),
-                start_date, end_date, output_dir)
+                start_date, weeks, end_date, output_dir)
 
             try:
-                export(token, start_date, end_date, output_dir)
+                export(token, start_date, weeks, output_dir)
             except HTTPError as exc:
                 raise CommandError(exc.args)
         logger.info('- sync database with exported Float data.')
-        sync(data_dir=output_dir)
+        sync(start_date, end_date, data_dir=output_dir)
         logger.info('- job complete.')
