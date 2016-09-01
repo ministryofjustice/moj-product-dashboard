@@ -35,7 +35,7 @@ def single_instance_task(timeout):
     return task_exc
 
 
-@periodic_task(run_every=timedelta(minutes=1))
+@periodic_task(run_every=timedelta(minutes=10))
 @single_instance_task(60*10)
 def sync_float():
     ninety_days_ago = date.today() - timedelta(days=90)
