@@ -5,7 +5,7 @@ import functools
 from django.core.cache import cache
 from django.core.management import call_command
 
-from celery import shared_task
+from celery import shared_task, group
 from celery.task import periodic_task
 
 from .models import Project
@@ -46,10 +46,14 @@ def sync_float():
 @shared_task()
 @single_instance_task(60*10)
 def cache_projects():
+    tasks = []
     for project in Project.objects.visible():
-        cache_project.delay(
+        tasks.append(cache_project.s(
             project_id=project.pk,
-            task_prefix='projet-%s-' % project.pk)
+            task_prefix='projet-%s-'
+                        % project.pk))
+    all_projects_task = group(tasks)
+    all_projects_task.apply_async()
 
 
 @shared_task()
