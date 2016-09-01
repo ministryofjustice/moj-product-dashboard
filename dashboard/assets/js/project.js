@@ -374,7 +374,7 @@ function TimeFrameSelector({
         <label className="form-label" htmlFor="form-field-name">
           Show data for
         </label>
-        <select className="form-control form-control-1-1" id="form-field-name" name="form-field-name" value={selectedStartDate || ''} onChange={onRangeChange}>
+        <select className="form-control form-control-1-1" id="form-field-name" name="form-field-name" value={selectedRange || ''} onChange={onRangeChange}>
         {
           rangeOptions.map((option, index) => (
             <option value={option.value} key={index}>{option.children}</option>)
