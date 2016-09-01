@@ -1,3 +1,9 @@
+section#content {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: none;
+}
+
 .util_mt-0 {
     margin-top: 0;
 }
@@ -143,19 +149,15 @@ ul.object-tools a:focus, button.button:focus, #changelist .actions .button:focus
 }
 
 .admin-wrapper {
-
     width: 100%;
-    /*overflow: hidden;*/
-
 }
 
 .main-section {
-    /*float: left;*/
-    /*width: 80%;*/
-    margin-left: auto;
-    margin-right: auto;
     margin-top: 36px;
+}
 
+.pad {
+    margin: 0 15px;
 }
 
 .admin-wrapper .admin-sidebar-wrapper {
