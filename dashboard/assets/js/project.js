@@ -1001,98 +1001,87 @@ class ProjectDetails extends Component {
 
   Recurring(costs) {
     const sortedCosts = costs.sort(Project.compareDate('start_date', 'desc'));
-
-    const Amount = () => {
+    const Rows = () => {
       if (sortedCosts.length == 0) {
-        return (<p>-</p>);
-      };
+        return (
+          <tr>
+            <td>-</td>
+            <td className="numeric">-</td>
+            <td className="numeric">-</td>
+            <td className="numeric">-</td>
+          </tr>
+        );
+      }
       return (
         sortedCosts.map(cost => {
           const unit = {'Monthly' : 'month', 'Annually': 'year'}[cost.freq];
-          const label = `${cost.name || ''} \u00a3${numberWithCommas(cost.cost | 0)}/${unit}`;
-          return (<li key={cost.id}>{ label }</li>);
-        })
-      );
-    };
-
-    const Dates = (key) => {
-      if (sortedCosts.length == 0) {
-        return (<p>-</p>);
-      };
-      return (
-        sortedCosts.map(cost => (
-          <li key={cost.id}>{ this.dateInNum(cost[key]) }</li>)
+          return (
+           <tr key={cost.id}>
+             <td>{ cost.name || '' }</td>
+             <td className="numeric">{ `\u00a3${numberWithCommas(cost.cost | 0)}/${unit}` }</td>
+             <td className="numeric">{ this.dateInNum(cost['start_date']) }</td>
+             <td className="numeric">{ this.dateInNum(cost['end_date']) }</td>
+           </tr>
+          )
+        }
         )
       );
-    };
+    }
 
     return (
-      <div className="grid-row">
-        <div className="column-one-quarter">
-          <ul>
-            <li className="heading-small">Recurring</li>
-            { Amount() }
-          </ul>
-        </div>
-        <div className="column-one-quarter">
-          <ul>
-            <li className="heading-small">Start date</li>
-            { Dates('start_date') }
-          </ul>
-        </div>
-        <div className="column-one-quarter">
-          <ul>
-            <li className="heading-small">End date</li>
-            { Dates('end_date') }
-          </ul>
-        </div>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Recurring</th>
+            <th className="numeric" scope="col">Amount</th>
+            <th className="numeric" scope="col">Start Date</th>
+            <th className="numeric" scope="col">End Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          { Rows() }
+        </tbody>
+      </table>
     );
   }
 
   OneOff(costs) {
     const sortedCosts = costs.sort(Project.compareDate('start_date', 'desc'));
-
-    const Amount = () => {
+    const Rows = () => {
       if (sortedCosts.length == 0) {
-        return (<p>-</p>);
-      };
+        return (
+          <tr>
+            <td>-</td>
+            <td className="numeric">-</td>
+            <td className="numeric">-</td>
+          </tr>
+        );
+      }
       return (
         sortedCosts.map(cost => (
-          <li key={cost.id}>{ `${cost.name || ''} \u00a3${numberWithCommas(cost.cost | 0)}` }</li>)
+          <tr key={cost.id}>
+            <td>{ cost.name || '' }</td>
+            <td className="numeric">{ `\u00a3${numberWithCommas(cost.cost | 0)}` }</td>
+            <td className="numeric">{ this.dateInNum(cost['start_date']) }</td>
+          </tr>
+          )
         )
       );
-    };
-
-    const Dates = () => {
-      if (sortedCosts.length == 0) {
-        return (<p>-</p>);
-      };
-      return (
-        sortedCosts.map(cost => (
-          <li key={cost.id}>{ this.dateInNum(cost['start_date']) }</li>)
-        )
-      );
-    };
+    }
 
     return (
-      <div className="grid-row">
-        <div className="column-one-quarter">
-          <ul>
-            <li className="heading-small">One off</li>
-            { Amount() }
-          </ul>
-        </div>
-        <div className="column-one-quarter">
-          <p className="heading-small"></p>
-        </div>
-        <div className="column-one-quarter">
-          <ul>
-            <li className="heading-small">Date</li>
-            { Dates() }
-          </ul>
-        </div>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">One off</th>
+            <th className="numeric" scope="col">Amount</th>
+            <th className="numeric" scope="col">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          { Rows() }
+        </tbody>
+      </table>
     );
   }
 
