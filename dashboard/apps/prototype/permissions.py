@@ -2,6 +2,10 @@
 from django.conf import settings
 
 
+def user_is_finance(user):
+    return user.groups.filter(name=settings.FINANCE_GROUP_NAME).exists()
+
+
 class ReadOnlyPermissions():
     exclude = []
 
@@ -22,7 +26,7 @@ class FinancePermissions():
     """
 
     def is_finance(self, user):
-        return user.groups.filter(name=settings.FINANCE_GROUP_NAME).exists()
+        return user_is_finance(user)
 
     def has_add_permission(self, request, obj=None):
         return self.is_finance(request.user)
