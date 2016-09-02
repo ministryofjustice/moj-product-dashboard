@@ -954,12 +954,12 @@ class ProjectDetails extends Component {
 
   Status() {
     const status = this.props.project.status;
-    let className = 'bold-xlarge';
+    let className = 'bold-xlarge status-text';
     if (status in statusMapping) {
       className = `${className} ${statusMapping[status]}`;
     }
     return (
-      <div>
+      <div className="status-header">
         <span className={ className }>{ status || '-' }</span>
         <p className="bold-medium">Product status</p>
       </div>
