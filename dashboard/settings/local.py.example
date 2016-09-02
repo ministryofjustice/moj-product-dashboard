@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
+DEBUG = True
+
 BROKER_URL = "amqp://"
 BROKER_TRANSPORT_OPTIONS = {}
 

@@ -13,6 +13,7 @@ from datetime import timedelta
 import os
 import sys
 
+FINANCE_GROUP_NAME = 'Finance'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,10 +30,11 @@ sys.path.insert(0, location('apps'))
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', [])
 
+ADMINS = os.environ.get('ADMINS', [])
 
 # Application definition
 
@@ -50,6 +52,7 @@ INSTALLED_APPS = [
     'axes',
 
     'dashboard.apps.prototype',
+    'dashboard_auth',
 ]
 
 MIDDLEWARE_CLASSES = [

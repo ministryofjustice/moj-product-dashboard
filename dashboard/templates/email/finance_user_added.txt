@@ -1,0 +1,18 @@
+<p>A user has been added to the Finance user group.</p>
+
+<p>This user can acces private parts of the dashboard meant only for finance users.</p>
+
+<p>User details:</p>
+
+<p>
+User Id: {{ user.pk }}<br>
+Username: {{ user.username }}<br>
+Email: {{ user.email }}<br>
+First name: {{ user.first_name }}<br>
+Last name: {{ user.last_name }}<br>
+Is staff: {{ user.is_staff }}<br>
+Is active: {{ user.is_active }}<br>
+Is superuser: {{ user.is_superuser }}
+</p>
+
+<p>Please get an admin user to visit /admin/auth/user/{{ user.pk }}/change/ if this doesn't seem right.<p>
