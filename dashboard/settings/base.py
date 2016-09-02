@@ -32,7 +32,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', [])
+ALLOWED_HOSTS = [
+    os.environ.get('ALLOWED_HOSTS', 'localhost'),
+]
 
 
 def expand_admins_to_list(envvar):
