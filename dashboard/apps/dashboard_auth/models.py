@@ -13,6 +13,7 @@ class DashboardUser(User):
     class Meta:
         proxy = True
         app_label = 'dashboard_auth'
+        auto_created = True
 
     @property
     def is_finance(self):
