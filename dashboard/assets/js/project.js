@@ -1008,16 +1008,17 @@ class ProjectDetails extends Component {
             <td>-</td>
             <td className="numeric">-</td>
             <td className="numeric">-</td>
+            <td className="numeric">-</td>
           </tr>
         );
       }
       return (
         sortedCosts.map(cost => {
           const unit = {'Monthly' : 'month', 'Annually': 'year'}[cost.freq];
-          const label = `${cost.name || ''} \u00a3${numberWithCommas(cost.cost | 0)}/${unit}`;
           return (
            <tr key={cost.id}>
-             <td>{ label }</td>
+             <td>{ cost.name || '' }</td>
+             <td className="numeric">{ `\u00a3${numberWithCommas(cost.cost | 0)}/${unit}` }</td>
              <td className="numeric">{ this.dateInNum(cost['start_date']) }</td>
              <td className="numeric">{ this.dateInNum(cost['end_date']) }</td>
            </tr>
@@ -1032,6 +1033,7 @@ class ProjectDetails extends Component {
         <thead>
           <tr>
             <th scope="col">Recurring</th>
+            <th className="numeric" scope="col">Amount</th>
             <th className="numeric" scope="col">Start Date</th>
             <th className="numeric" scope="col">End Date</th>
           </tr>
@@ -1051,13 +1053,15 @@ class ProjectDetails extends Component {
           <tr>
             <td>-</td>
             <td className="numeric">-</td>
+            <td className="numeric">-</td>
           </tr>
         );
       }
       return (
         sortedCosts.map(cost => (
           <tr key={cost.id}>
-            <td>{ `${cost.name || ''} \u00a3${numberWithCommas(cost.cost | 0)}` }</td>
+            <td>{ cost.name || '' }</td>
+            <td className="numeric">{ `\u00a3${numberWithCommas(cost.cost | 0)}` }</td>
             <td className="numeric">{ this.dateInNum(cost['start_date']) }</td>
           </tr>
           )
@@ -1070,6 +1074,7 @@ class ProjectDetails extends Component {
         <thead>
           <tr>
             <th scope="col">One off</th>
+            <th className="numeric" scope="col">Amount</th>
             <th className="numeric" scope="col">Date</th>
           </tr>
         </thead>
