@@ -402,7 +402,8 @@ ul.errorlist li {
     padding-left: 15px;
 }
 
-form.dropzone .form-control {
+.upload input[type="text"].form-control,
+.export input[type="text"].form-control {
   display: inline;
   margin-right: 5px;
   width: 50px;

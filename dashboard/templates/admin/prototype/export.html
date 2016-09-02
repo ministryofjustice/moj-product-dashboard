@@ -1,13 +1,64 @@
 {% extends "admin/base.html" %}
 
-{% block content %}
-<div class="pad">
-  <h1>Export</h1>
+{% load staticfiles %}
+{% block extrastyle %}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/gov-uk-elements.css" %}"/>
+{% endblock %}
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-  <input class="button" type="submit" value="Export" />
-  </form>
+{% block content %}
+<div class="pad export">
+
+  <div class="grid-row">
+    <div class="column-two-thirds">
+
+      <h1 class="heading-medium util_mt-0">Export</h1>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="payroll_date">
+            Enter month:
+            <span class="form-hint">For example 01 2016</span>
+          </label>
+          <input autocomplete="off" class="form-control" id="id_date_month" maxlength="2" name="date_month" placeholder="MM" size="3" type="text">
+          <input autocomplete="off" class="form-control" id="id_date_year" maxlength="4" name="date_year" placeholder="YYYY" size="5" type="text">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_project">Project:</label>
+          <select class="form-control" id="id_project" name="project">
+            {% for value, display in form.fields.project.choices %}
+                <option value="{{ value }}">{{ display }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <fieldset>
+            <legend>Export type:</legend>
+            <div class="options">
+              <label class="block-label" for="id_export_type_0">
+                <input id="id_export_type_0" name="export_type" type="radio" value="Adjustment_Journal">
+                Adjustment Export
+              </label>
+              <label class="block-label" for="id_export_type_1">
+                <input id="id_export_type_1" name="export_type" type="radio" value="Intercompany_Journal">
+                Intercompany Export
+              </label>
+              <label class="block-label" for="id_export_type_2">
+                <input id="id_export_type_2" name="export_type" type="radio" value="Project_Detail">
+                Project Detail Export
+              </label>
+            </div>
+          </fieldset>
+        </div>
+
+        <input class="button" type="submit" value="Export" />
+      </form>
+
+    </div>
+  </div>
+
 </div>
 {% endblock %}
