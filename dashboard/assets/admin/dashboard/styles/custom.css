@@ -382,15 +382,22 @@ div.dashboard-admin-nav {
 
 .messagelist {
     margin: 30px 0;
-    border: 5px solid #b10e1e;
+    border: 5px solid #bfc1c3;
     padding: 15px;
 }
 
-.messagelist .error {
+.messagelist li {
     border: none;
     font-size: 24px;
     font-weight: bold;
     padding-left: 0;
+    color: #6f777b;
+}
+.messagelist li.error {
+    color: #b10e1e;
+}
+.messagelist li.success {
+    color: #006435;
 }
 
 ul.errorlist {
