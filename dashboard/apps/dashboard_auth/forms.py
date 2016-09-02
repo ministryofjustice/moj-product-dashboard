@@ -13,7 +13,7 @@ class FinanceAuthFormMixin():
 
     def clean_groups(self):
         groups = self.cleaned_data.get('groups')
-        already_finance = user_is_finance(self.instance)
+        already_finance = user_is_finance(self.instance) if self.instance else False
         admin_user_is_finance = user_is_finance(self.request.user)
         is_finance_now = settings.FINANCE_GROUP_NAME in [g.name for g in groups]
         if not already_finance and is_finance_now and not admin_user_is_finance:
