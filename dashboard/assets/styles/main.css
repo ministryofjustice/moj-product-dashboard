@@ -7,6 +7,12 @@ strong {
     font-weight: bold;
 }
 
+.breadcrumbs {
+  padding-top: 20px;
+  padding-left: 0;
+  margin-left: 0;
+}
+
 @media (min-width: 641px) {
   select#projects, select#services {
     width: 450px;
@@ -29,6 +35,13 @@ button.update-from-float {
 
 .graph-spinkit {
   top: 40px;
+}
+
+.status-header {
+  padding-top: 30px;
+}
+.status-header .status-text {
+  margin-bottom: 10px;
 }
 
 img.rag {
