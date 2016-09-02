@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'axes',
 
     'dashboard.apps.prototype',
+    'dashboard_auth',
 ]
 
 MIDDLEWARE_CLASSES = [
