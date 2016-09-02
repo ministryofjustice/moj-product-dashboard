@@ -182,7 +182,7 @@ EXPORTS = (
 class ExportForm(forms.Form):
     date = MonthYearField(required=True)
     project = forms.ModelChoiceField(
-        queryset=Project.objects.visible(),
+        queryset=Project.objects.visible().order_by('name'),
         required=True)
     export_type = forms.ChoiceField(choices=EXPORTS, widget=forms.RadioSelect())
 
