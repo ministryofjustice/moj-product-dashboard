@@ -34,7 +34,15 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', [])
 
-ADMINS = os.environ.get('ADMINS', [])
+
+def expand_admins_to_list(envvar):
+    if not envvar:
+        return []
+    admins = envvar.replace("[['", "").replace("']]", "").split("'], ['")
+    return [a.split("', '") for a in admins]
+
+
+ADMINS = expand_admins_to_list(os.environ.get('ADMINS', []))
 
 # Application definition
 
