@@ -39,6 +39,14 @@ PAYROLL_COSTS = [
     'ERNIC',
 ]
 
+REQUIRED_COLS = [
+    'Init',
+    'Surname',
+    'Salary',
+    'Staff',
+    'Write Offs',
+]
+
 BASE_SALARY_RATE_KEY = 'Salary'
 
 
@@ -116,6 +124,15 @@ class PayrollUploadForm(forms.Form):
         ws = workbook.sheet_by_index(0)
 
         headers = ws.row_values(6)
+
+        missing_required = []
+        for required in PAYROLL_COSTS + REQUIRED_COLS:
+            if required not in headers:
+                missing_required.append(required)
+
+        if missing_required:
+            raise ValidationError('Missing fields in upload: %s' % ', '
+                                  .join(missing_required))
 
         payroll = []
 
