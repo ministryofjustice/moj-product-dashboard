@@ -16,7 +16,7 @@ from django import forms
 from django.conf import settings
 
 from openpyxl import load_workbook
-from xlrd import open_workbook
+from xlrd import open_workbook, XLRDError
 
 from dashboard.libs.date_tools import get_workdays
 from dashboard.libs.rate_converter import last_date_in_month
@@ -39,6 +39,14 @@ PAYROLL_COSTS = [
     'ERNIC',
 ]
 
+REQUIRED_COLS = [
+    'Init',
+    'Surname',
+    'Salary',
+    'Staff',
+    'Write Offs',
+]
+
 BASE_SALARY_RATE_KEY = 'Salary'
 
 
@@ -55,7 +63,7 @@ class MonthYearField(forms.DateField):
             return value
         try:
             return datetime.strptime(value, '%Y-%m-%d')
-        except ValueError:
+        except (TypeError, ValueError):
             raise ValidationError('Invalid Month or Year.')
 
 
@@ -103,13 +111,28 @@ class PayrollUploadForm(forms.Form):
                 '"%s"' % (row, data.get('Surname')))
 
     def clean_payroll_file(self):
-        start = self.cleaned_data['date']
-        workbook = open_workbook(
-            file_contents=self.cleaned_data['payroll_file'].read())
+        start = self.cleaned_data.get('date')
+        if not start:
+            raise ValidationError('No date supplied.')
+
+        try:
+            workbook = open_workbook(
+                file_contents=self.cleaned_data['payroll_file'].read())
+        except XLRDError:
+            raise ValidationError('Could not read .xls file.')
 
         ws = workbook.sheet_by_index(0)
 
         headers = ws.row_values(6)
+
+        missing_required = []
+        for required in PAYROLL_COSTS + REQUIRED_COLS:
+            if required not in headers:
+                missing_required.append(required)
+
+        if missing_required:
+            raise ValidationError('Missing fields in upload: %s' % ', '
+                                  .join(missing_required))
 
         payroll = []
 
