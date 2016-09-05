@@ -55,7 +55,7 @@ class MonthYearField(forms.DateField):
             return value
         try:
             return datetime.strptime(value, '%Y-%m-%d')
-        except ValueError:
+        except (TypeError, ValueError):
             raise ValidationError('Invalid Month or Year.')
 
 
