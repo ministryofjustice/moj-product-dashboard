@@ -16,7 +16,7 @@ from django import forms
 from django.conf import settings
 
 from openpyxl import load_workbook
-from xlrd import open_workbook
+from xlrd import open_workbook, XLRDError
 
 from dashboard.libs.date_tools import get_workdays
 from dashboard.libs.rate_converter import last_date_in_month
@@ -103,9 +103,15 @@ class PayrollUploadForm(forms.Form):
                 '"%s"' % (row, data.get('Surname')))
 
     def clean_payroll_file(self):
-        start = self.cleaned_data['date']
-        workbook = open_workbook(
-            file_contents=self.cleaned_data['payroll_file'].read())
+        start = self.cleaned_data.get('date')
+        if not start:
+            raise ValidationError('No date supplied.')
+
+        try:
+            workbook = open_workbook(
+                file_contents=self.cleaned_data['payroll_file'].read())
+        except XLRDError:
+            raise ValidationError('Could not read .xls file.')
 
         ws = workbook.sheet_by_index(0)
 
