@@ -136,28 +136,38 @@ def sync_projects(data_dir):
     source = os.path.join(data_dir, 'projects.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
+    float_ids = []
     for item in data['projects']:
         float_client_id = item['client_id']
+        float_id = item['project_id']
+        float_ids.append(float_id)
         if float_client_id:
             client_id = Client.objects.get(float_id=float_client_id).id
         else:
             client_id = None
         useful_data = {
             'name': item['project_name'],
-            'float_id': item['project_id'],
+            'float_id': float_id,
             'is_billable': item['non_billable'] == '0',
             'description': item['description'],
             'client_id': client_id,
             'raw_data': item,
         }
         try:
-            project = Project.objects.get(float_id=useful_data['float_id'])
+            project = Project.objects.get(float_id=float_id)
             diff = compare(project, useful_data)
             update(project, diff)
         except Project.DoesNotExist:
             project = Project.objects.create(**useful_data)
             logger.info('new project found "%s"', project)
             project.save()
+    deleted_projects = Project.objects.exclude(float_id__in=float_ids)
+    for deleted in deleted_projects:
+        if not deleted.tasks.all():
+            logger.info(
+                'found deleted project float_id=%s "%s"',
+                deleted.float_id, deleted)
+            deleted.delete()
 
 
 def sync_tasks(start_date, end_date, data_dir):
