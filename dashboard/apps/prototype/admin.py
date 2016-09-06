@@ -18,6 +18,8 @@ from .models import (Person, Rate, Client, Project, Cost, Budget,
                      Saving)
 from .forms import (PayrollUploadForm, ExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
+from .filters import (IsVisibleFilter, IsCivilServantFilter,
+                      IsCurrentStaffFilter)
 
 
 class ReadOnlyAdmin(ReadOnlyPermissions, admin.ModelAdmin):
@@ -27,62 +29,6 @@ class ReadOnlyAdmin(ReadOnlyPermissions, admin.ModelAdmin):
 class RateInline(FinancePermissions, admin.TabularInline):
     model = Rate
     extra = 0
-
-
-class IsCivilServantFilter(admin.SimpleListFilter):
-    """
-    this filter shows labels of civil servant or contractor
-    instead of boolean flags
-    """
-    title = 'civil servant | contractor'
-    parameter_name = 'is_civil_servant'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('yes', 'Civil Servant'),
-            ('no', 'Contractor'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == 'yes':
-            return queryset.filter(is_contractor=False)
-        elif self.value() == 'no':
-            return queryset.filter(is_contractor=True)
-        else:
-            return queryset
-
-
-class IsCurrentStaffFilter(admin.SimpleListFilter):
-    """
-    this filter shows `is_current=True` by default
-    """
-    title = 'is current staff?'
-    parameter_name = 'is_current_staff'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('all', 'All'),
-            (None, 'Yes'),
-            ('no', 'No'),
-        )
-
-    def choices(self, cl):
-        for lookup, title in self.lookup_choices:  # pragma: no cover
-            yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
-
-    def queryset(self, request, queryset):
-        if self.value() is None:
-            return queryset.filter(is_current=True)
-        elif self.value() == 'no':
-            return queryset.filter(is_current=False)
-        else:
-            return queryset
 
 
 class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
@@ -206,9 +152,9 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
                NoteInline]
     readonly_fields = ('name', 'description', 'float_id', 'service_area')
-    list_display = ('name', 'status', 'phase', 'service_area',
-                    'discovery_date', 'budget')
+    list_display = ('name', 'status', 'phase', 'service_area')
     search_fields = ('name', 'float_id')
+    list_filter = (IsVisibleFilter, 'client__name')
 
     def service_area(self, obj):  # pragma: no cover
         client = obj.client
