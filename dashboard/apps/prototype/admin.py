@@ -152,8 +152,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
                NoteInline]
     readonly_fields = ('name', 'description', 'float_id', 'service_area')
-    list_display = ('name', 'status', 'phase', 'service_area',
-                    'discovery_date', 'budget')
+    list_display = ('name', 'status', 'phase', 'service_area')
     search_fields = ('name', 'float_id')
     list_filter = (IsVisibleFilter, 'client__name')
 
