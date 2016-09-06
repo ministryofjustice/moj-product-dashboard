@@ -737,6 +737,7 @@ export const ProjectsTable = ({ projects, showService, showFilter }) => {
       useGriddleStyles={false}
       bodyHeight={800}
       resultsPerPage={100}
+      initialSort='service_area'
       showFilter={showFilter}
       filterPlaceholderText=''
     />

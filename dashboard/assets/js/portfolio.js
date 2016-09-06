@@ -30,8 +30,11 @@ export class PortfolioContainer extends Component {
   componentDidMount() {
     getPortfolioData(this.props.id, this.props.csrftoken)
       .then(portfolioData => {
+        // sort by service area and then name of product
         const projects = values(portfolioData)
-          .map(service => values(service.projects))
+          .sort((s1, s2) => s1.name.localeCompare(s2.name))
+          .map(service => values(service.projects).sort(
+                (p1, p2) => p1.name.localeCompare(p2.name)))
           .reduce((prev, curr) => prev.concat(curr), []);
         this.setState({projects: projects, hasData: true});
 
