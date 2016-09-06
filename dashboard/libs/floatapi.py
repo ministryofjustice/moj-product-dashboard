@@ -56,6 +56,23 @@ def one(endpoint, token, id):
     return result
 
 
+def delete(endpoint, token, id):
+    """
+    send a DELETE request for one object
+    :param endpoint: an endpoint from ENDPOINTS list
+    :param token: float token
+    :param id: id of the object
+    :return: a dictionary representing the json response
+    """
+    if endpoint not in ENDPOINTS:
+        raise ValueError('unknonw endpoint {}'.format(endpoint))
+    rsp = requests.delete('{}/{}/{}'.format(ROOT, endpoint, id),
+                          headers=get_headers(token))
+    rsp.raise_for_status()
+    result = rsp.json()
+    return result
+
+
 def try_endpoints(token):  # pragma: no cover
     for endpoint in ENDPOINTS:
         rsp = requests.get('{}/{}'.format(ROOT, endpoint),
