@@ -879,6 +879,7 @@ class Budget(models.Model):
     project = models.ForeignKey('Project', related_name='budgets')
     start_date = models.DateField()
     budget = models.DecimalField(max_digits=16, decimal_places=2)
+    note = models.TextField(null=True, blank=True)
 
 
 class Status(models.Model):
