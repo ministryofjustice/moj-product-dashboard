@@ -39,7 +39,7 @@ function backgroundForPhases(project, range) {
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
         y: -0.2,
-        text: name.toUpperCase(),
+        text: `<b>${name.toUpperCase()}</b>`,
         showarrow: false,
         bgcolor: color,
         font: {
