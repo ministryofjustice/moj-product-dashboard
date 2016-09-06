@@ -21,14 +21,14 @@ from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
 
 
 class BaseCost(models.Model):
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    name = models.CharField(max_length=128, null=True)
-    note = models.TextField(null=True, blank=True)
-    cost = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=ugettext_lazy('Amount'))
     type = models.PositiveSmallIntegerField(
         choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
+    name = models.CharField(max_length=128, null=True)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=ugettext_lazy('Amount'))
+    note = models.TextField(null=True, blank=True)
 
     def cost_between(self, start_date, end_date):
         start_date = max(start_date, self.start_date) if start_date else \
