@@ -61,5 +61,5 @@ export function plotMonthlySpendings(project, startDate, endDate, elem) {
     }
   };
   const data = [ actualTrace, forecastTrace ];
-  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
+  return Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }

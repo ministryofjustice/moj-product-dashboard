@@ -1,10 +1,21 @@
 import moment from 'moment';
 import React, { Component } from 'react';
+import Plotly from '../plotly-custom';
 
-import { monthRange, startOfMonth, values, numberWithCommas, min, max } from './utils';
-import { plotCumulativeSpendings } from './cumulative-graph';
-import { plotMonthlySpendings } from './monthly-graph';
+import { plotCumulativeSpendings } from '../cumulative-graph';
+import { plotMonthlySpendings } from '../monthly-graph';
+import { numberWithCommas } from '../utils';
 
+
+const Data = ({data, label}) => (
+  <div className="column-one-third">
+    <hr/>
+    <div className="data">
+      <h2 className="bold-xlarge">{data}</h2>
+      <p className="bold-xsmall">{label}</p>
+    </div>
+  </div>
+);
 
 export function TimeFrameSelector({
   rangeOptions,
@@ -26,7 +37,7 @@ export function TimeFrameSelector({
         <select className="form-control form-control-1-1" id="form-field-name" name="form-field-name" value={selectedRange || ''} onChange={onRangeChange}>
         {
           rangeOptions.map((option, index) => (
-            <option value={option.value} key={index}>{option.children}</option>)
+            <option value={option.value} key={index}>{option.name}</option>)
           )
         }
         </select>
@@ -38,7 +49,7 @@ export function TimeFrameSelector({
         <select className="form-control form-control-1-1" id="start-date" name="start-date" value={selectedStartDate || ''} onChange={onStartDateChange}>
           {
             startDateOpts.map((option, index) => (
-              <option value={option.value} key={index}>{option.children}</option>)
+              <option value={option.value} key={index}>{option.name}</option>)
             )
           }
         </select>
@@ -50,7 +61,7 @@ export function TimeFrameSelector({
         <select className="form-control form-control-1-1" id="end-date" name="end-date" value={selectedEndDate || ''} onChange={onEndDateChange}>
           {
             endDateOpts.map((option, index) => (
-              <option value={option.value} key={index}>{option.children}</option>)
+              <option value={option.value} key={index}>{option.name}</option>)
             )
           }
         </select>
@@ -86,16 +97,6 @@ export function KeyStats({project, timeFrame, startDate, endDate}) {
   }
   const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
-  const Data = ({data, label}) => (
-    <div className="column-one-third">
-      <hr/>
-      <div className="data">
-        <h2 className="bold-xlarge">{data}</h2>
-        <p className="bold-xsmall">{label}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="project-row">
       <h4 className="heading-medium">Key statistics</h4>
@@ -117,22 +118,31 @@ export function KeyStats({project, timeFrame, startDate, endDate}) {
   )
 }
 
-export class ProjectGraph extends Component {
+export class ProductGraph extends Component {
+
+  svg2png(svgPromise, elem) {
+    return svgPromise
+      .then((gd) => Plotly.toImage(gd, {format:'png'}))
+      .then((url) => elem.setAttribute('src', url));
+  }
 
   plot() {
-    plotCumulativeSpendings(
+    const cumulativeSpendings = plotCumulativeSpendings(
       this.props.project,
       this.props.showBurnDown,
       this.props.startDate,
       this.props.endDate,
-      this.container1
+      this.svg1
     );
-    plotMonthlySpendings(
+    this.svg2png(cumulativeSpendings, this.png1);
+
+    const monthlySpendings = plotMonthlySpendings(
       this.props.project,
       this.props.startDate,
       this.props.endDate,
-      this.container2
+      this.svg2
     );
+    this.svg2png(monthlySpendings, this.png2);
   }
 
   componentDidUpdate() {
@@ -143,11 +153,9 @@ export class ProjectGraph extends Component {
     this.plot();
   }
 
-  render() {
+  BurnDownToggle() {
     return (
-      <div className="project-row">
-        <h4 className="heading-medium">Total expenditure and budget</h4>
-        <hr/>
+      <div>
         <span>Show</span>
         <fieldset className="inline burn-down-toggle">
           <label className="block-label" htmlFor="radio-burn-up">
@@ -171,10 +179,24 @@ export class ProjectGraph extends Component {
             Burn down
           </label>
         </fieldset>
-        <div className="project-row" ref={(elem) => this.container1=elem} />
+      </div>
+    );
+  }
+
+  render() {
+    return (
+      <div className="project-row">
+        <h4 className="heading-medium">Total expenditure and budget</h4>
+        <hr/>
+        { this.props.showToggle ? this.BurnDownToggle() : null }
+        <div className="plotly-graph-svg" ref={(elem) => this.svg1=elem} />
+        {/* png is hidden for display and visible for printing */}
+        <img className="plotly-graph-png" ref={(elem) => this.png1=elem} />
         <h4 className="heading-medium">Monthly expenditure</h4>
         <hr/>
-        <div ref={(elem) => this.container2=elem} />
+        <div className="plotly-graph-svg" ref={(elem) => this.svg2=elem} />
+        {/* png is hidden for display and visible for printing */}
+        <img className="plotly-graph-png" ref={(elem) => this.png2=elem} />
       </div>
     );
   }
@@ -219,82 +241,26 @@ export function RagTag({rag}) {
 }
 
 
-export class ProductOverview extends Component {
+export const TimeFrameDisplay = ({ timeFrame, startDate, endDate }) => (
+  <div className="grid-row">
+    <div className="column-one-third">
+      <p className="heading-small">Data for</p>
+      <p>{ timeFrame }</p>
+    </div>
+    <div className="column-one-third">
+      <p className="heading-small">From beginning of</p>
+      <p>{ moment(startDate).format('MMM YY') }</p>
+    </div>
+    <div className="column-one-third">
+      <p className="heading-small">To end of</p>
+      <p>{ moment(endDate).format('MMM YY') }</p>
+    </div>
+  </div>
+);
 
-  get rangeOptions() {
-    const timeFrames = this.props.project.timeFrames;
-    return Object.keys(timeFrames)
-      .map(key => ({
-        value: key,
-        children: timeFrames[key].name
-      }))
-  }
 
-  get minStartDate() {
-    const candidates = values(this.props.project.timeFrames)
-      .map(tf => tf.startDate)
-      .filter(date => date != null);
-    candidates.push(startOfMonth(this.props.startDate));
-    return min(candidates);
-  }
-
-  get maxEndDate() {
-    const candidates = values(this.props.project.timeFrames)
-      .map(tf => tf.endDate)
-      .filter(date => date != null);
-    candidates.push(startOfMonth(this.props.endDate));
-    return max(candidates);
-  }
-
-  get startDateOpts() {
-    return monthRange(this.minStartDate, this.maxEndDate, 'start')
-      .filter(m => moment(m) <= moment(this.props.endDate) || m == this.props.startDate)
-      .map(m => ({
-        value: m,
-        children: moment(m).format('MMM YY'),
-      }));
-  }
-
-  get endDateOpts() {
-    return monthRange(this.minStartDate, this.maxEndDate, 'end')
-      .filter(m => moment(m) >= moment(this.props.startDate) || m == this.props.endDate)
-      .map(m => ({
-        value: m,
-        children: moment(m).format('MMM YY')
-      }));
-  }
-
-  render() {
-    const { project, selectedRange, onRangeChange,
-    startDate, onStartDateChange,
-    endDate, onEndDateChange,
-    showBurnDown, onBurnDownChange }  = this.props;
-    return (
-      <div>
-        <TimeFrameSelector rangeOptions={ this.rangeOptions }
-          selectedRange={ selectedRange }
-          onRangeChange={ onRangeChange }
-          selectedStartDate={ startDate }
-          selectedEndDate={ endDate }
-          startDateOpts={ this.startDateOpts }
-          endDateOpts={ this.endDateOpts }
-          onStartDateChange={ onStartDateChange }
-          onEndDateChange={ onEndDateChange }
-        />
-        <KeyStats
-          startDate={ startDate }
-          endDate={ endDate }
-          project={ project }
-          timeFrame={ selectedRange }
-        />
-        <ProjectGraph
-          project={ project }
-          onBurnDownChange={ onBurnDownChange }
-          showBurnDown={ showBurnDown }
-          startDate={ startDate }
-          endDate={ endDate }
-        />
-      </div>
-    );
-  }
-}
+export const PrintModeToggle = ({isPrintMode, onClick}) => (
+  <a className="print-label" onClick={ onClick }>
+    { isPrintMode ? 'Switch to normal mode' : 'Switch to print mode' }
+  </a>
+);

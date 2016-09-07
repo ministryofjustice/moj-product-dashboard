@@ -3,7 +3,7 @@ import { createHistory } from 'history';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { ProjectContainer } from './project';
+import { ProductContainer } from './containers/product-main';
 import { ServiceContainer} from './service';
 import { PortfolioContainer } from './portfolio';
 import { initCommon } from './common';
@@ -15,7 +15,7 @@ import '../styles/main.css';
 
 function project(id) {
   ReactDOM.render(
-    <ProjectContainer
+    <ProductContainer
       type='project'
       id={id}
       csrftoken={Cookies.get('csrftoken')}
@@ -48,7 +48,7 @@ function portfolio() {
 
 function projectGroup(id) {
   ReactDOM.render(
-    <ProjectContainer
+    <ProductContainer
       type='project-group'
       id={id}
       csrftoken={Cookies.get('csrftoken')}

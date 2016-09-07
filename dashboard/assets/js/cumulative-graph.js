@@ -231,5 +231,5 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
 
-  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
+  return Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }

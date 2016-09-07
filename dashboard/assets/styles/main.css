@@ -184,3 +184,38 @@ h1 a.button {
 .project-row h4 {
   margin-bottom: 10px;
 }
+
+a.print-label {
+  float: right;
+}
+
+/* print */
+.plotly-graph-png {
+  display: none;
+}
+
+@media print {
+
+  header,
+  .nav-bar,
+  .print-label,
+  .plotly-graph-svg {
+    display: none;
+  }
+
+  .plotly-graph-png {
+    display: block;
+  }
+
+  .column-third,
+  .column-one-third {
+    float: left;
+    width: 33.3333333333%;
+  }
+
+  .column-quarter,
+  .column-one-quarter {
+    float: left;
+    width: 25%;
+  }
+}
