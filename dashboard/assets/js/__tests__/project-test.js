@@ -1,7 +1,7 @@
 jest.mock('../plotly-custom');
 import Plotly from '../plotly-custom';
 
-import {parseProjectFinancials, getProjectData} from '../project';
+import {parseProjectFinancials, getProjectData} from '../models';
 
 const financial = {
   '2016-01': {

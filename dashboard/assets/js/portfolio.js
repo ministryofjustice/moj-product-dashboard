@@ -1,22 +1,10 @@
-import 'whatwg-fetch';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 
-import { ProjectsTable } from './project';
+import { ProductTable } from './product-table';
+import { getPortfolioData } from './models';
 import { values } from './utils';
 
-
-/**
- * send a POST request to the backend to retrieve projects profile
- */
-export function getPortfolioData(id, csrftoken) {
-  const init = {
-    credentials: 'same-origin',
-    method: 'GET',
-  };
-  return fetch('/portfolio.json', init)
-    .then(response => response.json());
-}
 
 /**
  * React component for portfolio
@@ -46,7 +34,7 @@ export class PortfolioContainer extends Component {
   render() {
     if (! this.state.hasData) {
       return (
-        <div className="projects-spinkit">
+        <div className="spinkit">
           <Spinner
             spinnerName='three-bounce'
           />
@@ -63,7 +51,7 @@ export class PortfolioContainer extends Component {
             Filter results
           </label>
         </div>
-        <ProjectsTable
+        <ProductTable
           projects={this.state.projects}
           showService={true}
           showFilter={true}
