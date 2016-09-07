@@ -2,27 +2,9 @@ import 'whatwg-fetch';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 
-import { ProjectsTable } from './project';
+import { ProductTable } from './product-table';
 import { values } from './utils';
-
-
-/**
- * send a POST request to the backend to retrieve service area profile
- */
-export function getServiceData(id, csrftoken) {
-  const init = {
-    credentials: 'same-origin',
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': csrftoken,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({id: id})
-  };
-  return fetch('/service.json', init)
-    .then(response => response.json());
-}
+import { getServiceData } from './models';
 
 
 /**

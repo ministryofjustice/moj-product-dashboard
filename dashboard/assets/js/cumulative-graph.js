@@ -1,8 +1,7 @@
-import Plotly from './plotly-custom';
 import moment from 'moment';
+import Plotly from './plotly-custom';
 
-import { parseProjectFinancials } from './project';
-import { values, startOfMonth, round, monthRange } from './utils';
+import { round, monthRange } from './utils';
 
 /**
  * work out the shapes and annotations for
