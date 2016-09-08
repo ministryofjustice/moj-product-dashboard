@@ -878,7 +878,9 @@ class Saving(BaseCost):
 class Budget(models.Model):
     project = models.ForeignKey('Project', related_name='budgets')
     start_date = models.DateField()
-    budget = models.DecimalField(max_digits=16, decimal_places=2)
+    budget = models.DecimalField(
+        max_digits=16, decimal_places=2,
+        help_text=ugettext_lazy('Please enter the total budget'))
     note = models.TextField(null=True, blank=True)
 
 
