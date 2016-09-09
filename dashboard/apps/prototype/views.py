@@ -1,7 +1,7 @@
 import json
 
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse, Http404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -22,9 +22,7 @@ def project_html(request, id):
     try:
         Project.objects.visible().get(id=id)
     except (ValueError, Project.DoesNotExist):
-        # TODO better error page
-        return HttpResponseNotFound(
-            'cannot find project with id={}'.format(id))
+        raise Http404
     return render(request, 'portfolio.html')
 
 
@@ -62,9 +60,7 @@ def project_group_html(request, id):
     try:
         ProjectGroup.objects.get(id=id)
     except (ValueError, ProjectGroup.DoesNotExist):
-        # TODO better error page
-        return HttpResponseNotFound(
-            'cannot find project group with id={}'.format(id))
+        raise Http404
     return render(request, 'portfolio.html')
 
 
@@ -94,9 +90,7 @@ def service_html(request, id):
     try:
         Client.objects.filter(visible=True).get(id=id)
     except (ValueError, Client.DoesNotExist):
-        # TODO better error page
-        return HttpResponseNotFound(
-            'cannot find service with id={}'.format(id))
+        raise Http404
     return render(request, 'portfolio.html')
 
 
