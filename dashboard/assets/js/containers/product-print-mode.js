@@ -25,7 +25,7 @@ export class ProductPrintMode extends Component {
         />
         <ProductGraph
           project={ project }
-          showToggle={ false }
+          isPrinterFriendly={ true }
           showBurnDown={ showBurnDown }
           startDate={ startDate }
           endDate={ endDate }

@@ -8,7 +8,7 @@ import { round, monthRange } from '../libs/utils';
  * shapes and annotations representing product
  * phases
  * */
-function backgroundForPhases(project, range) {
+function backgroundForPhases(project, range, isSmall) {
   const phases = project.phases;
   const shapes = [];
   const annotations = [];
@@ -37,13 +37,13 @@ function backgroundForPhases(project, range) {
       annotations.push({
         yref: 'paper',
         x: moment((l + h) / 2).format('YYYY-MM-DD'),
-        y: -0.2,
+        y: isSmall ? -0.3 : -0.2,
         text: `<b>${name.toUpperCase()}</b>`,
         showarrow: false,
         bgcolor: color,
         font: {
           color: '#ffffff',
-          size: 16
+          size: isSmall ? 8 : 16
         },
         borderpad: 4
       });
@@ -88,7 +88,7 @@ function markingsForToday(range) {
 }
 
 
-export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem) {
+export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem, isSmall) {
   const today = moment().format('YYYY-MM-DD');
   const keyDatesFinancials = project.keyDatesFinancials;
   const keyDates = Object.keys(keyDatesFinancials).sort();
@@ -197,7 +197,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     moment(endDate, 'YYYY-MM-DD').add(1, 'day')
   ];
 
-  const {shapes, annotations} = backgroundForPhases(project, range);
+  const {shapes, annotations} = backgroundForPhases(project, range, isSmall);
   const todayMarkings = markingsForToday(range);
   if (todayMarkings) {
     shapes.push(todayMarkings.shape);
@@ -206,7 +206,8 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   const layout = {
     // title: 'Total expenditure and budget',
     font: {
-      family: 'nta, Arial, sans-serif'
+      family: 'nta, Arial, sans-serif',
+      size: isSmall ? 8 : 12
     },
     xaxis: {
       type: 'date',
@@ -229,6 +230,9 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
       l: 50,
       r: 50
     }
+  };
+  if (isSmall) {
+    Object.assign(layout, {autosize: false, width: 640, height: 210});
   };
 
   return Plotly.newPlot(elem, data, layout, { displayModeBar: false });

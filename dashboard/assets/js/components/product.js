@@ -4,7 +4,7 @@ import Plotly from '../libs/plotly-custom';
 
 import { plotCumulativeSpendings } from '../components/cumulative-graph';
 import { plotMonthlySpendings } from '../components/monthly-graph';
-import { numberWithCommas } from '../libs/utils';
+import { numberWithCommas, isIE } from '../libs/utils';
 
 import PrinterImg from '../../img/printer.png';
 
@@ -128,23 +128,38 @@ export class ProductGraph extends Component {
       .then((url) => elem.setAttribute('src', url));
   }
 
+  get canConvert2png() {
+    // for better printing result, use png.
+    // Plotly supports converting svg to png except in IE.
+    // place the png alongside the original svg.
+    // in normal mode, svg is visible and png hidden.
+    // when printing, do the opposite.
+    return !isIE();
+  }
+
   plot() {
+    const isSmall = !this.canConvert2png && this.props.isPrinterFriendly;
     const cumulativeSpendings = plotCumulativeSpendings(
       this.props.project,
       this.props.showBurnDown,
       this.props.startDate,
       this.props.endDate,
-      this.svg1
+      this.svg1,
+      isSmall
     );
-    this.svg2png(cumulativeSpendings, this.png1);
 
     const monthlySpendings = plotMonthlySpendings(
       this.props.project,
       this.props.startDate,
       this.props.endDate,
-      this.svg2
+      this.svg2,
+      isSmall
     );
-    this.svg2png(monthlySpendings, this.png2);
+
+    if (this.canConvert2png) {
+      this.svg2png(cumulativeSpendings, this.png1);
+      this.svg2png(monthlySpendings, this.png2);
+    }
   }
 
   componentDidUpdate() {
@@ -186,22 +201,29 @@ export class ProductGraph extends Component {
   }
 
   render() {
+    const className = this.canConvert2png ? "plotly-graph-svg" : "plotly-graph-svg-ie";
     return (
       <div className="product-graph">
         <div className="product-row">
           <h4 className="heading-medium">Total expenditure and budget</h4>
           <hr/>
-          { this.props.showToggle ? this.BurnDownToggle() : null }
-          <div className="plotly-graph-svg" ref={(elem) => this.svg1=elem} />
-          {/* png is hidden for display and visible for printing */}
-          <img className="plotly-graph-png" ref={(elem) => this.png1=elem} />
+          { !this.props.isPrinterFriendly ? this.BurnDownToggle() : null }
+          <div className={ className } ref={(elem) => this.svg1=elem} />
+          {
+            !this.canConvert2png ? null : (
+              <img className="plotly-graph-png" ref={(elem) => this.png1=elem} />
+            )
+          }
         </div>
         <div className="product-row">
           <h4 className="heading-medium">Monthly expenditure</h4>
           <hr/>
-          <div className="plotly-graph-svg" ref={(elem) => this.svg2=elem} />
-          {/* png is hidden for display and visible for printing */}
-          <img className="plotly-graph-png" ref={(elem) => this.png2=elem} />
+          <div className={ className } ref={(elem) => this.svg2=elem} />
+          {
+            !this.canConvert2png ? null : (
+              <img className="plotly-graph-png" ref={(elem) => this.png2=elem} />
+            )
+          }
         </div>
       </div>
     );

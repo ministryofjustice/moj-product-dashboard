@@ -206,6 +206,15 @@ export function round(num) {
   return isNegative ? -num : num;
 }
 
+
 export function numberWithCommas(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+
+export function isIE() {
+  const ua = window.navigator.userAgent;
+  return ['MSIE ', 'Trident/', 'Edge/']
+    .map(flag => ua.indexOf(flag))
+    .filter(i => i > -1).length > 0;
 }
