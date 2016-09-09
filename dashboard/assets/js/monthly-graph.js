@@ -45,7 +45,7 @@ export function plotMonthlySpendings(project, startDate, endDate, elem) {
   const layout = {
     // title: 'Monthly expenditure',
     font: {
-      family: 'nta'
+      family: 'nta, Arial, sans-serif'
     },
     barmode: 'stack',
     yaxis: {

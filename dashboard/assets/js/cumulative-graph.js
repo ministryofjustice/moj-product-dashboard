@@ -206,7 +206,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   const layout = {
     // title: 'Total expenditure and budget',
     font: {
-      family: 'nta'
+      family: 'nta, Arial, sans-serif'
     },
     xaxis: {
       type: 'date',

@@ -196,6 +196,10 @@ a.print-label {
 
 @media print {
 
+  body {
+    font-family: "nta", Arial, sans-serif;
+  }
+
   header,
   .nav-bar,
   .print-label,
