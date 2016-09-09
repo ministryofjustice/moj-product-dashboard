@@ -426,3 +426,8 @@ th .help-tooltip {
     width: 15px;
     height: 15px;
 }
+
+th.required::before {
+    content: '*';
+    font-weight: bold;
+}
