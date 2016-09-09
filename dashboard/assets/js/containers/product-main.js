@@ -121,6 +121,7 @@ export class ProductContainer extends Component {
             <ProductInfo project={ project } />
           </TabPanel>
         </Tabs>
+        <hr/>
         <PrintModeToggle
           isPrintMode={ this.state.isPrintMode }
           onClick = { (evt) => this.handleTogglePrintMode(evt) }
@@ -151,6 +152,7 @@ export class ProductContainer extends Component {
           onBurnDownChange={ (e) => this.handleBurnDownChange(e) }
           showBurnDown={ this.state.showBurnDown }
         />
+        <hr/>
         <PrintModeToggle
           isPrintMode={ this.state.isPrintMode }
           onClick = { (evt) => this.handleTogglePrintMode(evt) }

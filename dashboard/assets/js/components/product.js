@@ -6,6 +6,8 @@ import { plotCumulativeSpendings } from '../cumulative-graph';
 import { plotMonthlySpendings } from '../monthly-graph';
 import { numberWithCommas } from '../utils';
 
+import PrinterImg from '../../img/printer.png';
+
 
 const Data = ({data, label}) => (
   <div className="column-one-third">
@@ -259,8 +261,17 @@ export const TimeFrameDisplay = ({ timeFrame, startDate, endDate }) => (
 );
 
 
-export const PrintModeToggle = ({isPrintMode, onClick}) => (
-  <a className="print-label" onClick={ onClick }>
-    { isPrintMode ? 'Switch to normal mode' : 'Switch to print mode' }
-  </a>
-);
+export function PrintModeToggle({isPrintMode, onClick}) {
+  if (isPrintMode) {
+    return (
+      <a className="print-label" onClick={ onClick }>
+        Switch to normal view
+      </a>
+    );
+  }
+  return (
+    <a className="print-label" onClick={ onClick }>
+      <img src={ PrinterImg } /><span>Switch to printer friendly view</span>
+    </a>
+  );
+}
