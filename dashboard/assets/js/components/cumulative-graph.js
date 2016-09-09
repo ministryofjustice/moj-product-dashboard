@@ -1,7 +1,7 @@
 import moment from 'moment';
-import Plotly from './plotly-custom';
 
-import { round, monthRange } from './utils';
+import Plotly from '../libs/plotly-custom';
+import { round, monthRange } from '../libs/utils';
 
 /**
  * work out the shapes and annotations for

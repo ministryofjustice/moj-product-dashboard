@@ -1,10 +1,10 @@
 import moment from 'moment';
 import React, { Component } from 'react';
-import Plotly from '../plotly-custom';
+import Plotly from '../libs/plotly-custom';
 
-import { plotCumulativeSpendings } from '../cumulative-graph';
-import { plotMonthlySpendings } from '../monthly-graph';
-import { numberWithCommas } from '../utils';
+import { plotCumulativeSpendings } from '../components/cumulative-graph';
+import { plotMonthlySpendings } from '../components/monthly-graph';
+import { numberWithCommas } from '../libs/utils';
 
 import PrinterImg from '../../img/printer.png';
 

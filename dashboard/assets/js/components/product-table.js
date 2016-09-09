@@ -2,12 +2,12 @@ import moment from 'moment';
 import React, { Component } from 'react';
 import Griddle from 'griddle-react';
 
-import { statusMapping } from './models';
-import { numberWithCommas } from './utils';
+import { statusMapping } from '../libs/models';
+import { numberWithCommas } from '../libs/utils';
 
-import RedImg from '../img/red.png';
-import AmberImg from '../img/amber.png';
-import GreenImg from '../img/green.png';
+import RedImg from '../../img/red.png';
+import AmberImg from '../../img/amber.png';
+import GreenImg from '../../img/green.png';
 
 
 /**

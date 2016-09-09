@@ -1,7 +1,7 @@
 import moment from 'moment';
 import React, { Component } from 'react';
-import { Project, statusMapping } from '../models';
-import { numberWithCommas } from '../utils';
+import { Project, statusMapping } from '../libs/models';
+import { numberWithCommas } from '../libs/utils';
 
 
 export class ProductInfo extends Component {

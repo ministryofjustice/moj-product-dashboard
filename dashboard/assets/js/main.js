@@ -4,10 +4,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { ProductContainer } from './containers/product-main';
-import { ServiceContainer} from './service';
-import { PortfolioContainer } from './portfolio';
-import { initCommon } from './common';
-
+import { ServiceContainer} from './containers/service';
+import { PortfolioContainer } from './containers/portfolio';
 
 import '../styles/gov-uk-elements.css';
 import '../styles/main.css';
@@ -87,6 +85,5 @@ function route(path) {
 }
 
 
-initCommon();
 const location = createHistory().getCurrentLocation();
 route(location.pathname);

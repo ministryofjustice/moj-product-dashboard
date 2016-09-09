@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
-import { Project, getProjectData } from '../models';
+import { Project, getProjectData } from '../libs/models';
 import { PhaseTag, RagTag, PrintModeToggle } from '../components/product';
 import { ProductOverview } from './product-overview-tab';
 import { ProductInfo } from './product-info-tab';

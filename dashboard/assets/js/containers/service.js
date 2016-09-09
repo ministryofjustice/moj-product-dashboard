@@ -2,9 +2,9 @@ import 'whatwg-fetch';
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 
-import { ProductTable } from './product-table';
-import { values } from './utils';
-import { getServiceData } from './models';
+import { ProductTable } from '../components/product-table';
+import { values } from '../libs/utils';
+import { getServiceData } from '../libs/models';
 
 
 /**

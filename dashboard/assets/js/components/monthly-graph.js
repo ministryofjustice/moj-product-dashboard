@@ -1,7 +1,7 @@
 import moment from 'moment';
-import Plotly from './plotly-custom';
 
-import { endOfMonth, round } from './utils';
+import Plotly from '../libs/plotly-custom';
+import { endOfMonth, round } from '../libs/utils';
 
 /**
  * plot the graph for a project's monthly spendings

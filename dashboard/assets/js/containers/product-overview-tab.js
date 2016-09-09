@@ -1,7 +1,7 @@
 import moment from 'moment';
 import React, { Component } from 'react';
 
-import { monthRange, startOfMonth, values, min, max } from '../utils';
+import { monthRange, startOfMonth, values, min, max } from '../libs/utils';
 import { TimeFrameSelector,  KeyStats, ProductGraph } from '../components/product';
 
 
