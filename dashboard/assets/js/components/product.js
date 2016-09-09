@@ -100,7 +100,7 @@ export function KeyStats({project, timeFrame, startDate, endDate}) {
   const format = (data) => `£${numberWithCommas(Math.round(parseFloat(data)))}`;
 
   return (
-    <div className="project-row">
+    <div className="product-row">
       <h4 className="heading-medium">Key statistics</h4>
       <div className="grid-row">
         <Data
@@ -187,18 +187,22 @@ export class ProductGraph extends Component {
 
   render() {
     return (
-      <div className="project-row">
-        <h4 className="heading-medium">Total expenditure and budget</h4>
-        <hr/>
-        { this.props.showToggle ? this.BurnDownToggle() : null }
-        <div className="plotly-graph-svg" ref={(elem) => this.svg1=elem} />
-        {/* png is hidden for display and visible for printing */}
-        <img className="plotly-graph-png" ref={(elem) => this.png1=elem} />
-        <h4 className="heading-medium">Monthly expenditure</h4>
-        <hr/>
-        <div className="plotly-graph-svg" ref={(elem) => this.svg2=elem} />
-        {/* png is hidden for display and visible for printing */}
-        <img className="plotly-graph-png" ref={(elem) => this.png2=elem} />
+      <div className="product-graph">
+        <div className="product-row">
+          <h4 className="heading-medium">Total expenditure and budget</h4>
+          <hr/>
+          { this.props.showToggle ? this.BurnDownToggle() : null }
+          <div className="plotly-graph-svg" ref={(elem) => this.svg1=elem} />
+          {/* png is hidden for display and visible for printing */}
+          <img className="plotly-graph-png" ref={(elem) => this.png1=elem} />
+        </div>
+        <div className="product-row">
+          <h4 className="heading-medium">Monthly expenditure</h4>
+          <hr/>
+          <div className="plotly-graph-svg" ref={(elem) => this.svg2=elem} />
+          {/* png is hidden for display and visible for printing */}
+          <img className="plotly-graph-png" ref={(elem) => this.png2=elem} />
+        </div>
       </div>
     );
   }
