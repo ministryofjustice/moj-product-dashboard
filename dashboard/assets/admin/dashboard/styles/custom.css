@@ -421,3 +421,8 @@ ul.errorlist li {
 #id_date_year {
     width: 70px;
 }
+
+th .help-tooltip {
+    width: 15px;
+    height: 15px;
+}
