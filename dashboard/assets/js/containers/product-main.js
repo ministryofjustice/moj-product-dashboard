@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
-import { Project, getProjectData } from './models';
-import { ProductInfo } from './product-info';
-import { PhaseTag, RagTag, ProductOverview } from './product-overview';
+import { Project, getProjectData } from '../libs/models';
+import { PhaseTag, RagTag, PrintModeToggle } from '../components/product';
+import { ProductOverview } from './product-overview-tab';
+import { ProductInfo } from './product-info-tab';
+import { ProductPrintMode } from './product-print-mode';
 
-import SeparatorImg from '../img/separator.png';
+import SeparatorImg from '../../img/separator.png';
 
-
-export class ProjectContainer extends Component {
+export class ProductContainer extends Component {
 
   constructor(props) {
     super(props);
@@ -20,6 +21,7 @@ export class ProjectContainer extends Component {
       timeFrame: 'entire-time-span',
       startDate: null,
       endDate: null,
+      isPrintMode: false
     };
     Tabs.setUseDefaultStyles(false);
   }
@@ -68,17 +70,12 @@ export class ProjectContainer extends Component {
     });
   }
 
-  render() {
+  handleTogglePrintMode(evt) {
+    this.setState({isPrintMode: !this.state.isPrintMode});
+  }
+
+  normalMode() {
     const project = this.state.project;
-    if (typeof project.name === 'undefined') {
-      return (
-        <div>
-          <div className="spinkit">
-            <Spinner spinnerName='three-bounce' />
-          </div>
-        </div>
-      );
-    };
     const adminUrl = `/admin/prototype/${project.type}/${project.id}/change/`.toLowerCase();
     return (
       <div>
@@ -124,7 +121,59 @@ export class ProjectContainer extends Component {
             <ProductInfo project={ project } />
           </TabPanel>
         </Tabs>
+        <hr/>
+        <PrintModeToggle
+          isPrintMode={ this.state.isPrintMode }
+          onClick = { (evt) => this.handleTogglePrintMode(evt) }
+        />
       </div>
     );
+  }
+
+  printMode() {
+    const project = this.state.project;
+    return (
+      <div>
+        <h1 className="heading-xlarge">
+          <div className="banner">
+            <PhaseTag phase={ project.phase } />
+            <RagTag rag={ project.rag } />
+          </div>
+          {project.name}
+        </h1>
+        <ProductPrintMode
+          project={project}
+          onRangeChange={evt => this.handleTimeFrameChange(evt)}
+          selectedRange={this.state.timeFrame}
+          startDate={this.state.startDate}
+          endDate={this.state.endDate}
+          onStartDateChange={evt => this.handleStartDateChange(evt)}
+          onEndDateChange={evt => this.handleEndDateChange(evt)}
+          onBurnDownChange={ (e) => this.handleBurnDownChange(e) }
+          showBurnDown={ this.state.showBurnDown }
+        />
+        <hr/>
+        <PrintModeToggle
+          isPrintMode={ this.state.isPrintMode }
+          onClick = { (evt) => this.handleTogglePrintMode(evt) }
+        />
+      </div>
+    );
+  }
+
+  render() {
+    if (typeof this.state.project.name === 'undefined') {
+      return (
+        <div>
+          <div className="spinkit">
+            <Spinner spinnerName='three-bounce' />
+          </div>
+        </div>
+      );
+    };
+    if (this.state.isPrintMode) {
+      return this.printMode();
+    }
+    return this.normalMode();
   }
 }

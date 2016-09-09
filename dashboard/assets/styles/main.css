@@ -147,11 +147,11 @@ h1 a.button {
 }
 
 .griddle-body thead th {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 .griddle-body .money-value {
-    text-align: right;
+  text-align: right;
 }
 
 .griddle-body th:first-child,
@@ -173,14 +173,99 @@ h1 a.button {
   padding-top: 30px;
 }
 
-.project-row {
+.product-row {
   padding-top: 30px;
 }
 
-.project-row hr {
+.product-row hr {
   margin-top: 0;
 }
 
-.project-row h4 {
+.product-row h4 {
   margin-bottom: 10px;
+}
+
+a.print-label {
+  color: #005ea5;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* print */
+.plotly-graph-png {
+  display: none;
+}
+
+@media print {
+
+  body {
+    font-family: "nta", Arial, sans-serif;
+  }
+
+  header,
+  .nav-bar,
+  .print-label,
+  .plotly-graph-svg {
+    display: none;
+  }
+
+  .plotly-graph-png {
+    display: block;
+  }
+
+  .column-third,
+  .column-one-third {
+    float: left;
+    width: 33.3333333333%;
+  }
+
+  .column-quarter,
+  .column-one-quarter {
+    float: left;
+    width: 25%;
+  }
+
+  .font-xxlarge,
+  .heading-xxlarge,
+  .bold-xxlarge {
+    font-size: 39px;
+  }
+
+  .font-xlarge,
+  .heading-xlarge,
+  .bold-xlarge {
+    font-size: 24px;
+  }
+
+  .font-large,
+  .heading-large,
+  .bold-large {
+    font-size: 20px;
+  }
+
+  .font-medium,
+  .heading-medium,
+  .bold-medium {
+    font-size: 18px;
+  }
+
+  .font-small,
+  .heading-small,
+  .bold-small {
+    font-size: 12px;
+  }
+
+  .font-xsmall,
+  .heading-xsmall,
+  .bold-xsmall {
+    font-size: 10px;
+  }
+
+  .product-row {
+    padding-top: 0px;
+  }
+
+  .product-graph {
+    page-break-after: always;
+  }
 }

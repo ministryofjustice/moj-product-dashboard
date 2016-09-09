@@ -3,11 +3,9 @@ import { createHistory } from 'history';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { ProjectContainer } from './project';
-import { ServiceContainer} from './service';
-import { PortfolioContainer } from './portfolio';
-import { initCommon } from './common';
-
+import { ProductContainer } from './containers/product-main';
+import { ServiceContainer} from './containers/service';
+import { PortfolioContainer } from './containers/portfolio';
 
 import '../styles/gov-uk-elements.css';
 import '../styles/main.css';
@@ -15,7 +13,7 @@ import '../styles/main.css';
 
 function project(id) {
   ReactDOM.render(
-    <ProjectContainer
+    <ProductContainer
       type='project'
       id={id}
       csrftoken={Cookies.get('csrftoken')}
@@ -48,7 +46,7 @@ function portfolio() {
 
 function projectGroup(id) {
   ReactDOM.render(
-    <ProjectContainer
+    <ProductContainer
       type='project-group'
       id={id}
       csrftoken={Cookies.get('csrftoken')}
@@ -87,6 +85,5 @@ function route(path) {
 }
 
 
-initCommon();
 const location = createHistory().getCurrentLocation();
 route(location.pathname);

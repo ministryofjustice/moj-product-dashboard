@@ -10,7 +10,7 @@ import {
   lastQuarter,
   round,
   numberWithCommas
-} from '../utils';
+} from '../libs/utils';
 
 describe('monthRange', () => {
   it(`returns the months between the startMonth and endMonth`, () => {

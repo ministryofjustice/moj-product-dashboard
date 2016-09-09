@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 
-import { ProductTable } from './product-table';
-import { getPortfolioData } from './models';
-import { values } from './utils';
+import { ProductTable } from '../components/product-table';
+import { getPortfolioData } from '../libs/models';
+import { values } from '../libs/utils';
 
 
 /**

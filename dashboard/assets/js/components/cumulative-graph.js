@@ -1,7 +1,7 @@
 import moment from 'moment';
-import Plotly from './plotly-custom';
 
-import { round, monthRange } from './utils';
+import Plotly from '../libs/plotly-custom';
+import { round, monthRange } from '../libs/utils';
 
 /**
  * work out the shapes and annotations for
@@ -206,7 +206,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   const layout = {
     // title: 'Total expenditure and budget',
     font: {
-      family: 'nta'
+      family: 'nta, Arial, sans-serif'
     },
     xaxis: {
       type: 'date',
@@ -231,5 +231,5 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     }
   };
 
-  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
+  return Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }

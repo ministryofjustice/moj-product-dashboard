@@ -39,7 +39,7 @@
   "jest": {
     "automock": false,
     "moduleNameMapper": {
-      "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS)$": "<rootDir>/dashboard/assets/js/EmptyModule.js"
+      "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS)$": "<rootDir>/dashboard/assets/js/libs/EmptyModule.js"
     }
   },
   "scripts": {

@@ -1,7 +1,7 @@
 import moment from 'moment';
-import Plotly from './plotly-custom';
 
-import { endOfMonth, round } from './utils';
+import Plotly from '../libs/plotly-custom';
+import { endOfMonth, round } from '../libs/utils';
 
 /**
  * plot the graph for a project's monthly spendings
@@ -45,7 +45,7 @@ export function plotMonthlySpendings(project, startDate, endDate, elem) {
   const layout = {
     // title: 'Monthly expenditure',
     font: {
-      family: 'nta'
+      family: 'nta, Arial, sans-serif'
     },
     barmode: 'stack',
     yaxis: {
@@ -61,5 +61,5 @@ export function plotMonthlySpendings(project, startDate, endDate, elem) {
     }
   };
   const data = [ actualTrace, forecastTrace ];
-  Plotly.newPlot(elem, data, layout, { displayModeBar: false });
+  return Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }
