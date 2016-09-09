@@ -39,6 +39,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     fields = ['name', 'staff_number', 'job_title', 'email',
               'is_contractor', 'is_current']
+    actions = None
 
     def contractor_civil_servant(self, obj):
         if obj.is_contractor:
@@ -110,6 +111,7 @@ class ClientAdmin(admin.ModelAdmin):
     fields = ['id', 'name', 'float_id', 'manager', 'visible']
     readonly_fields = ['id', 'name', 'float_id']
     exclude = ['raw_data']
+    actions = None
 
 
 class CostInline(admin.TabularInline):
@@ -154,6 +156,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     list_display = ('name', 'status', 'phase', 'client')
     search_fields = ('name', 'float_id')
     list_filter = (IsVisibleFilter, 'client')
+    actions = None
 
     def get_urls(self):
         urls = [
@@ -222,6 +225,7 @@ class ProjectGroupAdmin(admin.ModelAdmin):
             for p in obj.projects.all()])
     render_projects.short_description = 'Projects'
     render_projects.allow_tags = True
+    actions = None
 
 
 admin.site.register(Person, PersonAdmin)
