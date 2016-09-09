@@ -45,10 +45,15 @@
             <input type="file" name="payroll_file">
           </div>
 
-          <p class="dropzone-message">Drag and drop payroll file here <span>or </span><button class="dz-clickable button secondary">Choose file</button></p>
+          <p class="dropzone-message">
+            Drag and drop payroll file here <span>or </span>
+            <button class="dz-clickable button secondary">Choose file</button>
+          </p>
 
         </div>
-
+        <div class="form-group">
+          <span class="form-hint">{{ form.payroll_file.help_text }}</span>
+        </div>
         <div class="form-group file-submit">
           <button class="button" type="submit">Upload payroll</button>
         </div>
