@@ -16,7 +16,10 @@
       <form method="post">
         {% csrf_token %}
 
+        <p class = errors">{{ form.non_field_errors }}</p>
+
         <div class="form-group">
+          <p class = errors">{{ form.date.errors }}</p>
           <label class="form-label" for="payroll_date">
             Enter month:
             <span class="form-hint">For example 01 2016</span>
@@ -26,6 +29,7 @@
         </div>
 
         <div class="form-group">
+          <p class = errors">{{ form.project.errors }}</p>
           <label class="form-label" for="id_project">Project:</label>
           <select class="form-control" id="id_project" name="project">
             <option>--------</option>
@@ -40,6 +44,7 @@
         </div>
 
         <div class="form-group">
+          <p class = errors">{{ form.export_type.errors }}</p>
           <fieldset>
             <legend>Export type:</legend>
             <div class="options">
