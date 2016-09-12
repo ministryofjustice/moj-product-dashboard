@@ -217,6 +217,8 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
             'opts': self.model._meta,
             'has_permission': self.is_finance(request.user),
             'form': form,
+            'clients': Client.objects.exclude(projects__isnull=True)
+                        .order_by('name').prefetch_related('projects'),
         })
 
         return render_to_response(
