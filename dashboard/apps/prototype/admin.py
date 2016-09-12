@@ -1,5 +1,6 @@
 import re
 
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.admin import csrf_protect_m
@@ -40,7 +41,8 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     search_fields = ('name', 'job_title')
     list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     fields = ['name', 'staff_number', 'job_title', 'email',
-              'is_contractor', 'is_current']
+              'is_contractor', 'is_current', 'float_link']
+    readonly_fields = ['float_id']
     actions = None
 
     def contractor_civil_servant(self, obj):
@@ -49,6 +51,15 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         else:
             return 'Civil Servant'
     contractor_civil_servant.short_description = 'Contractor | Civil Servant'
+
+    def float_link(self, obj):
+        return format_html('<a href="{base}/people?active=1&people={name}"'
+                           ' target="_blank">{pk}</a>',
+                           base=settings.FLOAT_URL,
+                           name=obj.name,
+                           pk=obj.pk)
+    float_link.short_description = 'Float Id'
+    float_link.allow_tags = True
 
     def get_urls(self):
         urls = [
@@ -147,14 +158,14 @@ class SavingInline(admin.TabularInline):
 
 
 class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
-    fields = ['name', 'description', 'float_id', 'client',
+    fields = ['name', 'description', 'float_link', 'client',
               'product_manager', 'delivery_manager',
               'discovery_date', 'alpha_date', 'beta_date', 'live_date',
               'end_date', 'visible', 'groups']
     exclude = ['raw_data']
     inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
                NoteInline]
-    readonly_fields = ('name', 'description', 'float_id', 'client',
+    readonly_fields = ('name', 'description', 'float_link', 'client',
                        'groups')
     list_display = ('name', 'status', 'phase', 'client')
     search_fields = ('name', 'float_id')
@@ -173,6 +184,15 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
         return '<br>'.join(links)
     groups.short_description = 'Project Groups'
     groups.allow_tags = True
+
+    def float_link(self, obj):
+        return format_html('<a href="{base}/projects?active=1&project={name}"'
+                           ' target="_blank">{pk}</a>',
+                           base=settings.FLOAT_URL,
+                           name=obj.name,
+                           pk=obj.pk)
+    float_link.short_description = 'Float Id'
+    float_link.allow_tags = True
 
     def get_urls(self):
         urls = [
