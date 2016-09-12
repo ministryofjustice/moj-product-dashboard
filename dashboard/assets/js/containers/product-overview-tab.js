@@ -75,7 +75,7 @@ export class ProductOverview extends Component {
         />
         <ProductGraph
           project={ project }
-          showToggle={ true }
+          isPrinterFriendly={ false }
           onBurnDownChange={ onBurnDownChange }
           showBurnDown={ showBurnDown }
           startDate={ startDate }

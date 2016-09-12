@@ -38,11 +38,8 @@ button.update-from-float {
 }
 
 img.rag {
+  width: 31px;
   height: 26px;
-}
-
-img.status {
-  height: 21px;
 }
 
 .banner .phase-tag,

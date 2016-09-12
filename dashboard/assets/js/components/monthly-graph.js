@@ -6,7 +6,7 @@ import { endOfMonth, round } from '../libs/utils';
 /**
  * plot the graph for a project's monthly spendings
  */
-export function plotMonthlySpendings(project, startDate, endDate, elem) {
+export function plotMonthlySpendings(project, startDate, endDate, elem, isSmall) {
   const monthly = project.monthlyFinancials;
   const months = Object.keys(monthly).sort()
     .filter(m => endOfMonth(m) >= startDate && endOfMonth(m) <= endDate);
@@ -45,7 +45,8 @@ export function plotMonthlySpendings(project, startDate, endDate, elem) {
   const layout = {
     // title: 'Monthly expenditure',
     font: {
-      family: 'nta, Arial, sans-serif'
+      family: 'nta, Arial, sans-serif',
+      size: isSmall ? 8 : 12
     },
     barmode: 'stack',
     yaxis: {
@@ -60,6 +61,11 @@ export function plotMonthlySpendings(project, startDate, endDate, elem) {
       r: 50
     }
   };
+
+  if (isSmall) {
+    Object.assign(layout, {autosize: false, width: 640, height: 210});
+  };
+
   const data = [ actualTrace, forecastTrace ];
   return Plotly.newPlot(elem, data, layout, { displayModeBar: false });
 }
