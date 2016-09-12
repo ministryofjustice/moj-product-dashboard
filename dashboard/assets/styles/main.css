@@ -166,6 +166,10 @@ h1 a.button {
   cursor: pointer;
 }
 
+.griddle-container .footer-container {
+  display: none
+}
+
 .date-range > div {
   padding-top: 30px;
 }
@@ -200,9 +204,10 @@ a.print-label {
   }
 
   header,
-  .nav-bar,
+  .plotly-graph-svg
   .print-label,
-  .plotly-graph-svg {
+  .filter-container,
+  .nav-bar {
     display: none;
   }
 
@@ -265,4 +270,17 @@ a.print-label {
   .product-graph {
     page-break-after: always;
   }
+
+  .griddle-body th span {
+    color: #000000;
+    text-decoration: none;
+  }
+
+  .griddle-body td a {
+    text-decoration: none;
+  }
+  .griddle-body td a[href]:after {
+    content: none !important;
+  }
+
 }
