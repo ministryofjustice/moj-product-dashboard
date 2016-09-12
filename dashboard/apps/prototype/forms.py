@@ -69,7 +69,10 @@ class MonthYearField(forms.DateField):
 
 class PayrollUploadForm(forms.Form):
     date = MonthYearField(required=True)
-    payroll_file = forms.FileField(required=True)
+    payroll_file = forms.FileField(
+        required=True,
+        help_text='This must be an original payroll file from HR in .xls '
+                  'format')
 
     @property
     def month(self):
