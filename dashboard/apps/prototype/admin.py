@@ -6,11 +6,13 @@ from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.checks import messages
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
+from django.utils.html import format_html
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup,
@@ -148,15 +150,29 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     fields = ['name', 'description', 'float_id', 'client',
               'product_manager', 'delivery_manager',
               'discovery_date', 'alpha_date', 'beta_date', 'live_date',
-              'end_date', 'visible']
+              'end_date', 'visible', 'groups']
     exclude = ['raw_data']
     inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
                NoteInline]
-    readonly_fields = ('name', 'description', 'float_id', 'client')
+    readonly_fields = ('name', 'description', 'float_id', 'client',
+                       'groups')
     list_display = ('name', 'status', 'phase', 'client')
     search_fields = ('name', 'float_id')
     list_filter = (IsVisibleFilter, 'client')
     actions = None
+
+    def groups(self, obj):
+        groups = obj.project_groups.all()
+        links = [
+            format_html(
+                '<a href="{url}">{name}</a>',
+                url=reverse(
+                    'admin:%s_%s_change' % (g._meta.app_label,
+                                            g._meta.model_name),  args=[g.id]),
+                name=g.name) for g in groups]
+        return '<br>'.join(links)
+    groups.short_description = 'Project Groups'
+    groups.allow_tags = True
 
     def get_urls(self):
         urls = [
