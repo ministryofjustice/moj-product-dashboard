@@ -28,8 +28,13 @@
         <div class="form-group">
           <label class="form-label" for="id_project">Project:</label>
           <select class="form-control" id="id_project" name="project">
-            {% for value, display in form.fields.project.choices %}
-                <option value="{{ value }}">{{ display }}</option>
+            <option>--------</option>
+            {% for client in clients %}
+              <optgroup label="{{ client.name }}">
+                {% for project in client.projects.all %}
+                  <option value="{{ project.pk }}">{{ project.name }}</option>
+                {% endfor %}
+              </optgroup>
             {% endfor %}
           </select>
         </div>
