@@ -99,19 +99,15 @@ export class ProductInfo extends Component {
     }
 
     return (
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Recurring</th>
-            <th className="numeric" scope="col">Amount</th>
-            <th className="numeric" scope="col">Start Date</th>
-            <th className="numeric" scope="col">End Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          { Rows() }
-        </tbody>
-      </table>
+      <tbody>
+        <tr>
+          <th scope="col">Recurring</th>
+          <th className="numeric" scope="col">Amount</th>
+          <th className="numeric" scope="col">Start Date</th>
+          <th className="numeric" scope="col">End Date</th>
+        </tr>
+        { Rows() }
+      </tbody>
     );
   }
 
@@ -124,6 +120,7 @@ export class ProductInfo extends Component {
             <td>-</td>
             <td className="numeric">-</td>
             <td className="numeric">-</td>
+            <td className="numeric"></td>
           </tr>
         );
       }
@@ -133,6 +130,7 @@ export class ProductInfo extends Component {
             <td>{ cost.name || '' }</td>
             <td className="numeric">{ `\u00a3${numberWithCommas(cost.cost | 0)}` }</td>
             <td className="numeric">{ this.dateInNum(cost['start_date']) }</td>
+            <td className="numeric"></td>
           </tr>
           )
         )
@@ -140,18 +138,15 @@ export class ProductInfo extends Component {
     }
 
     return (
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">One off</th>
-            <th className="numeric" scope="col">Amount</th>
-            <th className="numeric" scope="col">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          { Rows() }
-        </tbody>
-      </table>
+      <tbody>
+        <tr>
+          <th scope="col">One off</th>
+          <th className="numeric" scope="col">Amount</th>
+          <th className="numeric" scope="col">Date</th>
+          <th className="numeric" scope="col"></th>
+        </tr>
+        { Rows() }
+      </tbody>
     );
   }
 
@@ -218,11 +213,15 @@ export class ProductInfo extends Component {
         <h3 className="heading-small">Budget</h3>
         { this.Budgets() }
         <h3 className="heading-small">Costs</h3>
-        { this.Recurring(this.props.project.recurringCosts) }
-        { this.OneOff(this.props.project.oneOffCosts) }
+        <table>
+          { this.Recurring(this.props.project.recurringCosts) }
+          { this.OneOff(this.props.project.oneOffCosts) }
+        </table>
         <h3 className="heading-small">Savings enabled</h3>
-        { this.Recurring(this.props.project.recurringSavings) }
-        { this.OneOff(this.props.project.oneOffSavings) }
+        <table>
+          { this.Recurring(this.props.project.recurringSavings) }
+          { this.OneOff(this.props.project.oneOffSavings) }
+        </table>
       </div>
     );
   }
