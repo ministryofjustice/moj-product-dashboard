@@ -1,7 +1,5 @@
 {% extends "common.html" %}
 
-{% load staticfiles %}
-
 {% block main %}
   <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
     {% csrf_token %}

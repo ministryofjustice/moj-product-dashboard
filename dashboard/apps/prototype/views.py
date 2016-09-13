@@ -11,9 +11,6 @@ from .models import Project, Client, ProjectGroup
 from .tasks import sync_float
 
 
-CUSTOMISED_GROUPS = 'Customised Groups'
-
-
 @login_required
 def project_html(request, id):
     if not id:
@@ -23,7 +20,7 @@ def project_html(request, id):
         Project.objects.visible().get(id=id)
     except (ValueError, Project.DoesNotExist):
         raise Http404
-    return render(request, 'portfolio.html')
+    return render(request, 'common.html')
 
 
 @login_required
@@ -61,7 +58,7 @@ def project_group_html(request, id):
         ProjectGroup.objects.get(id=id)
     except (ValueError, ProjectGroup.DoesNotExist):
         raise Http404
-    return render(request, 'portfolio.html')
+    return render(request, 'common.html')
 
 
 @login_required
@@ -91,7 +88,7 @@ def service_html(request, id):
         Client.objects.filter(visible=True).get(id=id)
     except (ValueError, Client.DoesNotExist):
         raise Http404
-    return render(request, 'portfolio.html')
+    return render(request, 'common.html')
 
 
 @login_required
@@ -109,7 +106,7 @@ def service_json(request):
 
 @login_required
 def portfolio_html(request):
-    return render(request, 'portfolio.html')
+    return render(request, 'common.html', {'body_classes': 'portfolio'})
 
 
 @login_required

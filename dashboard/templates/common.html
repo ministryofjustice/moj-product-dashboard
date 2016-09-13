@@ -22,10 +22,15 @@
 {% block before_content %}
 {% endblock %}
 
+{% block body_classes %}
+  {{ body_classes }}
+{% endblock %}
+
 {% block content %}
   <!--TODO use main tag in moj template-->
   <main id="content" role="main">
     {% block main %}
+      <div id="container" />
     {% endblock %}
   </main>
 {% endblock %}
