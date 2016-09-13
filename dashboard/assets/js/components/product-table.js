@@ -68,9 +68,10 @@ export const ProductTable = ({ projects, showService, showFilter }) => {
       'order': 4,
       'displayName': 'Status',
       'customComponent': (props) => {
-        if (props.data in statusMapping) {
+        const status = props.data.status;
+        if (status in statusMapping) {
           return (
-            <strong className={statusMapping[props.data]}>{props.data}</strong>
+            <strong className={statusMapping[status]}>{status}</strong>
           );
         };
         return null;

@@ -18,15 +18,20 @@ export class ProductInfo extends Component {
   }
 
   Status() {
-    const status = this.props.project.status;
-    let className = 'bold-xlarge status-text';
+    const { status, reason }= this.props.project.status;
+    const date = this.props.project.status['start_date'];
+    let className = 'bold-xlarge';
     if (status in statusMapping) {
-      className = `${className} ${statusMapping[status]}`;
+      className = `${className}  status-text ${statusMapping[status]}`;
     }
     return (
-      <div className="status-header">
-        <span className={ className }>{ status || '-' }</span>
-        <p className="bold-medium">Product status</p>
+      <div>
+        <h3 className="heading-small">Product status</h3>
+        <div className="banner">
+          <span className={ className }>{ status || '-' }</span>
+        </div>
+        <p>{ reason }</p>
+        <p>{ date ? `Last updated ${this.dateInNum(date)}` : null }</p>
       </div>
     );
   }
@@ -208,16 +213,16 @@ export class ProductInfo extends Component {
         <p>{ this.props.project.description || '-' }</p>
         <h3 className="heading-small">Phase dates</h3>
         { this.PhaseDates() }
+        <h3 className="heading-small">Team description</h3>
+        { this.Team() }
+        <h3 className="heading-small">Budget</h3>
+        { this.Budgets() }
         <h3 className="heading-small">Costs</h3>
         { this.Recurring(this.props.project.recurringCosts) }
         { this.OneOff(this.props.project.oneOffCosts) }
-        <h3 className="heading-small">Budget</h3>
-        { this.Budgets() }
         <h3 className="heading-small">Savings enabled</h3>
         { this.Recurring(this.props.project.recurringSavings) }
         { this.OneOff(this.props.project.oneOffSavings) }
-        <h3 className="heading-small">Team description</h3>
-        { this.Team() }
       </div>
     );
   }
