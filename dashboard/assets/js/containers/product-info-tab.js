@@ -22,7 +22,7 @@ export class ProductInfo extends Component {
     const date = this.props.project.status['start_date'];
     let className = 'bold-xlarge';
     if (status in statusMapping) {
-      className = `${className}  status-text ${statusMapping[status]}`;
+      className = `${className}  status-text ${statusMapping[status]}-inverse`;
     }
     return (
       <div>

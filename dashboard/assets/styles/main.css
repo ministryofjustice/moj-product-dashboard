@@ -30,11 +30,7 @@ button.update-from-float {
   top: 200px;
 }
 
-.status-header {
-  padding-top: 3px;
-}
 .banner .status-text {
-  /* margin-bottom: 10px; */
   display: -moz-inline-stack;
   display: inline-block;
   margin: 0 8px 0 0;
@@ -138,15 +134,28 @@ h1 a.button {
 }
 
 .status-green {
-  background-color: #006435;
+  color: #006435;
 }
 
 .status-amber {
-  background-color: #F47738;
+  color: #F47738;
 
 }
 
 .status-red {
+  color: #B10E1E;
+}
+
+.status-green-inverse {
+  background-color: #006435;
+}
+
+.status-amber-inverse {
+  background-color: #F47738;
+
+}
+
+.status-red-inverse {
   background-color: #B10E1E;
 }
 
