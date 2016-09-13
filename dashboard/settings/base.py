@@ -188,6 +188,7 @@ HEALTHCHECKS = [
 AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
 
 FLOAT_API_TOKEN = os.environ.get('FLOAT_API_TOKEN')
+FLOAT_URL = os.environ.get('FLOAT_URL')
 
 # RAVEN SENTRY CONFIG
 if 'SENTRY_DSN' in os.environ:
