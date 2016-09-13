@@ -42,7 +42,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     fields = ['name', 'staff_number', 'job_title', 'email',
               'is_contractor', 'is_current', 'float_link']
-    readonly_fields = ['float_id']
+    readonly_fields = ['float_link']
     actions = None
 
     def contractor_civil_servant(self, obj):
