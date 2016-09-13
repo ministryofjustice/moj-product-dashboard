@@ -57,7 +57,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
 
     def float_link(self, obj):
         return format_html('<a href="{base}/people?active=1&people={name}"'
-                           ' target="_blank">{pk}</a>',
+                           ' target="_blank" rel="external">{pk}</a>',
                            base=settings.FLOAT_URL,
                            name=obj.name,
                            pk=obj.pk)
@@ -195,7 +195,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
 
     def float_link(self, obj):
         return format_html('<a href="{base}/projects?active=1&project={name}"'
-                           ' target="_blank">{pk}</a>',
+                           ' target="_blank" rel="external">{pk}</a>',
                            base=settings.FLOAT_URL,
                            name=obj.name,
                            pk=obj.pk)

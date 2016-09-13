@@ -431,3 +431,7 @@ th.required::before {
     content: '*';
     font-weight: bold;
 }
+
+.form-row a[rel="external"]:after {
+    background-position: right 3px;
+}
