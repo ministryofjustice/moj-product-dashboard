@@ -1,3 +1,4 @@
+from datetime import date
 import re
 
 from django.conf import settings
@@ -14,6 +15,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
+
+from dateutil.relativedelta import relativedelta
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
                      ProjectStatus, ProjectGroupStatus, Note, ProjectGroup,
@@ -88,8 +91,13 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         if not self.has_upload_permission(request):
             raise PermissionDenied
 
+        initial = {
+            'date': date.today() - relativedelta(months=1)
+        }
+
         if request.method == 'POST':
-            form = PayrollUploadForm(data=request.POST, files=request.FILES)
+            form = PayrollUploadForm(data=request.POST, files=request.FILES,
+                                     initial=initial)
             if form.is_valid():
                 form.save()
                 level = messages.INFO
@@ -100,7 +108,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
 
             self.message_user(request, message, level=level)
         else:
-            form = PayrollUploadForm()
+            form = PayrollUploadForm(initial=initial)
 
         context = self.admin_site.each_context(request)
         context.update({
@@ -211,8 +219,13 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
         if not self.is_finance(request.user):  # pragma: no cover
             raise PermissionDenied
 
+        initial = {
+            'date': date.today() - relativedelta(months=1)
+        }
+
         if request.method == 'POST':
-            form = ExportForm(data=request.POST, files=request.FILES)
+            form = ExportForm(data=request.POST, files=request.FILES,
+                              initial=initial)
             if form.is_valid():
                 fname = '%s_%s_%s-%s.xlsm' % (
                     form.cleaned_data['export_type'],
@@ -230,7 +243,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
                 workbook.save(response)
                 return response
         else:
-            form = ExportForm()
+            form = ExportForm(initial=initial)
 
         context = self.admin_site.each_context(request)
         context.update({

@@ -15,7 +15,7 @@ class MonthYearDateWidget(Widget):
 
     def render(self, name, value, attrs=None):
         try:
-            year_val, month_val = value.year, value.month
+            year_val, month_val = ["%02d" % v for v in [value.year, value.month]]
         except AttributeError:
             year_val = month_val = None
             if isinstance(value, str):
