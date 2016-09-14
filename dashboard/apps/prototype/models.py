@@ -865,6 +865,7 @@ class Project(BaseProject, AditionalCostsMixin):
             ('intercompanyexport_project', 'Can run Intercompany Export'),
             ('projectdetailexport_project', 'Can run Intercompany Export'),
         )
+        verbose_name = ugettext_lazy('product')
 
 
 class Cost(BaseCost):
