@@ -435,3 +435,12 @@ th.required::before {
 .form-row a[rel="external"]:after {
     background-position: right 3px;
 }
+
+div.inline-group div.inline-related fieldset.module table tr.toggle-collapsed-inlines td {
+    cursor: pointer;
+    background-color: #eeffee;
+    border-bottom: 1px solid #eee;
+    color: #666;
+    font-weight: bold;
+    text-align: center;
+}
