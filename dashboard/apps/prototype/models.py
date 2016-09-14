@@ -359,6 +359,17 @@ class BaseProject(models.Model):
                                  verbose_name='live start')
     end_date = models.DateField(null=True, blank=True)
 
+    @property
+    def admin_url(self):
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        name = 'admin:{}_{}_change'.format(content_type.app_label,
+                                           content_type.model)
+        try:
+            return urlresolvers.reverse(name, args=(self.id,))
+        except urlresolvers.NoReverseMatch:
+            # in case not exposed on admin site
+            return ''
+
     def __str__(self):
         return self.name
 
@@ -627,6 +638,11 @@ class BaseProject(models.Model):
         }
         return result
 
+    def can_user_change(self, user):
+        ctype = ContentType.objects.get_for_model(self.__class__)
+        perm = '{}.change_{}'.format(ctype.app_label, ctype.model)
+        return user.has_perm(perm)
+
     class Meta:
         abstract = True
 
@@ -641,13 +657,6 @@ class Project(BaseProject, AditionalCostsMixin):
     raw_data = JSONField(null=True)
 
     objects = ProjectManager()
-
-    @property
-    def admin_url(self):
-        content_type = ContentType.objects.get_for_model(self.__class__)
-        name = 'admin:{}_{}_change'.format(content_type.app_label,
-                                           content_type.model)
-        return urlresolvers.reverse(name, args=(self.id,))
 
     @property
     def first_task(self):

@@ -76,7 +76,16 @@ export class ProductContainer extends Component {
 
   normalMode() {
     const project = this.state.project;
-    const adminUrl = `/admin/prototype/${project.type}/${project.id}/change/`.toLowerCase();
+    const editButton = () => {
+      if (project['__meta__']['can_edit']) {
+        return (
+          <a className="button" href={ project['__meta__']['admin_url'] }>
+            Edit product details
+          </a>
+        );
+      }
+      return null;
+    }
     return (
       <div>
         <div className="breadcrumbs">
@@ -95,9 +104,7 @@ export class ProductContainer extends Component {
             <RagTag rag={ project.rag } />
           </div>
           {project.name}
-          <a className="button" href={ adminUrl }>
-            Edit product details
-          </a>
+          { editButton() }
         </h1>
         <Tabs className="product-tabs">
           <TabList>

@@ -11,7 +11,14 @@ from .models import Project, Client, ProjectGroup
 from .tasks import sync_float
 
 
-@login_required
+def _project_meta(request, project):
+    meta = {
+        'can_edit': project.can_user_change(request.user),
+        'admin_url': request.build_absolute_uri(project.admin_url)
+    }
+    return meta
+
+
 def project_html(request, id):
     if not id:
         id = Project.objects.visible().first().id
@@ -23,7 +30,6 @@ def project_html(request, id):
     return render(request, 'common.html')
 
 
-@login_required
 def project_json(request):
     """
     send json for a project profilet
@@ -43,13 +49,17 @@ def project_json(request):
     if end_date:
         end_date = parse_date(end_date)
     # get the profile of the project for each month
-    return JsonResponse(project.profile(
+    profile = project.profile(
         start_date=start_date,
         end_date=end_date,
-        freq='MS'))
+        freq='MS')
+    meta = _project_meta(request, project)
+    # use __meta__ to avoid potential key conflict
+    # if meta grows bigger, put meta and profile in
+    # different name spaces.
+    return JsonResponse({**profile, '__meta__': meta})
 
 
-@login_required
 def project_group_html(request, id):
     if not id:
         id = ProjectGroup.objects.first().id
@@ -61,7 +71,6 @@ def project_group_html(request, id):
     return render(request, 'common.html')
 
 
-@login_required
 def project_group_json(request):
     """
     send json for a project group profilet
@@ -76,10 +85,14 @@ def project_group_json(request):
         return JsonResponse({'error': error}, status=404)
 
     # get the profile of the project group for each month
-    return JsonResponse(project_group.profile(freq='MS'))
+    profile = project_group.profile(freq='MS')
+    meta = _project_meta(request, project_group)
+    # use __meta__ to avoid potential key conflict
+    # if meta grows bigger, put meta and profile in
+    # different name spaces.
+    return JsonResponse({**profile, '__meta__': meta})
 
 
-@login_required
 def service_html(request, id):
     if not id:
         id = Client.objects.filter(visible=True).first().id
@@ -91,7 +104,6 @@ def service_html(request, id):
     return render(request, 'common.html')
 
 
-@login_required
 def service_json(request):
     request_data = json.loads(request.body.decode())
     try:
@@ -104,12 +116,10 @@ def service_json(request):
     return JsonResponse(client.profile())
 
 
-@login_required
 def portfolio_html(request):
     return render(request, 'common.html', {'body_classes': 'portfolio'})
 
 
-@login_required
 def portfolio_json(request):
     result = {client.id: client.profile() for client
               in Client.objects.filter(visible=True)}
