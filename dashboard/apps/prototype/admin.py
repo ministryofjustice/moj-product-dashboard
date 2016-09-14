@@ -19,8 +19,7 @@ from django.utils.html import format_html
 from dateutil.relativedelta import relativedelta
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
-                     ProjectStatus, ProjectGroupStatus, Note, ProjectGroup,
-                     Saving)
+                     ProjectStatus, ProjectGroupStatus, Note, Saving)
 from .forms import (PayrollUploadForm, ExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 from .filters import (IsVisibleFilter, IsCivilServantFilter,
@@ -283,4 +282,3 @@ admin.site.register(Person, PersonAdmin)
 admin.site.register(Client, ClientAdmin)
 
 admin.site.register(Project, ProjectAdmin)
-admin.site.register(ProjectGroup, ProjectGroupAdmin)
