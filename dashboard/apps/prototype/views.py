@@ -54,10 +54,7 @@ def project_json(request):
         end_date=end_date,
         freq='MS')
     meta = _project_meta(request, project)
-    # use __meta__ to avoid potential key conflict
-    # if meta grows bigger, put meta and profile in
-    # different name spaces.
-    return JsonResponse({**profile, '__meta__': meta})
+    return JsonResponse({**profile, 'meta': meta})
 
 
 def project_group_html(request, id):
@@ -87,10 +84,7 @@ def project_group_json(request):
     # get the profile of the project group for each month
     profile = project_group.profile(freq='MS')
     meta = _project_meta(request, project_group)
-    # use __meta__ to avoid potential key conflict
-    # if meta grows bigger, put meta and profile in
-    # different name spaces.
-    return JsonResponse({**profile, '__meta__': meta})
+    return JsonResponse({**profile, 'meta': meta})
 
 
 def service_html(request, id):

@@ -77,9 +77,9 @@ export class ProductContainer extends Component {
   normalMode() {
     const project = this.state.project;
     const editButton = () => {
-      if (project['__meta__']['can_edit']) {
+      if (project.meta['can_edit']) {
         return (
-          <a className="button" href={ project['__meta__']['admin_url'] }>
+          <a className="button" href={ project.meta['admin_url'] }>
             Edit product details
           </a>
         );
