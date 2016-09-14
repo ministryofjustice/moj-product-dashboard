@@ -438,9 +438,9 @@ th.required::before {
 
 div.inline-group div.inline-related fieldset.module table tr.toggle-collapsed-inlines td {
     cursor: pointer;
-    height: 10px;
-    background-color: #f8f8f8;
+    background-color: #eeffee;
     border-bottom: 1px solid #eee;
-    text-align: center;
     color: #666;
+    font-weight: bold;
+    text-align: center;
 }
