@@ -407,6 +407,21 @@ ul.errorlist {
 ul.errorlist li {
     border-left: 5px solid #b10e1e;
     padding-left: 15px;
+    color: #b10e1e;
+    font-weight: bold;
+}
+
+p.errornote {
+    border: 5px solid #b10e1e;
+    font-size: 16px;
+    line-height: 1.25;
+    text-transform: none;
+    display: block;
+    clear: both;
+    margin: 0;
+    padding: 16px;
+    color: #b10e1e;
+    font-weight: bold;
 }
 
 .upload input[type="text"].form-control,
