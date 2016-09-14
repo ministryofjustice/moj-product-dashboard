@@ -30,11 +30,18 @@ button.update-from-float {
   top: 200px;
 }
 
-.status-header {
-  padding-top: 30px;
-}
-.status-header .status-text {
-  margin-bottom: 10px;
+.banner .status-text {
+  display: -moz-inline-stack;
+  display: inline-block;
+  margin: 0 8px 0 0;
+  padding: 2px 5px 0;
+  font-family: "nta", Arial, sans-serif;
+  line-height: 1.1428571429;
+  text-transform: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+  color: #fff;
 }
 
 img.rag {
@@ -137,6 +144,19 @@ h1 a.button {
 
 .status-red {
   color: #B10E1E;
+}
+
+.status-green-inverse {
+  background-color: #006435;
+}
+
+.status-amber-inverse {
+  background-color: #F47738;
+
+}
+
+.status-red-inverse {
+  background-color: #B10E1E;
 }
 
 .griddle-filter {

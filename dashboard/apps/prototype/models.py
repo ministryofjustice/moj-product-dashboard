@@ -581,7 +581,7 @@ class BaseProject(models.Model):
         :return: a dictionary representing the profile
         """
         status = self.status()
-        status = status.get_status_display() if status else ''
+        status = status.as_dict() if status else {}
         if self.client:
             service_area = {
                 'id': self.client.id,
@@ -888,9 +888,17 @@ class Status(models.Model):
     start_date = models.DateField()
     status = models.PositiveSmallIntegerField(
         choices=STATUS_TYPES, default=STATUS_TYPES.OK)
+    reason = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return str(self.get_status_display())
+
+    def as_dict(self):
+        return {
+            'status': self.get_status_display(),
+            'reason': self.reason,
+            'start_date': self.start_date
+        }
 
     class Meta:
         abstract = True
@@ -899,12 +907,10 @@ class Status(models.Model):
 
 class ProjectStatus(Status):
     project = models.ForeignKey('Project', related_name='statuses')
-    reason = models.TextField(null=True, blank=True)
 
 
 class ProjectGroupStatus(Status):
     project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
-    reason = models.TextField(null=True, blank=True)
 
 
 class Note(models.Model):
