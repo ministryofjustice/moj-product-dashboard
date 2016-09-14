@@ -436,14 +436,11 @@ th.required::before {
     background-position: right 3px;
 }
 
-div.inline-group div.inline-related fieldset.module h2 {
+div.inline-group div.inline-related fieldset.module table tr.toggle-collapsed-inlines td {
     cursor: pointer;
-}
-
-div.inline-group div.inline-related fieldset.module h2::before {
-    content: '-';
-}
-
-div.inline-group div.inline-related fieldset.module h2.expand::before {
-    content: '+';
+    height: 10px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    color: #666;
 }
