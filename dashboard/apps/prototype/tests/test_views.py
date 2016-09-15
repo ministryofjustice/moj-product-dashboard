@@ -8,7 +8,6 @@ from unittest.mock import patch
 from django.test import Client
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
-from django.conf import settings
 from django.contrib.auth.models import User
 import pytest
 from faker import Faker
@@ -37,15 +36,12 @@ def make_login_client():
     return client
 
 
-@pytest.mark.parametrize('view', [
-    project_html,
-    project_json
-])
-def test_login_required(view):
+@pytest.mark.django_db
+def test_login_not_required():
+    project = mommy.make(Project)
     client = Client()
-    rsp = client.get(reverse(view))
-    assert rsp.status_code == 302
-    assert rsp.url.startswith(settings.LOGIN_URL)
+    rsp = client.get(reverse(project_html, kwargs={'id': project.id}))
+    assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
