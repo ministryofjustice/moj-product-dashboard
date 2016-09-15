@@ -204,7 +204,7 @@ if 'SENTRY_DSN' in os.environ:
         'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
     ] + MIDDLEWARE_CLASSES
 
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
 CACHES = {

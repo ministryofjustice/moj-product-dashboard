@@ -40,5 +40,7 @@ urlpatterns = [
         name='ping_json'),
     url(r'^healthcheck.json$', HealthcheckView.as_view(),
         name='healthcheck_json'),
-    url(r'^admin/login/$', 'django.contrib.auth.views.login'),
+    url(r'^login/$', 'django.contrib.auth.views.login', {'template': 'login.html'}),
+    url(r'^logout/$', 'django.contrib.auth.views.logout',
+        {'next_page': '/'})
 ]
