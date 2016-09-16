@@ -224,7 +224,7 @@ a.print-label {
   }
 
   header,
-  .plotly-graph-svg
+  .plotly-graph-svg,
   .print-label,
   .filter-container,
   .nav-bar {
