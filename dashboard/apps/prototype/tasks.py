@@ -64,25 +64,30 @@ def cache_project(project_id):
     project = Project.objects.get(pk=project_id)
 
     logger.info('- generating caching for project "%s"', project)
-    logger.info('  * spendings each month')
+    logger.info('  * people costs monthly and on key dates')
     project.profile(freq='MS')
-    if project.first_task:
-        start_date = project.first_task.start_date
-        end_date = project.last_task.end_date
-        # monthly people costs
-        time_windows = slice_time_window(
-            start_date, end_date, freq='MS', extend=True)
-        # to date people costs
-        time_windows.append((start_date, date.today()))
-        for sdate, edate in time_windows:
-            project.people_costs(
-                sdate, edate,
-                ignore_cache=True)
-            project.people_costs(
-                sdate, edate,
-                contractor_only=True,
-                ignore_cache=True)
-            project.people_costs(
-                sdate, edate,
-                non_contractor_only=True,
-                ignore_cache=True)
+    try:
+        start_date = project.first_date
+        end_date = project.last_date
+    except ValueError:
+        return
+    # monthly people costs
+    time_windows = slice_time_window(
+        start_date, end_date, freq='MS', extend=True)
+    # people cost to key dates
+    time_windows += [
+        (start_date, key_date['date']) for key_date
+        in project.key_dates(freq='MS').values()
+    ]
+    for sdate, edate in time_windows:
+        project.people_costs(
+            sdate, edate,
+            ignore_cache=True)
+        project.people_costs(
+            sdate, edate,
+            contractor_only=True,
+            ignore_cache=True)
+        project.people_costs(
+            sdate, edate,
+            non_contractor_only=True,
+            ignore_cache=True)

@@ -468,20 +468,20 @@ class BaseProject(models.Model):
 
     def key_dates(self, freq=None):
         """
-        snapshots on key dates of the project. these include the start of
-        phases, today and end of time frames defined by frequency.
+        key dates of the project. these include the start of
+        phases, today. if a frequency is specified, it also include
+        start of time frames and end of last time frame sliced by frequency.
         :param freq: an optional parameter to slice the time window into
         sub windows. value of freq should be an offset aliases supported by
         pandas date_range, e.g. MS for month start.
         :return: a dictionary
         """
-        phases = {
+        phase_start_dates = {
             '{}-{}'.format('-'.join(name.split(' ')),
                            date.strftime('%Y%m%d')): {
                'name': name,
                'date': date,
                'type': 'phase start',
-               'stats': self.stats_on(date),
             }
             for (name, date) in [
                 ('discovery start', self.discovery_date),
@@ -497,14 +497,13 @@ class BaseProject(models.Model):
             'new-budget-{}'.format(bgt.start_date.strftime('%Y%m%d')): {
                 'name': 'new budget {}'.format(bgt.budget),
                 'date': bgt.start_date,
-                'stats': self.stats_on(bgt.start_date),
                 'type': 'new budget set'
             }
             for bgt in self.budgets.all()
         }
 
         if not freq:
-            return {**phases, **budget_start_dates}
+            return {**phase_start_dates, **budget_start_dates}
 
         try:
             time_windows = slice_time_window(
@@ -512,25 +511,47 @@ class BaseProject(models.Model):
                 self.last_date,
                 freq, extend=True)
         except ValueError:  # when no first_date
-            time_windows = []
+            return {**phase_start_dates, **budget_start_dates}
 
         def _key(sdate, edate):
-            return 'end-of-{}-{}'.format(
+            return 'start-of-{}-{}'.format(
                 sdate.strftime('%Y%m%d'), edate.strftime('%Y%m%d'))
-        time_window_end_dates = {
+        time_window_start_dates = {
             _key(sdate, edate): {
                 'name': _key(sdate, edate),
-                # technically the date should be 23:59:59 of edate,
-                # which rounded to next day at 00:00:00
-                'date': edate + timedelta(days=1),
-                'stats': self.stats_on(edate),
-                'type': 'end of a time window'
+                'date': sdate,
+                'type': 'start of a time window'
             }
             for sdate, edate in time_windows
         }
-        return {**phases, **budget_start_dates, **time_window_end_dates}
+        rear_time_window = time_windows[-1]
+        key = 'first-day-after-rear-time-window-{}-{}'.format(
+            *rear_time_window)
+        day_after_time_windows = {
+            key: {
+                'name': key,
+                'date': rear_time_window[1] + timedelta(days=1),
+                'type': 'first day after rear time window'
+            }
+        }
+        return {
+            **phase_start_dates,
+            **budget_start_dates,
+            **time_window_start_dates,
+            **day_after_time_windows
+        }
 
-    def time_frames(self, start_date, end_date, freq):
+    def stats_on_key_dates(self, freq=None):
+        """
+        statistics on key dates
+        return: a dictionary
+        """
+        return {
+            k: {**{'stats': self.stats_on(v['date'])}, **v}
+            for k, v in self.key_dates(freq).items()
+        }
+
+    def stats_in_time_frames(self, start_date, end_date, freq):
         """
         cumulative stats of time frames sliced by freq
         :param start_date: start date of time window, a date object
@@ -624,8 +645,9 @@ class BaseProject(models.Model):
             'first_date': first_date,
             'last_date': last_date,
             'financial': {
-                'time_frames': self.time_frames(start_date, end_date, freq),
-                'key_dates': self.key_dates(freq)
+                'time_frames': self.stats_in_time_frames(
+                    start_date, end_date, freq),
+                'key_dates': self.stats_on_key_dates(freq)
             },
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
