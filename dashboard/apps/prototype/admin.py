@@ -163,28 +163,14 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     fields = ['name', 'description', 'float_link', 'client',
               'product_manager', 'delivery_manager',
               'discovery_date', 'alpha_date', 'beta_date', 'live_date',
-              'end_date', 'visible', 'groups']
+              'end_date', 'visible']
     exclude = ['raw_data']
     inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline]
-    readonly_fields = ('name', 'description', 'float_link', 'client',
-                       'groups')
+    readonly_fields = ('name', 'description', 'float_link', 'client')
     list_display = ('name', 'status', 'phase', 'client')
     search_fields = ('name', 'float_id')
     list_filter = (IsVisibleFilter, 'client')
     actions = None
-
-    def groups(self, obj):
-        groups = obj.project_groups.all()
-        links = [
-            format_html(
-                '<a href="{url}">{name}</a>',
-                url=reverse(
-                    'admin:%s_%s_change' % (g._meta.app_label,
-                                            g._meta.model_name),  args=[g.id]),
-                name=g.name) for g in groups]
-        return '<br>'.join(links)
-    groups.short_description = 'Project Groups'
-    groups.allow_tags = True
 
     def float_link(self, obj):
         return format_html('<a href="{base}/projects?active=1&project={name}"'
