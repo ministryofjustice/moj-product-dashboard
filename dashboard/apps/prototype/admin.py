@@ -4,6 +4,7 @@ import re
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.checks import messages
@@ -261,3 +262,4 @@ admin.site.register(Person, PersonAdmin)
 admin.site.register(Client, ClientAdmin)
 
 admin.site.register(Project, ProjectAdmin)
+admin.site.register(LogEntry)
