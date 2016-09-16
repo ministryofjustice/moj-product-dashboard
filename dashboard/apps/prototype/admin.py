@@ -8,7 +8,6 @@ from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.checks import messages
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
