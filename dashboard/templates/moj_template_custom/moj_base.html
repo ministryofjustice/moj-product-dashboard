@@ -148,7 +148,7 @@
               {% if request.user.is_authenticated %}
                 {% if perms.prototype.change_project %}
                   <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
-                {% elif perms.prototype.change_user %}
+                {% elif perms.auth.change_user %}
                   <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
                 {% endif %}
                 <li class="user-menu">
