@@ -23,9 +23,7 @@ Dependencies
 
 -  `Python 3.5 <http://www.python.org/>`__ (can be installed using :code:`brew install python3`)
 -  `Virtualenv <http://www.virtualenv.org/en/latest/>`__ (can be installed using :code:`pip3 install virtualenv`)
--  `Plotly.js <https://plot.ly/javascript/>`__(can be installed using :code:`npm install plotly.js --save`)
--  `fetch polyfill <https://github.com/github/fetch>`__(can be installed using :code:`npm install whatwg-fetch --save`)
--  `webpack <https://webpack.github.io/>`__(can be installed using :code:`npm install webpack -g`)
+-  `nodejs.org <http://nodejs.org/>`__ (v6.2.0 - can be installed using `nvm <https://github.com/creationix/nvm>`_)
 
 
 Installation
@@ -123,20 +121,24 @@ Background Tasks
 Background tasks on AWS are run using Celery and SQS. Locally you will need to install rabbitmq-server instead of SQS.
 
 ::
+
     brew install rabbitmq
 
 Copy BROCKER_URL in to your local.py
 
 ::
+
     BROKER_URL = "amqp://"
     BROKER_TRANSPORT_OPTIONS = {}
 
 Then run rabbitmq-server it with
 
 ::
+
     rabbitmq-server
 
 and finally run cellery with
 
 ::
+
     celery -A dashboard worker -B -l info
