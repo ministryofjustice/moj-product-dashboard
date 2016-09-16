@@ -923,13 +923,6 @@ class ProjectGroupStatus(Status):
     project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
 
 
-class Note(models.Model):
-    project = models.ForeignKey('Project', related_name='notes')
-    date = models.DateField()
-    name = models.CharField(max_length=128, null=True)
-    note = models.TextField(null=True, blank=True)
-
-
 class ProjectGroup(BaseProject):
     projects = models.ManyToManyField(
         Project,

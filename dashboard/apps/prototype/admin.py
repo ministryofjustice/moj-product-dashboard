@@ -19,7 +19,7 @@ from django.utils.html import format_html
 from dateutil.relativedelta import relativedelta
 
 from .models import (Person, Rate, Client, Project, Cost, Budget,
-                     ProjectStatus, ProjectGroupStatus, Note, Saving)
+                     ProjectStatus, ProjectGroupStatus, Saving)
 from .forms import (PayrollUploadForm, ExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 from .filters import (IsVisibleFilter, IsCivilServantFilter,
@@ -154,11 +154,6 @@ class ProjectGroupStatusInline(admin.TabularInline):
     extra = 0
 
 
-class NoteInline(admin.TabularInline):
-    model = Note
-    extra = 0
-
-
 class SavingInline(admin.TabularInline):
     model = Saving
     extra = 0
@@ -170,8 +165,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
               'discovery_date', 'alpha_date', 'beta_date', 'live_date',
               'end_date', 'visible', 'groups']
     exclude = ['raw_data']
-    inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
-               NoteInline]
+    inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline]
     readonly_fields = ('name', 'description', 'float_link', 'client',
                        'groups')
     list_display = ('name', 'status', 'phase', 'client')
