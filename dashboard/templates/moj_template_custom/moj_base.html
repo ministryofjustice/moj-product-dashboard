@@ -145,12 +145,12 @@
         <div class="nav-bar">
             <ul>
               <li class="portfolio"><a href="{% url 'portfolio_html' %}">Portfolio Summary</a></li>
-              {% if perms.prototype.change_project %}
-                <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
-              {% else %}
-                <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
-              {% endif %}
               {% if request.user.is_authenticated %}
+                {% if perms.prototype.change_project %}
+                  <li class="admin"><a href="/admin/prototype/project/">Admin</a></li>
+                {% elif perms.prototype.change_user %}
+                  <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
+                {% endif %}
                 <li class="user-menu">
                   <ul>
                     <li><a href="/password_change">Change password</a></li>
@@ -158,6 +158,8 @@
                   </ul>
                   <a>{{ request.user.username }} <i class="arrow-down"></i></a>
                 </li>
+              {% else %}
+                <li class="admin"><a href="/login/?next=/">Login</a></li>
               {% endif %}
             </ul>
         </div>
