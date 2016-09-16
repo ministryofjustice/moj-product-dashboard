@@ -262,4 +262,4 @@ admin.site.register(Person, PersonAdmin)
 admin.site.register(Client, ClientAdmin)
 
 admin.site.register(Project, ProjectAdmin)
-admin.site.register(LogEntry)
+admin.site.register(LogEntry, ReadOnlyAdmin)
