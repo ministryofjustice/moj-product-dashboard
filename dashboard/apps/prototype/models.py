@@ -490,7 +490,12 @@ class BaseProject(models.Model):
                 ('beta start', self.beta_date),
                 ('live start', self.live_date),
                 ('today', date.today()),
-                ('end', self.end_date)
+                # by convention, when we say the project ends on '31 Aug 16',
+                # what we really mean is it ends on 'end of 31 Aug 16', i.e.
+                # 31/08/16 23:59:59, which is essentially beginning of
+                # '1 Sept 16'.
+                ('end of day on end date', self.end_date + timedelta(days=1)
+                 if self.end_date else None)
             ]
             if date
         }

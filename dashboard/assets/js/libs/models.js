@@ -102,12 +102,12 @@ export class Project {
     return this['financial_rag'];
   }
 
-  get startDate() {
+  get firstDate() {
     const firstDate = this['first_date'];
     return firstDate ? startOfMonth(firstDate) : null;
   }
 
-  get endDate() {
+  get lastDate() {
     const lastDate = this['last_date'];
     return lastDate? endOfMonth(lastDate) : null;
   }
@@ -126,6 +126,10 @@ export class Project {
 
   get liveStart() {
     return this['live_date'];
+  }
+
+  get endDate() {
+    return this['end_date'];
   }
 
   get serviceArea() {
@@ -217,8 +221,8 @@ export class Project {
     const result = {
       'entire-time-span': {
         name: 'Entire project life time',
-        startDate: this.startDate,
-        endDate: this.endDate,
+        startDate: this.firstDate,
+        endDate: this.lastDate,
         isPhase: false
       },
       'this-year': {

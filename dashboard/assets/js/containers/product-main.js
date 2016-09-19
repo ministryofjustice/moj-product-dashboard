@@ -32,8 +32,8 @@ export class ProductContainer extends Component {
         const project = new Project(projectJSON);
         this.setState({
           project: project,
-          startDate: project.startDate,
-          endDate: project.endDate,
+          startDate: project.firstDate,
+          endDate: project.lastDate,
           hasData: true
         });
       });
