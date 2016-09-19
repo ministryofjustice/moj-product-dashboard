@@ -45,13 +45,18 @@ export class ProductContainer extends Component {
   }
 
   handleTimeFrameChange(evt) {
-    const newVal = evt.target.value;
-    const { startDate, endDate } = this.state.project.timeFrames[newVal];
-    this.setState({
-      startDate: startDate,
-      endDate: endDate,
-      timeFrame: newVal
-    });
+    const timeFrame = evt.target.value;
+    const state = {timeFrame: timeFrame};
+    const { startDate, endDate } = this.state.project.timeFrames[timeFrame];
+    // startDate can be null e.g. for 'custome range'
+    if (startDate) {
+      state.startDate = startDate
+    };
+    // endDate can be null e.g. for 'custome range'
+    if (endDate) {
+      state.endDate = endDate
+    };
+    this.setState(state);
   }
 
   handleStartDateChange(evt) {
