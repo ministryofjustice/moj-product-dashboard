@@ -43,25 +43,25 @@ export class ProductInfo extends Component {
       <div>
         <div className="grid-row">
           <div className="column-one-quarter">
-            <p className="heading-small">Discovery started</p>
+            <p className="heading-small">Discovery start</p>
             <p>{ discoveryStart ? this.dateInEnglish(discoveryStart) : '-' }</p>
           </div>
           <div className="column-one-quarter">
-            <p className="heading-small">Alpha started</p>
+            <p className="heading-small">Alpha start</p>
             <p>{ alphaStart ? this.dateInEnglish(alphaStart) : '-' }</p>
           </div>
           <div className="column-one-quarter">
-            <p className="heading-small">Beta started</p>
+            <p className="heading-small">Beta start</p>
             <p>{ betaStart ? this.dateInEnglish(betaStart) : '-' }</p>
           </div>
           <div className="column-one-quarter">
-            <p className="heading-small">Live started</p>
+            <p className="heading-small">Live start</p>
             <p>{ liveStart? this.dateInEnglish(liveStart) : '-' }</p>
           </div>
         </div>
         <div className="grid-row">
           <div className="column-one-quarter">
-            <p className="heading-small">Estimated end date</p>
+            <p className="heading-small">End date</p>
             <p>{ endDate ? this.dateInEnglish(endDate) : '-' }</p>
           </div>
         </div>
