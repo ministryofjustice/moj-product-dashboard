@@ -218,37 +218,44 @@ export class Project {
       'entire-time-span': {
         name: 'Entire project life time',
         startDate: this.startDate,
-        endDate: this.endDate
+        endDate: this.endDate,
+        isPhase: false
       },
       'this-year': {
         name: 'This calendar year',
         startDate: thisCalendarYear(now).startDate,
-        endDate: thisCalendarYear(now).endDate
+        endDate: thisCalendarYear(now).endDate,
+        isPhase: false
       },
       'this-financial-year': {
         name: 'This financial year',
         startDate: thisFinancialYear(now).startDate,
-        endDate: thisFinancialYear(now).endDate
+        endDate: thisFinancialYear(now).endDate,
+        isPhase: false
       },
       'this-quarter': {
         name: 'This quarter',
         startDate: thisQuarter(now).startDate,
-        endDate: thisQuarter(now).endDate
+        endDate: thisQuarter(now).endDate,
+        isPhase: false
       },
       'last-year': {
         name: 'Last calendar year',
         startDate: lastCalendarYear(now).startDate,
-        endDate: lastCalendarYear(now).endDate
+        endDate: lastCalendarYear(now).endDate,
+        isPhase: false
       },
       'last-financial-year': {
         name: 'Last financial year',
         startDate: lastFinancialYear(now).startDate,
-        endDate: lastFinancialYear(now).endDate
+        endDate: lastFinancialYear(now).endDate,
+        isPhase: false
       },
       'last-quarter': {
         name: 'Last quarter',
         startDate: lastQuarter(now).startDate,
-        endDate: lastQuarter(now).endDate
+        endDate: lastQuarter(now).endDate,
+        isPhase: false
       },
     };
     const phases = this.phases;
@@ -259,7 +266,8 @@ export class Project {
         result[id] = {
           name: `${name} (${formatDate(start)} - ${formatDate(end)})`,
           startDate: startOfMonth(start),
-          endDate: endOfMonth(oneDayBefore(end))
+          endDate: endOfMonth(oneDayBefore(end)),
+          isPhase: true
         }
       }
     });
@@ -276,7 +284,9 @@ export class Project {
     const matched = Object.keys(timeFrames).filter(
         key => {
           const val = timeFrames[key];
-          return (val.startDate == startDate && val.endDate == endDate);
+          // do not match time frame for phases because they are mostly
+          // often not whole months
+          return (!val.isPhase && val.startDate == startDate && val.endDate == endDate);
         });
     if (matched.length > 0) {
       return matched[0];
