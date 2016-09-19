@@ -72,8 +72,8 @@ function markingsForToday(range) {
     y0: 0,
     y1: 1,
     line: {
-      width: 0.3,
-      dash: 'dashdot'
+      width: 0.5,
+      dash: 'dot'
     }
   };
   const annotation = {
@@ -82,6 +82,41 @@ function markingsForToday(range) {
     xanchor: 'left',
     y: 0.3,
     text: 'Today',
+    showarrow: false
+  };
+  return {shape, annotation}
+}
+
+
+/**
+ * line and annotation to indicate end date of the product
+ **/
+function markingsForEndDate(endDate, range) {
+  // plot a line for today if within the time frame
+  const endDateMoment = moment(endDate);
+  if (endDateMoment < range[0] || endDateMoment > range[1]) {
+    return null;
+  }
+  const x = endDateMoment.add(1, 'days').format('YYYY-MM-DD');
+  const shape = {
+    type: 'line',
+    xref: 'x',
+    yref: 'paper',
+    x0: x,
+    x1: x,
+    y0: 0,
+    y1: 1,
+    line: {
+      width: 0.3,
+      color: '#ff0000'
+    }
+  };
+  const annotation = {
+    yref: 'paper',
+    x: x,
+    xanchor: 'left',
+    y: 0.6,
+    text: 'End',
     showarrow: false
   };
   return {shape, annotation}
@@ -202,7 +237,14 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
   if (todayMarkings) {
     shapes.push(todayMarkings.shape);
     annotations.push(todayMarkings.annotation);
-  }
+  };
+  if (project.endDate) {
+    const endDateMarkings = markingsForEndDate(project.endDate, range);
+    if (endDateMarkings) {
+      shapes.push(endDateMarkings.shape);
+      annotations.push(endDateMarkings.annotation);
+    }
+  };
   const layout = {
     // title: 'Total expenditure and budget',
     font: {
