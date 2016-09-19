@@ -103,6 +103,7 @@ class BaseCost(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['start_date']
 
 
 class AditionalCostsMixin():
