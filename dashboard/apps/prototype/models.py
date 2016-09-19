@@ -3,6 +3,7 @@ from datetime import timedelta, date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY
+from urllib.parse import urlparse
 
 from django.db import models
 from django.core import urlresolvers
@@ -661,7 +662,8 @@ class BaseProject(models.Model):
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,
             'costs': {c.id: c.as_dict() for c in self.costs.all()},
-            'savings': {s.id: s.as_dict() for s in self.savings.all()}
+            'savings': {s.id: s.as_dict() for s in self.savings.all()},
+            'links': [l.as_dict() for l in self.links.all()]
         }
         return result
 
