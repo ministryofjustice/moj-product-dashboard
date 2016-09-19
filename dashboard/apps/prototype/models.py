@@ -1163,3 +1163,29 @@ class Task(models.Model):
     def get_days(self, *timewindow):
         timewindow_workdays = get_workdays(*timewindow)
         return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
+
+
+class Link(models.Model):
+    project = models.ForeignKey('Project', related_name='links')
+    name = models.CharField(max_length=150, null=True, blank=True)
+    url = models.URLField()
+    note = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['url']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def type(self):
+        hostname = urlparse(self.url).hostname
+        return hostname.replace('.', '-')
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'url': self.url,
+            'note': self.note,
+            'type': self.type,
+        }
