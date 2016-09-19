@@ -16,7 +16,7 @@ export const statusMapping = {
 /**
  * send a POST request to the backend to retrieve project profile
  */
-export function getProjectData(type, id, startDate, endDate, csrftoken) {
+export function getProjectData(type, id, csrftoken) {
   const urls = {
     'project': '/project.json',
     'project-group': '/project-group.json'
@@ -29,7 +29,7 @@ export function getProjectData(type, id, startDate, endDate, csrftoken) {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({id: id, startDate: startDate, endDate: endDate})
+    body: JSON.stringify({id: id})
   };
   return fetch(urls[type], init)
     .then(response => response.json());
