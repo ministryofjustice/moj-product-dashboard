@@ -657,7 +657,6 @@ class BaseProject(models.Model):
             },
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
-            'savings': self.savings_between(start_date, end_date),
             'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,
