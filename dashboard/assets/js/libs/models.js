@@ -309,10 +309,10 @@ export class Project {
     const budget = monthly[upper].budget;
     const spend = monthly[upper].spendCumulative
       - monthly[lower].spendCumulative
-      + monthly[upper].total;
+      + monthly[lower].total;
     const savings = monthly[upper].savingsCumulative
       - monthly[lower].savingsCumulative
-      + monthly[upper].savings;
+      + monthly[lower].savings;
     return {budget, spend, savings};
   }
 
