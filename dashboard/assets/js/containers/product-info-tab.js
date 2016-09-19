@@ -200,6 +200,22 @@ export class ProductInfo extends Component {
     );
   }
 
+  Links(links) {
+    return (
+      <ul>
+      {
+        links.map(link => (
+          <li className={ link.type }>
+            <a classname={ link.type } href={ link.url } rel="external">
+              { link.name }
+            </a> - <span>{ link.note }</span>
+          </li>
+        ))
+      }
+      </ul>
+    );
+  }
+
   render() {
     return (
       <div id="product-info">
@@ -222,6 +238,8 @@ export class ProductInfo extends Component {
           { this.Recurring(this.props.project.recurringSavings) }
           { this.OneOff(this.props.project.oneOffSavings) }
         </table>
+        <h3 className="heading-small">External links</h3>
+        { this.Links(this.props.project['links']) }
       </div>
     );
   }
