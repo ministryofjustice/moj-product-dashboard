@@ -120,7 +120,7 @@ export const ProductTable = ({ projects, showService, showFilter }) => {
     {
       'columnName': 'end_date',
       'order': 9,
-      'displayName': 'Estimated end date',
+      'displayName': 'End date',
       'customComponent': (props) => {
         const date = moment(props.data, 'YYYY-MM-DD').format('DD/MM/YYYY');
         const val = date === 'Invalid date' ? '' : date;

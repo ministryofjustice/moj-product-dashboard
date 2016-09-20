@@ -27,14 +27,13 @@ export class ProductContainer extends Component {
   }
 
   componentDidMount() {
-    const { startDate, endDate } = this.state.project.timeFrames[this.state.timeFrame];
-    getProjectData(this.props.type, this.props.id, startDate, endDate, this.props.csrftoken)
+    getProjectData(this.props.type, this.props.id, this.props.csrftoken)
       .then(projectJSON => {
         const project = new Project(projectJSON);
         this.setState({
           project: project,
-          startDate: project.startDate,
-          endDate: project.endDate,
+          startDate: project.firstDate,
+          endDate: project.lastDate,
           hasData: true
         });
       });
