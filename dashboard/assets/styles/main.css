@@ -304,3 +304,42 @@ a.print-label {
   }
 
 }
+
+/* external links */
+ul.external-links li {
+    background-image: url("/static/img/external-link.png");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    height: 46px;
+    line-height:52px;
+    width: 100%;
+    border-bottom: 1px solid #eee;
+}
+
+ul.external-links li a {
+    padding-left: 50px;
+}
+
+a[rel="external"]:after, a[rel="external"]:hover:after {
+    background-position: right 3px;
+    padding-left: 1px;
+    color: #2b8cc4;
+}
+
+ul.external-links li.github-com {
+    background-position: left center;
+    background-image: url("/static/img/Octocat.jpg");
+}
+
+ul.external-links li.github-com div.code-climate {
+    float: right;
+    padding-top: 3px;
+}
+
+ul.external-links li.github-com div.code-climate a {
+    padding-left: 5px;
+}
+
+ul.external-links li span.external-link-note:before {
+    content: ' - ';
+}

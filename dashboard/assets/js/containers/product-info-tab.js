@@ -200,15 +200,52 @@ export class ProductInfo extends Component {
     );
   }
 
+  codeClimateProjectURL(githubURL) {
+    const a = document.createElement('a');
+    a.href = githubURL;
+    return 'https://codeclimate.com/github' + a.pathname;
+  }
+
+  handleImageError(event) {
+    event.currentTarget.style.display = 'none';
+  }
+
+  LinkExtra(link) {
+    if (link.type == 'github-com') {
+      return (
+        <div className="code-climate">
+          <a href={ this.codeClimateProjectURL(link.url) }>
+            <img alt="Code Climate" src={ this.codeClimateProjectURL(link.url) + "/badges/gpa.svg" } onError={ this.handleImageError } />
+          </a>
+          <a href={ this.codeClimateProjectURL(link.url) + '/coverage' }>
+            <img alt="Test Coverage" src={ this.codeClimateProjectURL(link.url) + "/badges/coverage.svg" } onError={ this.handleImageError } />
+          </a>
+          <a href={ this.codeClimateProjectURL(link.url) }>
+            <img alt="Issue Count" src={ this.codeClimateProjectURL(link.url) + "/badges/issue_count.svg" } onError={ this.handleImageError } />
+          </a>
+        </div>
+      )
+    }
+  }
+
+  LinkNote(link) {
+    if (link.note) {
+      return (
+         <span className="external-link-note">{ link.note }</span>
+      )
+    }
+  }
+
   Links(links) {
     return (
-      <ul>
+      <ul className="external-links">
       {
         links.map(link => (
           <li className={ link.type }>
             <a classname={ link.type } href={ link.url } rel="external">
               { link.name }
-            </a> - <span>{ link.note }</span>
+            </a>{ this.LinkNote(link) }
+            { this.LinkExtra(link) }
           </li>
         ))
       }
