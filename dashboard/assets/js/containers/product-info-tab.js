@@ -237,20 +237,25 @@ export class ProductInfo extends Component {
   }
 
   Links(links) {
-    return (
-      <ul className="external-links">
-      {
-        links.map(link => (
-          <li className={ link.type }>
-            <a classname={ link.type } href={ link.url } rel="external">
-              { link.name }
-            </a>{ this.LinkNote(link) }
-            { this.LinkExtra(link) }
-          </li>
-        ))
-      }
-      </ul>
-    );
+    if (links.length > 0) {
+      return (
+        <div>
+          <h3 className="heading-small">External links</h3>
+          <ul className="external-links">
+          {
+            links.map(link => (
+              <li className={ link.type }>
+                <a classname={ link.type } href={ link.url } rel="external">
+                  { link.name }
+                </a>{ this.LinkNote(link) }
+                { this.LinkExtra(link) }
+              </li>
+            ))
+          }
+          </ul>
+        </div>
+      )
+    }
   }
 
   render() {
@@ -275,7 +280,6 @@ export class ProductInfo extends Component {
           { this.Recurring(this.props.project.recurringSavings) }
           { this.OneOff(this.props.project.oneOffSavings) }
         </table>
-        <h3 className="heading-small">External links</h3>
         { this.Links(this.props.project['links']) }
       </div>
     );
