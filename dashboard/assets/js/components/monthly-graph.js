@@ -28,7 +28,7 @@ export function plotMonthlySpendings(project, startDate, endDate, elem, isSmall)
     name: 'Actual spend',
     type: 'bar',
     marker: {
-      color: '#c0c2dc',
+      color: 'rgba(45, 52, 138, 0.3)',  // result in #c0c2dc with opacity
       line: {width: 0}  // for ie9 only
     }
   };
@@ -38,7 +38,7 @@ export function plotMonthlySpendings(project, startDate, endDate, elem, isSmall)
     name: 'Forecast spend',
     type: 'bar',
     marker: {
-      color: '#add1d1',
+      color: 'rgba(-238, 102, 102, 0.3)',  // result in #add1d1 with opacity
       line: {width: 0}  // for ie9 only
     }
   };
