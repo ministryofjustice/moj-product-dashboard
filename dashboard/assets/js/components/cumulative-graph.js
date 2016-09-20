@@ -72,17 +72,19 @@ function markingsForToday(range) {
     y0: 0,
     y1: 1,
     line: {
-      width: 0.5,
-      dash: 'dot'
+      width: 2,
+      dash: 'dashdot'
     }
   };
   const annotation = {
     yref: 'paper',
     x: x,
     xanchor: 'left',
-    y: 0.3,
+    y: 1,
     text: 'Today',
-    showarrow: false
+    showarrow: true,
+    ax: 0,
+    ay: -15
   };
   return {shape, annotation}
 }
@@ -107,17 +109,21 @@ function markingsForEndDate(endDate, range) {
     y0: 0,
     y1: 1,
     line: {
-      width: 0.3,
-      color: '#ff0000'
+      width: 2,
+      color: '#974AB2'
     }
   };
   const annotation = {
     yref: 'paper',
     x: x,
     xanchor: 'left',
-    y: 0.6,
+    y: 1,
     text: 'End',
-    showarrow: false
+    font: {color: '#974AB2'},
+    showarrow: true,
+    ax: 0,
+    ay: -15,
+    arrowcolor: '#974AB2'
   };
   return {shape, annotation}
 }
@@ -268,7 +274,7 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     shapes: shapes,
     annotations: annotations,
     margin: {
-      t: 10,
+      t: 20,
       l: 50,
       r: 50
     }
