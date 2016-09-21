@@ -11,10 +11,10 @@ import '../styles/gov-uk-elements.css';
 import '../styles/main.css';
 
 
-function project(id) {
+function product(id) {
   ReactDOM.render(
     <ProductContainer
-      type='project'
+      type='product'
       id={id}
       csrftoken={Cookies.get('csrftoken')}
     />,
@@ -24,7 +24,7 @@ function project(id) {
 
 
 function service(id) {
-  // project table
+  // product table
   ReactDOM.render(
     <ServiceContainer
       id={id}
@@ -36,7 +36,7 @@ function service(id) {
 
 
 function portfolio() {
-  // project table
+  // product table
   ReactDOM.render(
     <PortfolioContainer csrftoken={Cookies.get('csrftoken')} />,
     document.getElementById('container')
@@ -44,10 +44,10 @@ function portfolio() {
 }
 
 
-function projectGroup(id) {
+function productGroup(id) {
   ReactDOM.render(
     <ProductContainer
-      type='project-group'
+      type='product-group'
       id={id}
       csrftoken={Cookies.get('csrftoken')}
     />,
@@ -63,7 +63,7 @@ function route(path) {
     return;
   }
 
-  const pattern = /(projects|services|project-groups)(\/(\d+))?/;
+  const pattern = /(products|services|product-groups)(\/(\d+))?/;
   const matches = pattern.exec(path);
 
   if (matches === null)
@@ -72,14 +72,14 @@ function route(path) {
   const [_0, endpoint, _1, id] = matches;
 
   switch (endpoint) {
-    case 'projects':
-      project(id);
+    case 'products':
+      product(id);
       break;
     case 'services':
       service(id);
       break;
-    case 'project-groups':
-      projectGroup(id);
+    case 'product-groups':
+      productGroup(id);
       break;
   };
 }

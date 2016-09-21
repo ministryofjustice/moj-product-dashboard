@@ -1,7 +1,7 @@
 jest.mock('../libs/plotly-custom');
 import Plotly from '../libs/plotly-custom';
 
-import {parseProjectFinancials, getProjectData} from '../libs/models';
+import {parseProductFinancials, getProductData} from '../libs/models';
 
 const financial = {
   '2016-01': {
@@ -27,9 +27,9 @@ const financial = {
   }
 };
 
-describe('parseProjectFinancials', () => {
+describe('parseProductFinancials', () => {
   it(`extracts and the converts the months and financial figures`, () => {
-    const parsed = parseProjectFinancials(financial);
+    const parsed = parseProductFinancials(financial);
 
     expect(Object.keys(parsed)).toEqual([ '2016-01', '2016-02', '2016-03' ]);
     expect(parsed['2016-01']).toEqual({
@@ -60,22 +60,22 @@ describe('parseProjectFinancials', () => {
 });
 
 
-describe('getProjectData', () => {
+describe('getProductData', () => {
   it(`uses the window.fetch from the ployfill`, () => {
     expect(window.fetch.polyfill).toBe(true);
   });
 
-  it(`does a POST to the /project.json endpoint.
-      when succeeds, returns a Promise with the project data`, () => {
-    const data = {project: 'some data'};
+  it(`does a POST to the /product.json endpoint.
+      when succeeds, returns a Promise with the product data`, () => {
+    const data = {product: 'some data'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => resolve({json: () => data})));
-    return getProjectData('project')
-      .then(projectData => {
+    return getProductData('product')
+      .then(productData => {
         expect(window.fetch).toBeCalled();
-        expect(projectData).toEqual(data);
+        expect(productData).toEqual(data);
         const [url, init] = window.fetch.mock.calls[0];
-        expect(url).toEqual('/project.json');
+        expect(url).toEqual('/product.json');
         expect(init.method).toEqual('POST');
       });
   });
@@ -84,12 +84,12 @@ describe('getProjectData', () => {
     const error = {message: 'something went wrong'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => reject(error)));
-    return getProjectData('project')
+    return getProductData('product')
       .catch(err => {
         expect(window.fetch).toBeCalled();
         expect(err).toEqual(error);
         const [url, init] = window.fetch.mock.calls[0];
-        expect(url).toEqual('/project.json');
+        expect(url).toEqual('/product.json');
         expect(init.method).toEqual('POST');
       });
   });

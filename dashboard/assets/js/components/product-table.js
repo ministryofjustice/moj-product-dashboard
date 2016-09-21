@@ -28,7 +28,7 @@ const FilterComponent = ({ changeFilter }) => (
 /**
  * React component for a table of products
  */
-export const ProductTable = ({ projects, showService, showFilter }) => {
+export const ProductTable = ({ products, showService, showFilter }) => {
 
   const displayMoney = (props) => {
     const number = numberWithCommas(Number(props.data).toFixed(0));
@@ -43,9 +43,9 @@ export const ProductTable = ({ projects, showService, showFilter }) => {
       'customComponent': (props) => {
         let url;
         if (props.rowData.type == 'ProjectGroup') {
-          url = `/project-groups/${props.rowData.id}`;
+          url = `/product-groups/${props.rowData.id}`;
         } else {
-          url = `/projects/${props.rowData.id}`;
+          url = `/products/${props.rowData.id}`;
         };
         return (<a href={url}>{props.data}</a>);
       },
@@ -143,12 +143,12 @@ export const ProductTable = ({ projects, showService, showFilter }) => {
 
   return (
     <Griddle
-      results={projects}
+      results={products}
       columns={columnMetadata.map(item => item['columnName'])}
       columnMetadata={columnMetadata}
       useGriddleStyles={false}
       bodyHeight={800}
-      resultsPerPage={ projects.length }
+      resultsPerPage={ products.length }
       initialSort='name'
       showFilter={showFilter}
       filterPlaceholderText=''

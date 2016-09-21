@@ -11,18 +11,18 @@ from .models import Project, Client, ProjectGroup
 from .tasks import sync_float
 
 
-def _project_meta(request, project):
+def _product_meta(request, product):
     meta = {
-        'can_edit': project.can_user_change(request.user),
-        'admin_url': request.build_absolute_uri(project.admin_url)
+        'can_edit': product.can_user_change(request.user),
+        'admin_url': request.build_absolute_uri(product.admin_url)
     }
     return meta
 
 
-def project_html(request, id):
+def product_html(request, id):
     if not id:
         id = Project.objects.visible().first().id
-        return redirect(reverse(project_html, kwargs={'id': id}))
+        return redirect(reverse(product_html, kwargs={'id': id}))
     try:
         Project.objects.visible().get(id=id)
     except (ValueError, Project.DoesNotExist):
@@ -30,16 +30,16 @@ def project_html(request, id):
     return render(request, 'common.html')
 
 
-def project_json(request):
+def product_json(request):
     """
-    send json for a project profilet
+    send json for a product profile
     """
     # TODO handle errors
     request_data = json.loads(request.body.decode())
     try:
-        project = Project.objects.visible().get(id=request_data['id'])
+        product = Project.objects.visible().get(id=request_data['id'])
     except (ValueError, Project.DoesNotExist):
-        error = 'cannot find project with id={}'.format(request_data['id'])
+        error = 'cannot find product with id={}'.format(request_data['id'])
         return JsonResponse({'error': error}, status=404)
 
     start_date = request_data.get('startDate')
@@ -48,19 +48,19 @@ def project_json(request):
     end_date = request_data.get('endDate')
     if end_date:
         end_date = parse_date(end_date)
-    # get the profile of the project for each month
-    profile = project.profile(
+    # get the profile of the product for each month
+    profile = product.profile(
         start_date=start_date,
         end_date=end_date,
         freq='MS')
-    meta = _project_meta(request, project)
+    meta = _product_meta(request, product)
     return JsonResponse({**profile, 'meta': meta})
 
 
-def project_group_html(request, id):
+def product_group_html(request, id):
     if not id:
         id = ProjectGroup.objects.first().id
-        return redirect(reverse(project_group_html, kwargs={'id': id}))
+        return redirect(reverse(product_group_html, kwargs={'id': id}))
     try:
         ProjectGroup.objects.get(id=id)
     except (ValueError, ProjectGroup.DoesNotExist):
@@ -68,22 +68,22 @@ def project_group_html(request, id):
     return render(request, 'common.html')
 
 
-def project_group_json(request):
+def product_group_json(request):
     """
-    send json for a project group profilet
+    send json for a product group profilet
     """
     # TODO handle errors
     request_data = json.loads(request.body.decode())
     try:
-        project_group = ProjectGroup.objects.get(id=request_data['id'])
+        product_group = ProjectGroup.objects.get(id=request_data['id'])
     except (ValueError, ProjectGroup.DoesNotExist):
-        error = 'cannot find project group with id={}'.format(
+        error = 'cannot find product group with id={}'.format(
             request_data['id'])
         return JsonResponse({'error': error}, status=404)
 
-    # get the profile of the project group for each month
-    profile = project_group.profile(freq='MS')
-    meta = _project_meta(request, project_group)
+    # get the profile of the product group for each month
+    profile = product_group.profile(freq='MS')
+    meta = _product_meta(request, product_group)
     return JsonResponse({**profile, 'meta': meta})
 
 

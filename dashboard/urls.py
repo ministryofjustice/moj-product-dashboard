@@ -19,8 +19,8 @@ from django.contrib import admin
 from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.prototype.views import (
-    service_html, service_json, project_html, project_json, project_group_json,
-    project_group_html, portfolio_html, portfolio_json, sync_from_float)
+    service_html, service_json, product_html, product_json, product_group_json,
+    product_group_html, portfolio_html, portfolio_json, sync_from_float)
 
 
 urlpatterns = [
@@ -28,11 +28,11 @@ urlpatterns = [
     url(r'^sync.json$', sync_from_float, name='sync'),
     url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
     url(r'^service.json', service_json, name='service_json'),
-    url(r'^projects/(?P<id>[0-9]+)?$', project_html, name='project'),
-    url(r'^project-groups/(?P<id>[0-9]+)?$', project_group_html,
-        name='project_group'),
-    url(r'^project.json', project_json, name='project_json'),
-    url(r'^project-group.json', project_group_json, name='project_group_json'),
+    url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product'),
+    url(r'^product-groups/(?P<id>[0-9]+)?$', product_group_html,
+        name='product_group'),
+    url(r'^product.json', product_json, name='product_json'),
+    url(r'^product-group.json', product_group_json, name='product_group_json'),
     url(r'^portfolio.json', portfolio_json, name='portfolio_json'),
     url(r'^admin/', admin.site.urls),
     url('^', include('django.contrib.auth.urls')),

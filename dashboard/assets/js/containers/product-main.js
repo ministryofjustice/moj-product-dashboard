@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Spinner from 'react-spinkit';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
-import { Project, getProjectData } from '../libs/models';
+import { Product, getProductData } from '../libs/models';
 import { PhaseTag, RagTag, PrintModeToggle } from '../components/product';
 import { ProductOverview } from './product-overview-tab';
 import { ProductInfo } from './product-info-tab';
@@ -17,7 +17,7 @@ export class ProductContainer extends Component {
     this.state = {
       showBurnDown: false,
       hasData: false,
-      project: new Project({}),
+      product: new Product({}),
       timeFrame: 'entire-time-span',
       startDate: null,
       endDate: null,
@@ -27,13 +27,13 @@ export class ProductContainer extends Component {
   }
 
   componentDidMount() {
-    getProjectData(this.props.type, this.props.id, this.props.csrftoken)
-      .then(projectJSON => {
-        const project = new Project(projectJSON);
+    getProductData(this.props.type, this.props.id, this.props.csrftoken)
+      .then(productJSON => {
+        const product = new Product(productJSON);
         this.setState({
-          project: project,
-          startDate: project.firstDate,
-          endDate: project.lastDate,
+          product: product,
+          startDate: product.firstDate,
+          endDate: product.lastDate,
           hasData: true
         });
       });
@@ -46,7 +46,7 @@ export class ProductContainer extends Component {
   handleTimeFrameChange(evt) {
     const timeFrame = evt.target.value;
     const state = {timeFrame: timeFrame};
-    const { startDate, endDate } = this.state.project.timeFrames[timeFrame];
+    const { startDate, endDate } = this.state.product.timeFrames[timeFrame];
     // startDate can be null e.g. for 'custome range'
     if (startDate) {
       state.startDate = startDate
@@ -62,7 +62,7 @@ export class ProductContainer extends Component {
     const startDate = evt.target.value;
     this.setState({
       startDate: startDate,
-      timeFrame: this.state.project.matchTimeFrame(startDate, this.state.endDate)
+      timeFrame: this.state.product.matchTimeFrame(startDate, this.state.endDate)
     });
   }
 
@@ -70,7 +70,7 @@ export class ProductContainer extends Component {
     const endDate = evt.target.value;
     this.setState({
       endDate: endDate,
-      timeFrame: this.state.project.matchTimeFrame(this.state.startDate, endDate)
+      timeFrame: this.state.product.matchTimeFrame(this.state.startDate, endDate)
     });
   }
 
@@ -79,11 +79,11 @@ export class ProductContainer extends Component {
   }
 
   normalMode() {
-    const project = this.state.project;
+    const product = this.state.product;
     const editButton = () => {
-      if (project.meta['can_edit']) {
+      if (product.meta['can_edit']) {
         return (
-          <a className="button" href={ project.meta['admin_url'] }>
+          <a className="button" href={ product.meta['admin_url'] }>
             Edit product details
           </a>
         );
@@ -98,16 +98,16 @@ export class ProductContainer extends Component {
               <a href="/">Portfolio Summary</a>
             </li>
             <li style={{ backgroundImage: `url(${SeparatorImg})` }}>
-              { project.name }
+              { product.name }
             </li>
           </ol>
         </div>
         <h1 className="heading-xlarge">
           <div className="banner">
-            <PhaseTag phase={ project.phase } />
-            <RagTag rag={ project.rag } />
+            <PhaseTag phase={ product.phase } />
+            <RagTag rag={ product.rag } />
           </div>
-          {project.name}
+          {product.name}
           { editButton() }
         </h1>
         <Tabs className="product-tabs">
@@ -117,7 +117,7 @@ export class ProductContainer extends Component {
           </TabList>
           <TabPanel>
             <ProductOverview
-              project={project}
+              product={product}
               onRangeChange={evt => this.handleTimeFrameChange(evt)}
               selectedRange={this.state.timeFrame}
               startDate={this.state.startDate}
@@ -129,7 +129,7 @@ export class ProductContainer extends Component {
             />
           </TabPanel>
           <TabPanel>
-            <ProductInfo project={ project } />
+            <ProductInfo product={ product } />
           </TabPanel>
         </Tabs>
         <hr/>
@@ -142,18 +142,18 @@ export class ProductContainer extends Component {
   }
 
   printMode() {
-    const project = this.state.project;
+    const product = this.state.product;
     return (
       <div>
         <h1 className="heading-xlarge">
           <div className="banner">
-            <PhaseTag phase={ project.phase } />
-            <RagTag rag={ project.rag } />
+            <PhaseTag phase={ product.phase } />
+            <RagTag rag={ product.rag } />
           </div>
-          {project.name}
+          {product.name}
         </h1>
         <ProductPrintMode
-          project={project}
+          product={product}
           onRangeChange={evt => this.handleTimeFrameChange(evt)}
           selectedRange={this.state.timeFrame}
           startDate={this.state.startDate}
@@ -173,7 +173,7 @@ export class ProductContainer extends Component {
   }
 
   render() {
-    if (typeof this.state.project.name === 'undefined') {
+    if (typeof this.state.product.name === 'undefined') {
       return (
         <div>
           <div className="spinkit">
