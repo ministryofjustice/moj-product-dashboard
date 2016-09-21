@@ -1,7 +1,7 @@
 import moment from 'moment';
 import React, { Component } from 'react';
-import { Project, statusMapping } from '../libs/models';
-import { numberWithCommas, codeClimateProjectURL } from '../libs/utils';
+import { Product, statusMapping } from '../libs/models';
+import { numberWithCommas } from '../libs/utils';
 import { ExternalLinkExtra } from '../components/product-table';
 
 
@@ -19,8 +19,8 @@ export class ProductInfo extends Component {
   }
 
   Status() {
-    const { status, reason }= this.props.project.status;
-    const date = this.props.project.status['start_date'];
+    const { status, reason }= this.props.product.status;
+    const date = this.props.product.status['start_date'];
     let className = 'bold-xlarge';
     if (status in statusMapping) {
       className = `${className}  status-text ${statusMapping[status]}-inverse`;
@@ -39,7 +39,7 @@ export class ProductInfo extends Component {
 
   PhaseDates() {
     const { discoveryStart, alphaStart,
-            betaStart, liveStart, endDate } = this.props.project;
+            betaStart, liveStart, endDate } = this.props.product;
     return (
       <div>
         <div className="grid-row">
@@ -71,7 +71,7 @@ export class ProductInfo extends Component {
   }
 
   Recurring(costs) {
-    const sortedCosts = costs.sort(Project.compareDate('start_date', 'desc'));
+    const sortedCosts = costs.sort(Product.compareDate('start_date', 'desc'));
     const Rows = () => {
       if (sortedCosts.length == 0) {
         return (
@@ -113,7 +113,7 @@ export class ProductInfo extends Component {
   }
 
   OneOff(costs) {
-    const sortedCosts = costs.sort(Project.compareDate('start_date', 'desc'));
+    const sortedCosts = costs.sort(Product.compareDate('start_date', 'desc'));
     const Rows = () => {
       if (sortedCosts.length == 0) {
         return (
@@ -152,8 +152,8 @@ export class ProductInfo extends Component {
   }
 
   Budgets() {
-    const budgets = this.props.project.budgets
-      .sort(Project.compareDate('date', 'desc'));
+    const budgets = this.props.product.budgets
+      .sort(Product.compareDate('date', 'desc'));
     if (budgets.length == 0) {
       return (<p>-</p>);
     }
@@ -178,7 +178,7 @@ export class ProductInfo extends Component {
   }
 
   Team() {
-    const { serviceManager, productManager, deliveryManager, serviceArea } = this.props.project;
+    const { serviceManager, productManager, deliveryManager, serviceArea } = this.props.product;
     return (
       <div className="grid-row">
         <div className="column-one-quarter">
@@ -236,7 +236,7 @@ export class ProductInfo extends Component {
       <div id="product-info">
         { this.Status() }
         <h3 className="heading-small">Product description</h3>
-        <p>{ this.props.project.description || '-' }</p>
+        <p>{ this.props.product.description || '-' }</p>
         <h3 className="heading-small">Phase dates</h3>
         { this.PhaseDates() }
         <h3 className="heading-small">Team description</h3>
@@ -245,15 +245,15 @@ export class ProductInfo extends Component {
         { this.Budgets() }
         <h3 className="heading-small">Costs</h3>
         <table>
-          { this.Recurring(this.props.project.recurringCosts) }
-          { this.OneOff(this.props.project.oneOffCosts) }
+          { this.Recurring(this.props.product.recurringCosts) }
+          { this.OneOff(this.props.product.oneOffCosts) }
         </table>
         <h3 className="heading-small">Savings enabled</h3>
         <table>
-          { this.Recurring(this.props.project.recurringSavings) }
-          { this.OneOff(this.props.project.oneOffSavings) }
+          { this.Recurring(this.props.product.recurringSavings) }
+          { this.OneOff(this.props.product.oneOffSavings) }
         </table>
-        { this.Links(this.props.project['links']) }
+        { this.Links(this.props.product['links']) }
       </div>
     );
   }

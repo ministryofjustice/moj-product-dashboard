@@ -9,28 +9,28 @@ import { ProductInfo } from './product-info-tab';
 export class ProductPrintMode extends Component {
 
   render() {
-    const { project, selectedRange, startDate, endDate, showBurnDown }  = this.props;
+    const { product, selectedRange, startDate, endDate, showBurnDown }  = this.props;
     return (
       <div>
         <TimeFrameDisplay
-          timeFrame={ project.timeFrames[selectedRange].name }
+          timeFrame={ product.timeFrames[selectedRange].name }
           startDate={ startDate }
           endDate={ endDate }
         />
         <KeyStats
           startDate={ startDate }
           endDate={ endDate }
-          project={ project }
+          product={ product }
           timeFrame={ selectedRange }
         />
         <ProductGraph
-          project={ project }
+          product={ product }
           isPrinterFriendly={ true }
           showBurnDown={ showBurnDown }
           startDate={ startDate }
           endDate={ endDate }
         />
-        <ProductInfo project={ project } />
+        <ProductInfo product={ product } />
       </div>
     );
   }

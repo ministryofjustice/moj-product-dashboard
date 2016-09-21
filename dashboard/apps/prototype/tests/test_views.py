@@ -14,8 +14,8 @@ from faker import Faker
 from model_mommy import mommy
 
 from dashboard.apps.prototype.views import (
-    project_html, project_json, service_html, service_json,
-    project_group_html, project_group_json, sync_from_float)
+    product_html, product_json, service_html, service_json,
+    product_group_html, product_group_json, sync_from_float)
 from dashboard.apps.prototype.models import (
     Client as Service, Project, ProjectGroup)
 
@@ -38,44 +38,44 @@ def make_login_client():
 
 @pytest.mark.django_db
 def test_login_not_required():
-    project = mommy.make(Project)
+    product = mommy.make(Project)
     client = Client()
-    rsp = client.get(reverse(project_html, kwargs={'id': project.id}))
+    rsp = client.get(reverse(product_html, kwargs={'id': product.id}))
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
-def test_project_html_without_projectid():
-    project = mommy.make(Project)
+def test_product_html_without_productid():
+    product = mommy.make(Project)
     client = make_login_client()
-    rsp = client.get(reverse(project_html))
+    rsp = client.get(reverse(product_html))
     assert rsp.status_code == 302
-    assert rsp.url == reverse(project_html, kwargs={'id': project.id})
+    assert rsp.url == reverse(product_html, kwargs={'id': product.id})
 
 
 @pytest.mark.django_db
-def test_project_html_with_valid_projectid():
+def test_product_html_with_valid_productid():
     client = make_login_client()
-    project = mommy.make(Project)
-    rsp = client.get(reverse(project_html, kwargs={'id': project.id}))
+    product = mommy.make(Project)
+    rsp = client.get(reverse(product_html, kwargs={'id': product.id}))
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
-def test_project_html_with_non_existing_id():
+def test_product_html_with_non_existing_id():
     client = make_login_client()
-    project = mommy.make(Project)
-    rsp = client.get(reverse(project_html, kwargs={'id': project.id + 1}))
+    product = mommy.make(Project)
+    rsp = client.get(reverse(product_html, kwargs={'id': product.id + 1}))
     assert rsp.status_code == 404
 
 
 @pytest.mark.django_db
-def test_project_json_with_valid_id():
+def test_product_json_with_valid_id():
     client = make_login_client()
-    project = mommy.make(Project)
+    product = mommy.make(Project)
     rsp = client.post(
-        reverse(project_json),
-        json.dumps({'id': project.id}),
+        reverse(product_json),
+        json.dumps({'id': product.id}),
         content_type='application/json'
     )
     assert rsp.status_code == 200
@@ -83,10 +83,10 @@ def test_project_json_with_valid_id():
 
 
 @pytest.mark.django_db
-def test_project_json_with_invalid_id():
+def test_product_json_with_invalid_id():
     client = make_login_client()
     rsp = client.post(
-        reverse(project_json),
+        reverse(product_json),
         json.dumps({'id': 'invalid_id'}),
         content_type='application/json'
     )
@@ -144,36 +144,36 @@ def test_service_json_with_invalid_id():
 
 
 @pytest.mark.django_db
-def test_project_group_html_without_projectid():
+def test_product_group_html_without_productid():
     group = mommy.make(ProjectGroup)
     client = make_login_client()
-    rsp = client.get(reverse(project_group_html))
+    rsp = client.get(reverse(product_group_html))
     assert rsp.status_code == 302
-    assert rsp.url == reverse(project_group_html, kwargs={'id': group.id})
+    assert rsp.url == reverse(product_group_html, kwargs={'id': group.id})
 
 
 @pytest.mark.django_db
-def test_project_group_html_with_valid_projectid():
+def test_product_group_html_with_valid_productid():
     client = make_login_client()
     group = mommy.make(ProjectGroup)
-    rsp = client.get(reverse(project_group_html, kwargs={'id': group.id}))
+    rsp = client.get(reverse(product_group_html, kwargs={'id': group.id}))
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
-def test_project_group_html_with_non_existing_id():
+def test_product_group_html_with_non_existing_id():
     client = make_login_client()
     group = mommy.make(ProjectGroup)
-    rsp = client.get(reverse(project_group_html, kwargs={'id': group.id + 1}))
+    rsp = client.get(reverse(product_group_html, kwargs={'id': group.id + 1}))
     assert rsp.status_code == 404
 
 
 @pytest.mark.django_db
-def test_project_group_json_with_valid_id():
+def test_product_group_json_with_valid_id():
     client = make_login_client()
     group = mommy.make(ProjectGroup)
     rsp = client.post(
-        reverse(project_group_json),
+        reverse(product_group_json),
         json.dumps({'id': group.id}),
         content_type='application/json'
     )
@@ -182,10 +182,10 @@ def test_project_group_json_with_valid_id():
 
 
 @pytest.mark.django_db
-def test_project_group_json_with_invalid_id():
+def test_product_group_json_with_invalid_id():
     client = make_login_client()
     rsp = client.post(
-        reverse(project_group_json),
+        reverse(product_group_json),
         json.dumps({'id': 'invalid_id'}),
         content_type='application/json'
     )

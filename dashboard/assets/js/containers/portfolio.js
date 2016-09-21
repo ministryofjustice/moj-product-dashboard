@@ -12,18 +12,18 @@ import { values } from '../libs/utils';
 export class PortfolioContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {projects: [], hasData: false};
+    this.state = {products: [], hasData: false};
   }
 
   componentDidMount() {
     getPortfolioData(this.props.id, this.props.csrftoken)
       .then(portfolioData => {
         // sort by service area and then name of product
-        const projects = values(portfolioData)
+        const products = values(portfolioData)
           .map(service => values(service.projects))
           .reduce((prev, curr) => prev.concat(curr), [])
           .sort((p1, p2) => p1.name.localeCompare(p2.name));
-        this.setState({projects: projects, hasData: true});
+        this.setState({products: products, hasData: true});
       });
   }
 
@@ -45,7 +45,7 @@ export class PortfolioContainer extends Component {
           </h1>
         </div>
         <ProductTable
-          projects={this.state.projects}
+          products={this.state.products}
           showService={true}
           showFilter={true}
         />

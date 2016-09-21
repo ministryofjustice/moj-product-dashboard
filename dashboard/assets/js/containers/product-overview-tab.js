@@ -8,7 +8,7 @@ import { TimeFrameSelector,  KeyStats, ProductGraph } from '../components/produc
 export class ProductOverview extends Component {
 
   get rangeOptions() {
-    const timeFrames = this.props.project.timeFrames;
+    const timeFrames = this.props.product.timeFrames;
     return Object.keys(timeFrames)
       .map(key => ({
         value: key,
@@ -17,7 +17,7 @@ export class ProductOverview extends Component {
   }
 
   get minStartDate() {
-    const candidates = values(this.props.project.timeFrames)
+    const candidates = values(this.props.product.timeFrames)
       .map(tf => tf.startDate)
       .filter(date => date != null);
     candidates.push(startOfMonth(this.props.startDate));
@@ -25,7 +25,7 @@ export class ProductOverview extends Component {
   }
 
   get maxEndDate() {
-    const candidates = values(this.props.project.timeFrames)
+    const candidates = values(this.props.product.timeFrames)
       .map(tf => tf.endDate)
       .filter(date => date != null);
     candidates.push(startOfMonth(this.props.endDate));
@@ -51,7 +51,7 @@ export class ProductOverview extends Component {
   }
 
   render() {
-    const { project, selectedRange, onRangeChange,
+    const { product, selectedRange, onRangeChange,
     startDate, onStartDateChange,
     endDate, onEndDateChange,
     showBurnDown, onBurnDownChange }  = this.props;
@@ -70,11 +70,11 @@ export class ProductOverview extends Component {
         <KeyStats
           startDate={ startDate }
           endDate={ endDate }
-          project={ project }
+          product={ product }
           timeFrame={ selectedRange }
         />
         <ProductGraph
-          project={ project }
+          product={ product }
           isPrinterFriendly={ false }
           onBurnDownChange={ onBurnDownChange }
           showBurnDown={ showBurnDown }

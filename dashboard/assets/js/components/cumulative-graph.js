@@ -8,8 +8,8 @@ import { round, monthRange } from '../libs/utils';
  * shapes and annotations representing product
  * phases
  * */
-function backgroundForPhases(project, range, isSmall) {
-  const phases = project.phases;
+function backgroundForPhases(product, range, isSmall) {
+  const phases = product.phases;
   const shapes = [];
   const annotations = [];
 
@@ -129,9 +129,9 @@ function markingsForEndDate(endDate, range) {
 }
 
 
-export function plotCumulativeSpendings(project, showBurnDown, startDate, endDate, elem, isSmall) {
+export function plotCumulativeSpendings(product, showBurnDown, startDate, endDate, elem, isSmall) {
   const today = moment().format('YYYY-MM-DD');
-  const keyDatesFinancials = project.keyDatesFinancials;
+  const keyDatesFinancials = product.keyDatesFinancials;
   const keyDates = Object.keys(keyDatesFinancials).sort();
   const pastDates = keyDates.filter(d => d <= today).sort();
   const futureDates = keyDates.filter(d => d >= today).sort();
@@ -238,14 +238,14 @@ export function plotCumulativeSpendings(project, showBurnDown, startDate, endDat
     moment(endDate, 'YYYY-MM-DD').add(1, 'day')
   ];
 
-  const {shapes, annotations} = backgroundForPhases(project, range, isSmall);
+  const {shapes, annotations} = backgroundForPhases(product, range, isSmall);
   const todayMarkings = markingsForToday(range);
   if (todayMarkings) {
     shapes.push(todayMarkings.shape);
     annotations.push(todayMarkings.annotation);
   };
-  if (project.endDate) {
-    const endDateMarkings = markingsForEndDate(project.endDate, range);
+  if (product.endDate) {
+    const endDateMarkings = markingsForEndDate(product.endDate, range);
     if (endDateMarkings) {
       shapes.push(endDateMarkings.shape);
       annotations.push(endDateMarkings.annotation);

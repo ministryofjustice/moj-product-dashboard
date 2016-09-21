@@ -14,12 +14,12 @@ export const statusMapping = {
 };
 
 /**
- * send a POST request to the backend to retrieve project profile
+ * send a POST request to the backend to retrieve product profile
  */
-export function getProjectData(type, id, csrftoken) {
+export function getProductData(type, id, csrftoken) {
   const urls = {
-    'project': '/project.json',
-    'project-group': '/project-group.json'
+    'product': '/product.json',
+    'product-group': '/product-group.json'
   };
   const init = {
     credentials: 'same-origin',
@@ -55,7 +55,7 @@ export function getServiceData(id, csrftoken) {
 
 
 /**
- * send a POST request to the backend to retrieve projects profile
+ * send a POST request to the backend to retrieve products profile
  */
 export function getPortfolioData(id, csrftoken) {
   const init = {
@@ -67,9 +67,9 @@ export function getPortfolioData(id, csrftoken) {
 }
 
 /**
- * parse the financial infomation about the project
+ * parse the financial infomation about the product
  */
-export function parseProjectFinancials(financial) {
+export function parseProductFinancials(financial) {
   const result = {};
   let spendCumulative = 0;
   let savingsCumulative = 0;
@@ -93,9 +93,9 @@ export function parseProjectFinancials(financial) {
 }
 
 
-export class Project {
-  constructor(projectJSON) {
-    Object.assign(this, projectJSON);
+export class Product {
+  constructor(productJSON) {
+    Object.assign(this, productJSON);
   }
 
   get rag() {
@@ -149,7 +149,7 @@ export class Project {
   }
 
   get monthlyFinancials() {
-    return parseProjectFinancials(this.financial['time_frames']);
+    return parseProductFinancials(this.financial['time_frames']);
   }
 
   get keyDatesFinancials() {
@@ -220,7 +220,7 @@ export class Project {
     const now = moment();
     const result = {
       'entire-time-span': {
-        name: 'Entire project life time',
+        name: 'Entire product life time',
         startDate: this.firstDate,
         endDate: this.lastDate,
         isPhase: false

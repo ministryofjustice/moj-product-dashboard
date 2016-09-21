@@ -4,10 +4,10 @@ import Plotly from '../libs/plotly-custom';
 import { endOfMonth, round } from '../libs/utils';
 
 /**
- * plot the graph for a project's monthly spendings
+ * plot the graph for a product's monthly spendings
  */
-export function plotMonthlySpendings(project, startDate, endDate, elem, isSmall) {
-  const monthly = project.monthlyFinancials;
+export function plotMonthlySpendings(product, startDate, endDate, elem, isSmall) {
+  const monthly = product.monthlyFinancials;
   const months = Object.keys(monthly).sort()
     .filter(m => endOfMonth(m) >= startDate && endOfMonth(m) <= endDate);
 

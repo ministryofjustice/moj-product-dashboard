@@ -73,18 +73,18 @@ export function TimeFrameSelector({
 }
 
 
-export function KeyStats({project, timeFrame, startDate, endDate}) {
+export function KeyStats({product, timeFrame, startDate, endDate}) {
   let budget = 0;
   let spend= 0;
   let savings = 0;
   let phaseName = null
-  if (timeFrame in project.phases) {
-    phaseName = project.phases[timeFrame].name;
-    ({ budget, spend, savings } = project.statsInPhase(timeFrame));
+  if (timeFrame in product.phases) {
+    phaseName = product.phases[timeFrame].name;
+    ({ budget, spend, savings } = product.statsInPhase(timeFrame));
   } else {
     const startMonth = moment(startDate, 'YYYY-MM-DD').format('YYYY-MM');
     const endMonth = moment(endDate, 'YYYY-MM-DD').format('YYYY-MM');
-    ({ budget, spend, savings } = project.statsBetween(startMonth, endMonth));
+    ({ budget, spend, savings } = product.statsBetween(startMonth, endMonth));
   }
 
   const budgetLabel = (endDate, phaseName) => {
@@ -140,7 +140,7 @@ export class ProductGraph extends Component {
   plot() {
     const isSmall = !this.canConvert2png && this.props.isPrinterFriendly;
     const cumulativeSpendings = plotCumulativeSpendings(
-      this.props.project,
+      this.props.product,
       this.props.showBurnDown,
       this.props.startDate,
       this.props.endDate,
@@ -149,7 +149,7 @@ export class ProductGraph extends Component {
     );
 
     const monthlySpendings = plotMonthlySpendings(
-      this.props.project,
+      this.props.product,
       this.props.startDate,
       this.props.endDate,
       this.svg2,
