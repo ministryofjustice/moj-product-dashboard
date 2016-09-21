@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'djcelery',
     'moj_template',
     'axes',
+    'webpack_loader',
 
     'dashboard.apps.prototype',
     'dashboard_auth',
@@ -250,6 +251,15 @@ if all([os.environ.get('SMTP_USER'),
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': location('assets/dist/'),
+        'STATS_FILE': location('assets/dist/webpack-stats.json'),
+        'IGNORE': ['.+\.hot-update.js', '.+\.map']
+    }
+}
 # .local.py overrides all the common settings.
 try:
     from .local import *
