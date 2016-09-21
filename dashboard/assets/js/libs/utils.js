@@ -218,3 +218,11 @@ export function isIE() {
     .map(flag => ua.indexOf(flag))
     .filter(i => i > -1).length > 0;
 }
+
+
+export function codeClimateProjectURL(githubURL) {
+  if (!githubURL.includes('github.com')) {
+    return null;
+  }
+  return 'https://codeclimate.com/github' + githubURL.split('github.com')[1];
+}

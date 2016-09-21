@@ -1,7 +1,8 @@
 import moment from 'moment';
 import React, { Component } from 'react';
 import { Project, statusMapping } from '../libs/models';
-import { numberWithCommas } from '../libs/utils';
+import { numberWithCommas, codeClimateProjectURL } from '../libs/utils';
+import { ExternalLinkExtra } from '../components/product-table';
 
 
 export class ProductInfo extends Component {
@@ -200,34 +201,6 @@ export class ProductInfo extends Component {
     );
   }
 
-  codeClimateProjectURL(githubURL) {
-    const a = document.createElement('a');
-    a.href = githubURL;
-    return 'https://codeclimate.com/github' + a.pathname;
-  }
-
-  handleImageError(event) {
-    event.currentTarget.style.display = 'none';
-  }
-
-  LinkExtra(link) {
-    if (link.type == 'github-com') {
-      return (
-        <div className="code-climate">
-          <a href={ this.codeClimateProjectURL(link.url) }>
-            <img alt="Code Climate" src={ this.codeClimateProjectURL(link.url) + "/badges/gpa.svg" } onError={ this.handleImageError } />
-          </a>
-          <a href={ this.codeClimateProjectURL(link.url) + '/coverage' }>
-            <img alt="Test Coverage" src={ this.codeClimateProjectURL(link.url) + "/badges/coverage.svg" } onError={ this.handleImageError } />
-          </a>
-          <a href={ this.codeClimateProjectURL(link.url) }>
-            <img alt="Issue Count" src={ this.codeClimateProjectURL(link.url) + "/badges/issue_count.svg" } onError={ this.handleImageError } />
-          </a>
-        </div>
-      )
-    }
-  }
-
   LinkNote(link) {
     if (link.note) {
       return (
@@ -243,12 +216,12 @@ export class ProductInfo extends Component {
           <h3 className="heading-small">External links</h3>
           <ul className="external-links">
           {
-            links.map(link => (
-              <li className={ link.type }>
-                <a classname={ link.type } href={ link.url } rel="external">
+            links.map((link, index) => (
+              <li key={index} className={ link.type }>
+                <a className={ link.type } href={ link.url } rel="external">
                   { link.name }
                 </a>{ this.LinkNote(link) }
-                { this.LinkExtra(link) }
+                <ExternalLinkExtra baseURL={ link.url } />
               </li>
             ))
           }
