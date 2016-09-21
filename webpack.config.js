@@ -1,7 +1,9 @@
 var path = require('path');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var BundleTracker = require('webpack-bundle-tracker');
 
 var directory = path.resolve(__dirname, "dashboard/assets");
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var dist = path.resolve(directory, 'dist');
 
 module.exports = {
   entry: [
@@ -9,9 +11,9 @@ module.exports = {
     path.resolve(directory, 'js/main.js'),
   ],
   output: {
-    path: path.resolve(directory, 'dist'),
+    path: dist,
     publicPath: '/static/dist/',
-    filename: "prototype.js"
+    filename: "prototype.[hash].js"
   },
 
   module: {
@@ -35,7 +37,11 @@ module.exports = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin("prototype.css")
+    new ExtractTextPlugin("prototype.[hash].css"),
+    new BundleTracker({
+      path: dist,
+      filename: 'webpack-stats.json'
+    })
   ],
   devtool: 'source-map'
 };
