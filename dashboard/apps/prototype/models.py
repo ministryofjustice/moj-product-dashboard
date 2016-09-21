@@ -1000,6 +1000,11 @@ class ProjectGroup(BaseProject):
             return clients[0]
 
     @property
+    def links(self):
+        return Link.objects.filter(
+            project_id__in=[p.id for p in self.projects.visible()])
+
+    @property
     def final_budget(self):
         return sum(p.final_budget for p in self.projects.all())
 
