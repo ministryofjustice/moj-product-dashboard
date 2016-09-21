@@ -3,6 +3,7 @@ from datetime import timedelta, date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import MONTHLY, YEARLY
+from urllib.parse import urlparse
 
 from django.db import models
 from django.core import urlresolvers
@@ -657,12 +658,12 @@ class BaseProject(models.Model):
             },
             'financial_rag': self.financial_rag,
             'budget': self.budget(),
-            'savings': self.savings_between(start_date, end_date),
             'current_fte': self.current_fte(start_date, end_date),
             'cost_to_date': self.cost_to_date,
             'phase': self.phase,
             'costs': {c.id: c.as_dict() for c in self.costs.all()},
-            'savings': {s.id: s.as_dict() for s in self.savings.all()}
+            'savings': {s.id: s.as_dict() for s in self.savings.all()},
+            'links': [l.as_dict() for l in self.links.all()]
         }
         return result
 
@@ -1164,3 +1165,29 @@ class Task(models.Model):
     def get_days(self, *timewindow):
         timewindow_workdays = get_workdays(*timewindow)
         return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
+
+
+class Link(models.Model):
+    project = models.ForeignKey('Project', related_name='links')
+    name = models.CharField(max_length=150, null=True, blank=True)
+    url = models.URLField()
+    note = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['url']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def type(self):
+        hostname = urlparse(self.url).hostname
+        return hostname.replace('.', '-')
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'url': self.url,
+            'note': self.note,
+            'type': self.type,
+        }

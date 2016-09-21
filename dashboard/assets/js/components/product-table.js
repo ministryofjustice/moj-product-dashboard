@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import Griddle from 'griddle-react';
 
 import { statusMapping } from '../libs/models';
-import { numberWithCommas } from '../libs/utils';
+import { numberWithCommas, codeClimateProjectURL } from '../libs/utils';
 
 import RedImg from '../../img/red.png';
 import AmberImg from '../../img/amber.png';
@@ -156,4 +156,48 @@ export const ProductTable = ({ projects, showService, showFilter }) => {
       customFilterComponent={FilterComponent}
     />
   );
+}
+
+/**
+ * React component for a image which hides onError
+ */
+export class ImageDisappearOnError extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  handleError() {
+    this.setState({ hasError: true });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    };
+    return <img alt={ this.props.alt } onError={() => this.handleError()} src={ this.props.src } />;
+  }
+}
+
+export class ExternalLinkExtra extends Component {
+  render() {
+    if (this.props.baseURL.includes('github.com')) {
+      const codeClimateURL = codeClimateProjectURL(this.props.baseURL);
+      return (
+        <div className="code-climate">
+          <a href={ codeClimateURL }>
+            <ImageDisappearOnError alt="Code Climate" src={ codeClimateURL + "/badges/gpa.svg" } />
+          </a>
+          <a href={ codeClimateURL + '/coverage' }>
+            <ImageDisappearOnError alt="Test Coverage" src={ codeClimateURL + "/badges/coverage.svg" } />
+          </a>
+          <a href={ codeClimateURL }>
+            <ImageDisappearOnError alt="Issue Count" src={ codeClimateURL + "/badges/issue_count.svg" } />
+          </a>
+        </div>
+      )
+    }
+    return null;
+  }
 }

@@ -45,6 +45,9 @@
       - ['change_saving', 'prototype', 'saving']
       - ['add_saving', 'prototype', 'saving']
       - ['delete_saving', 'prototype', 'saving']
+      - ['change_link', 'prototype', 'link']
+      - ['add_link', 'prototype', 'link']
+      - ['delete_link', 'prototype', 'link']
 - model: auth.group
   pk: 3
   fields:
@@ -72,3 +75,6 @@
       - ['change_saving', 'prototype', 'saving']
       - ['add_saving', 'prototype', 'saving']
       - ['delete_saving', 'prototype', 'saving']
+      - ['change_link', 'prototype', 'link']
+      - ['add_link', 'prototype', 'link']
+      - ['delete_link', 'prototype', 'link']

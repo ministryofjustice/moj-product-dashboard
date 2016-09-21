@@ -1,7 +1,8 @@
 import moment from 'moment';
 import React, { Component } from 'react';
 import { Project, statusMapping } from '../libs/models';
-import { numberWithCommas } from '../libs/utils';
+import { numberWithCommas, codeClimateProjectURL } from '../libs/utils';
+import { ExternalLinkExtra } from '../components/product-table';
 
 
 export class ProductInfo extends Component {
@@ -200,6 +201,36 @@ export class ProductInfo extends Component {
     );
   }
 
+  LinkNote(link) {
+    if (link.note) {
+      return (
+         <span className="external-link-note">{ link.note }</span>
+      )
+    }
+  }
+
+  Links(links) {
+    if (links.length > 0) {
+      return (
+        <div>
+          <h3 className="heading-small">External links</h3>
+          <ul className="external-links">
+          {
+            links.map((link, index) => (
+              <li key={index} className={ link.type }>
+                <a className={ link.type } href={ link.url } rel="external">
+                  { link.name }
+                </a>{ this.LinkNote(link) }
+                <ExternalLinkExtra baseURL={ link.url } />
+              </li>
+            ))
+          }
+          </ul>
+        </div>
+      )
+    }
+  }
+
   render() {
     return (
       <div id="product-info">
@@ -222,6 +253,7 @@ export class ProductInfo extends Component {
           { this.Recurring(this.props.project.recurringSavings) }
           { this.OneOff(this.props.project.oneOffSavings) }
         </table>
+        { this.Links(this.props.project['links']) }
       </div>
     );
   }
