@@ -12,6 +12,7 @@
       - ['change_accesslog', 'axes', 'accesslog']
       - ['add_accesslog', 'axes', 'accesslog']
       - ['delete_accesslog', 'axes', 'accesslog']
+      - ['change_logentry', 'admin', 'logentry']
 - model: auth.group
   pk: 2
   fields:
