@@ -5,7 +5,7 @@ from django.test import TestCase
 from model_mommy import mommy
 from faker import Faker
 
-from dashboard.apps.prototype.models import Person, Project, Task, Rate
+from dashboard.apps.prototype.models import Person, Product, Task, Rate
 from dashboard.libs.date_tools import parse_date, to_datetime
 
 
@@ -17,7 +17,7 @@ class TaskTimeSpentTestCase(TestCase):
         # actual working days is 6. given the time for the task is 3 days,
         # 0.5 day is spent daily during each of the 6 working days.
         self.task_0 = Task.objects.create(
-            name='task_0', person_id=0, project_id=0, float_id=0,
+            name='task_0', person_id=0, product_id=0, float_id=0,
             start_date=date(2016, 4, 27),
             end_date=date(2016, 5, 5),
             days=3
@@ -25,7 +25,7 @@ class TaskTimeSpentTestCase(TestCase):
 
         # task_1 is a task for bank holiday over Easter holiday
         self.task_1 = Task.objects.create(
-            name='day off over Easter', person_id=0, project_id=1,
+            name='day off over Easter', person_id=0, product_id=1,
             float_id=1,
             start_date=date(2016, 3, 25),
             end_date=date(2016, 3, 28),
@@ -76,7 +76,7 @@ class TaskMoneySpentTestCase(TestCase):
         mommy.make(Rate, start_date=date(2015, 1, 1), rate=Decimal('400'),
                    person=person)
         self.task_0 = mommy.make(
-            Task, project=mommy.make(Project),
+            Task, product=mommy.make(Product),
             person=person,
             start_date=date(2016, 6, 1),
             end_date=date(2016, 6, 10),
@@ -110,25 +110,25 @@ class TaskString(TestCase):
 
     def test_task_without_name(self):
         task_without_name = mommy.make(
-            Task, project=mommy.make(Project, name='project 0'),
+            Task, product=mommy.make(Product, name='product 0'),
             person=mommy.make(Person, name='John'),
             start_date=date(2016, 6, 1),
             end_date=date(2016, 6, 10),
             days=8)
-        expected = 'John on project 0 from 2016-06-01 to 2016-06-10 for 8 days'
+        expected = 'John on product 0 from 2016-06-01 to 2016-06-10 for 8 days'
         assert str(task_without_name) == expected
 
     def test_task_with_name(self):
         task_with_name = mommy.make(
             Task,
             name='task 0',
-            project=mommy.make(Project, name='project 0'),
+            product=mommy.make(Product, name='product 0'),
             person=mommy.make(Person, name='John'),
             start_date=date(2016, 6, 1),
             end_date=date(2016, 6, 10),
             days=8)
         expected = (
-            'task 0 - John on project 0'
+            'task 0 - John on product 0'
             ' from 2016-06-01 to 2016-06-10 for 8 days')
         assert str(task_with_name) == expected
 

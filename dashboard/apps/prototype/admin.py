@@ -18,8 +18,8 @@ from django.utils.html import format_html
 
 from dateutil.relativedelta import relativedelta
 
-from .models import (Person, Rate, Client, Project, Cost, Budget,
-                     ProjectStatus, ProjectGroupStatus, Saving, Link)
+from .models import (Person, Rate, Client, Product, Cost, Budget,
+                     ProductStatus, ProductGroupStatus, Saving, Link)
 from .forms import (PayrollUploadForm, ExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 from .filters import (IsVisibleFilter, IsCivilServantFilter,
@@ -144,13 +144,13 @@ class BudgetInline(admin.TabularInline):
     extra = 0
 
 
-class ProjectStatusInline(admin.TabularInline):
-    model = ProjectStatus
+class ProductStatusInline(admin.TabularInline):
+    model = ProductStatus
     extra = 0
 
 
-class ProjectGroupStatusInline(admin.TabularInline):
-    model = ProjectGroupStatus
+class ProductGroupStatusInline(admin.TabularInline):
+    model = ProductGroupStatus
     extra = 0
 
 
@@ -164,13 +164,13 @@ class LinkInline(admin.TabularInline):
     extra = 0
 
 
-class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
+class ProductAdmin(admin.ModelAdmin, FinancePermissions):
     fields = ['name', 'description', 'float_link', 'client',
               'product_manager', 'delivery_manager',
               'discovery_date', 'alpha_date', 'beta_date', 'live_date',
               'end_date', 'visible']
     exclude = ['raw_data']
-    inlines = [CostInline, BudgetInline, SavingInline, ProjectStatusInline,
+    inlines = [CostInline, BudgetInline, SavingInline, ProductStatusInline,
                LinkInline]
     readonly_fields = ('name', 'description', 'float_link', 'client')
     list_display = ('name', 'status', 'phase', 'client')
@@ -179,7 +179,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
     actions = None
 
     def float_link(self, obj):
-        return format_html('<a href="{base}/projects?active=1&project={name}"'
+        return format_html('<a href="{base}/products?active=1&product={name}"'
                            ' target="_blank" rel="external">{pk}</a>',
                            base=settings.FLOAT_URL,
                            name=obj.name,
@@ -192,13 +192,13 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
             url(
                 r'^export/$',
                 self.admin_site.admin_view(self.export_view),
-                name='project_export'),
+                name='product_export'),
         ]
-        return urls + super(ProjectAdmin, self).get_urls()
+        return urls + super(ProductAdmin, self).get_urls()
 
     @csrf_protect_m
     @transaction.atomic
-    @method_decorator(permission_required('prototype.adjustmentexport_project',
+    @method_decorator(permission_required('prototype.adjustmentexport_product',
                                           raise_exception=True))
     def export_view(self, request):
         if not self.is_finance(request.user):  # pragma: no cover
@@ -217,7 +217,7 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
                     re.sub(
                         '[^0-9a-zA-Z]+',
                         '-',
-                        form.cleaned_data['project'].name),
+                        form.cleaned_data['product'].name),
                     form.cleaned_data['date'].year,
                     form.cleaned_data['date'].month)
                 workbook = form.export()
@@ -235,8 +235,8 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
             'opts': self.model._meta,
             'has_permission': self.is_finance(request.user),
             'form': form,
-            'clients': Client.objects.exclude(projects__isnull=True)
-                        .order_by('name').prefetch_related('projects'),
+            'clients': Client.objects.exclude(products__isnull=True)
+                        .order_by('name').prefetch_related('products'),
         })
 
         return render_to_response(
@@ -246,26 +246,26 @@ class ProjectAdmin(admin.ModelAdmin, FinancePermissions):
 
 
 class TaskAdmin(ReadOnlyAdmin):
-    search_fields = ('name', 'person__name', 'project__name', 'float_id')
+    search_fields = ('name', 'person__name', 'product__name', 'float_id')
     exclude = ['raw_data']
 
 
-class ProjectGroupAdmin(admin.ModelAdmin):
-    filter_horizontal = ('projects', )
-    list_display = ('name', 'render_projects')
-    inlines = [ProjectGroupStatusInline]
+class ProductGroupAdmin(admin.ModelAdmin):
+    filter_horizontal = ('products', )
+    list_display = ('name', 'render_products')
+    inlines = [ProductGroupStatusInline]
 
-    def render_projects(self, obj):  # pragma: no cover
+    def render_products(self, obj):  # pragma: no cover
         return '<br/>'.join([
             '<a href="{}"/>{}</a>'.format(p.admin_url, p.name)
-            for p in obj.projects.all()])
-    render_projects.short_description = 'Projects'
-    render_projects.allow_tags = True
+            for p in obj.products.all()])
+    render_products.short_description = 'Products'
+    render_products.allow_tags = True
     actions = None
 
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Client, ClientAdmin)
 
-admin.site.register(Project, ProjectAdmin)
+admin.site.register(Product, ProductAdmin)
 admin.site.register(LogEntry, ReadOnlyAdmin)

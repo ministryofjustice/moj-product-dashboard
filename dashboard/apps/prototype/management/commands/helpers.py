@@ -5,7 +5,7 @@ import logging
 
 from django.db.models import Q
 
-from dashboard.apps.prototype.models import Person, Project, Client
+from dashboard.apps.prototype.models import Person, Product, Client
 
 
 class NoMatchFound(Exception):
@@ -62,12 +62,12 @@ def print_person(person, padding=''):
 def print_task(task, start_date, end_date, padding='  '):
     lines = []
     lines.append('task name: {}'.format(task.name or 'N/A'))
-    if task.project.is_billable:
-        lines.append('project: {}, area: {}'.format(
-            task.project, task.project.client.name))
+    if task.product.is_billable:
+        lines.append('product: {}, area: {}'.format(
+            task.product, task.product.client.name))
     else:
-        lines.append('project: {} (non-billable), area: {}'.format(
-            task.project, task.project.client.name))
+        lines.append('product: {} (non-billable), area: {}'.format(
+            task.product, task.product.client.name))
     lines.append('task start: {}, end: {}, total: {:.5f} working days'.format(
         task.start_date, task.end_date, task.days))
     time_spent = task.time_spent(start_date, end_date)
@@ -115,28 +115,28 @@ def get_areas(names, as_filter=True):
     return areas
 
 
-def get_projects(names, areas, as_filter=True):
+def get_products(names, areas, as_filter=True):
     if not names and not areas:
-        logger.info('projects: all')
+        logger.info('products: all')
         if as_filter:
             return []
         else:
-            return Project.objects.all()
+            return Product.objects.all()
 
-    projects = Project.objects.filter(contains_any('name', names))
+    products = Product.objects.filter(contains_any('name', names))
 
     if areas:
         if not isinstance(areas[0], Client):
             areas = get_areas(areas)
-        projects = projects.filter(client__in=areas)
+        products = products.filter(client__in=areas)
 
-    if not projects:
+    if not products:
         area_names = ','.join([area.name for area in areas]) or 'all'
         raise NoMatchFound(
-            ('could not find any project with name(s) {} and area(s) {}'
+            ('could not find any product with name(s) {} and area(s) {}'
              ).format(','.join(names), area_names))
-    logger.info('projects: {}'.format(', '.join([p.name for p in projects])))
-    return projects
+    logger.info('products: {}'.format(', '.join([p.name for p in products])))
+    return products
 
 
 def contains_any(field, values, ignore_case=True):

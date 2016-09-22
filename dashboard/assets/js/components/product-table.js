@@ -42,7 +42,7 @@ export const ProductTable = ({ products, showService, showFilter }) => {
       'displayName': 'Product',
       'customComponent': (props) => {
         let url;
-        if (props.rowData.type == 'ProjectGroup') {
+        if (props.rowData.type == 'ProductGroup') {
           url = `/product-groups/${props.rowData.id}`;
         } else {
           url = `/products/${props.rowData.id}`;

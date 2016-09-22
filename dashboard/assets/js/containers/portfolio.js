@@ -20,7 +20,7 @@ export class PortfolioContainer extends Component {
       .then(portfolioData => {
         // sort by service area and then name of product
         const products = values(portfolioData)
-          .map(service => values(service.projects))
+          .map(service => values(service.products))
           .reduce((prev, curr) => prev.concat(curr), [])
           .sort((p1, p2) => p1.name.localeCompare(p2.name));
         this.setState({products: products, hasData: true});

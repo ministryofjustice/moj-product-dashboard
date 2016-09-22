@@ -6,7 +6,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 
-from ..models import Project, Client, Person, PersonCost, Rate, Task
+from ..models import Product, Client, Person, PersonCost, Rate, Task
 from ..constants import COST_TYPES
 from ..forms import EXPORTS
 
@@ -16,7 +16,7 @@ class ExportTestCase(TestCase):
 
     def setUp(self):
         client = mommy.make(Client)
-        self.project = mommy.make(Project, client=client)
+        self.product = mommy.make(Product, client=client)
 
         p = mommy.make(Person)
         c = mommy.make(Person, is_contractor=True)
@@ -49,7 +49,7 @@ class ExportTestCase(TestCase):
         mommy.make(
             Task,
             person=p,
-            project=self.project,
+            product=self.product,
             start_date=date(2015, 1, 1),
             end_date=date(2015, 1, 2),
             days=1
@@ -65,7 +65,7 @@ class ExportTestCase(TestCase):
         mommy.make(
             Task,
             person=c,
-            project=self.project,
+            product=self.product,
             start_date=date(2015, 1, 1),
             end_date=date(2015, 1, 2),
             days=1
@@ -75,7 +75,7 @@ class ExportTestCase(TestCase):
         self.client.login(username='test_finance', password='Admin123')
         for export in dict(EXPORTS).keys():
             response = self.client.post(
-                '/admin/prototype/project/export/',
-                {'date': date(2015, 1, 1), 'project': self.project.pk,
+                '/admin/prototype/product/export/',
+                {'date': date(2015, 1, 1), 'product': self.product.pk,
                  'export_type': export})
             self.assertEqual(response.status_code, 200)
