@@ -5,7 +5,7 @@ import logging
 
 from django.db.models import Q
 
-from dashboard.apps.prototype.models import Person, Product, Area
+from dashboard.apps.dashboard.models import Person, Product, Area
 
 
 class NoMatchFound(Exception):

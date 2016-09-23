@@ -75,7 +75,7 @@ class ExportTestCase(TestCase):
         self.client.login(username='test_finance', password='Admin123')
         for export in dict(EXPORTS).keys():
             response = self.client.post(
-                '/admin/prototype/product/export/',
+                '/admin/dashboard/product/export/',
                 {'date': date(2015, 1, 1), 'product': self.product.pk,
                  'export_type': export})
             self.assertEqual(response.status_code, 200)

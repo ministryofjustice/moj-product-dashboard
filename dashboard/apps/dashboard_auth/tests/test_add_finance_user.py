@@ -2,7 +2,7 @@
 from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
-from dashboard.apps.prototype.permissions import user_is_finance
+from dashboard.apps.dashboard.permissions import user_is_finance
 
 
 SWITCH_DM_TO_FINANCE_POST_DATA = {'is_staff': ['on'], 'date_joined_0':

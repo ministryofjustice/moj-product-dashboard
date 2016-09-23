@@ -18,7 +18,7 @@ from django.conf import settings
 from django.contrib import admin
 from moj_irat.views import PingJsonView, HealthcheckView
 
-from dashboard.apps.prototype.views import (
+from dashboard.apps.dashboard.views import (
     service_html, service_json, product_html, product_json, product_group_json,
     product_group_html, portfolio_html, portfolio_json, sync_from_float)
 

@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'axes',
     'webpack_loader',
 
-    'dashboard.apps.prototype',
+    'dashboard.apps.dashboard',
     'dashboard_auth',
 ]
 
@@ -91,7 +91,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'dashboard.apps.prototype.context_processors.moj',
+                'dashboard.apps.dashboard.context_processors.moj',
             ],
         },
     },

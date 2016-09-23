@@ -21,12 +21,12 @@
             <caption>
                 Finance
             </caption>
-            {% if perms.prototype.upload_person %}
+            {% if perms.dashboard.upload_person %}
                 <tr class="model-">
                     <th scope="row"><a href="{% url 'admin:person_upload_payroll' %}">Upload payroll</a></th>
                 </tr>
             {% endif %}
-            {% if perms.prototype.adjustmentexport_product %}
+            {% if perms.dashboard.adjustmentexport_product %}
                 <tr class="model-">
                     <th scope="row"><a href="{% url 'admin:product_export' %}">Adjustment Export</a></th>
                 </tr>

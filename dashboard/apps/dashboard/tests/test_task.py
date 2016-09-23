@@ -5,7 +5,7 @@ from django.test import TestCase
 from model_mommy import mommy
 from faker import Faker
 
-from dashboard.apps.prototype.models import Person, Product, Task, Rate
+from dashboard.apps.dashboard.models import Person, Product, Task, Rate
 from dashboard.libs.date_tools import parse_date, to_datetime
 
 

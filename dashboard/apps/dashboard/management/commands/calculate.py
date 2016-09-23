@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from django.core.management.base import BaseCommand, CommandError
 
 from dashboard.libs.date_tools import parse_date
-from dashboard.apps.prototype.models import Task
+from dashboard.apps.dashboard.models import Task
 from .helpers import (print_person, print_task, logger, get_persons,
                       get_products, get_areas, NoMatchFound)
 

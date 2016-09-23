@@ -96,9 +96,9 @@ class PayrollUploadTestCase(TestCase):
     def test_view_post_with_error(self):
         fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
         self.client.login(username='test_finance', password='Admin123')
-        self.client.get("/admin/prototype/person/upload/")
+        self.client.get("/admin/dashboard/person/upload/")
         response = self.client.post(
-            '/admin/prototype/person/upload/',
+            '/admin/dashboard/person/upload/',
             {'date': date(2016, 1, 1), 'payroll_file': fb})
         self.assertEqual(response.status_code, 200)
         self.assertTrue('ERROR' in str(response.content))
@@ -106,13 +106,13 @@ class PayrollUploadTestCase(TestCase):
     def test_view_post_no_error(self):
         fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
         self.client.login(username='test_finance', password='Admin123')
-        self.client.get("/admin/prototype/person/upload/")
+        self.client.get("/admin/dashboard/person/upload/")
         mommy.make(Person, name='X Surname1', is_contractor=False)
         mommy.make(Person, name='B Surname2', is_contractor=False)
         mommy.make(Person, name='C Surname3', is_contractor=False)
         mommy.make(Person, name='C Surname3', is_contractor=True)
         response = self.client.post(
-            '/admin/prototype/person/upload/',
+            '/admin/dashboard/person/upload/',
             {'date': date(2016, 1, 1), 'payroll_file': fb})
         self.assertEqual(response.status_code, 200)
         self.assertTrue('ERROR' not in str(response.content))
@@ -121,6 +121,6 @@ class PayrollUploadTestCase(TestCase):
         fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
         self.client.login(username='admin', password='Admin123')
         response = self.client.post(
-            '/admin/prototype/person/upload/',
+            '/admin/dashboard/person/upload/',
             {'date': date(2016, 1, 1), 'payroll_file': fb})
         self.assertEqual(response.status_code, 403)

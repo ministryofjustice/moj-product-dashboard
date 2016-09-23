@@ -4,7 +4,7 @@ from decimal import Decimal
 from unittest.mock import patch
 from model_mommy import mommy
 import pytest
-from dashboard.apps.prototype.constants import COST_TYPES
+from dashboard.apps.dashboard.constants import COST_TYPES
 
 from ..models import Product, Saving
 
@@ -16,7 +16,7 @@ class NewDate(date):
 
 
 @pytest.mark.django_db
-@patch('dashboard.apps.prototype.models.date', NewDate)
+@patch('dashboard.apps.dashboard.models.date', NewDate)
 def test_monthly_savings_no_start_end():
     product = mommy.make(Product)
 

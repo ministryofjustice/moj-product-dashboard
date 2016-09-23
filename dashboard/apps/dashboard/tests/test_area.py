@@ -2,7 +2,7 @@
 from model_mommy import mommy
 import pytest
 
-from dashboard.apps.prototype.models import Area, Product
+from dashboard.apps.dashboard.models import Area, Product
 
 
 @pytest.mark.django_db

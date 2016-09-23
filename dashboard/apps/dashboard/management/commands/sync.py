@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
-from dashboard.apps.prototype.models import Area, Person, Product, Task
+from dashboard.apps.dashboard.models import Area, Person, Product, Task
 from dashboard.libs.date_tools import get_workdays, parse_date
 from .helpers import logger
 
