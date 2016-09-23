@@ -32,9 +32,9 @@
           <label class="form-label" for="id_product">Product:</label>
           <select class="form-control" id="id_product" name="product">
             <option>--------</option>
-            {% for client in clients %}
-              <optgroup label="{{ client.name }}">
-                {% for product in client.products.all %}
+            {% for area in areas %}
+              <optgroup label="{{ area.name }}">
+                {% for product in area.products.all %}
                   <option value="{{ product.pk }}">{{ product.name }}</option>
                 {% endfor %}
               </optgroup>
