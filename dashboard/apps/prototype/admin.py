@@ -18,7 +18,7 @@ from django.utils.html import format_html
 
 from dateutil.relativedelta import relativedelta
 
-from .models import (Person, Rate, Client, Product, Cost, Budget,
+from .models import (Person, Rate, Area, Product, Cost, Budget,
                      ProductStatus, ProductGroupStatus, Saving, Link)
 from .forms import (PayrollUploadForm, ExportForm)
 from .permissions import ReadOnlyPermissions, FinancePermissions
@@ -126,7 +126,7 @@ class RateAdmin(FinancePermissions, admin.ModelAdmin):
     search_fields = ('person__name', 'person__job_title')
 
 
-class ClientAdmin(admin.ModelAdmin):
+class AreaAdmin(admin.ModelAdmin):
     search_fields = ('name', 'float_id')
     fields = ['id', 'name', 'float_id', 'manager', 'visible']
     readonly_fields = ['id', 'name', 'float_id']
@@ -165,17 +165,17 @@ class LinkInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin, FinancePermissions):
-    fields = ['name', 'description', 'float_link', 'client',
+    fields = ['name', 'description', 'float_link', 'area',
               'product_manager', 'delivery_manager',
               'discovery_date', 'alpha_date', 'beta_date', 'live_date',
               'end_date', 'visible']
     exclude = ['raw_data']
     inlines = [CostInline, BudgetInline, SavingInline, ProductStatusInline,
                LinkInline]
-    readonly_fields = ('name', 'description', 'float_link', 'client')
-    list_display = ('name', 'status', 'phase', 'client')
+    readonly_fields = ('name', 'description', 'float_link', 'area')
+    list_display = ('name', 'status', 'phase', 'area')
     search_fields = ('name', 'float_id')
-    list_filter = (IsVisibleFilter, 'client')
+    list_filter = (IsVisibleFilter, 'area')
     actions = None
 
     def float_link(self, obj):
@@ -235,7 +235,7 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
             'opts': self.model._meta,
             'has_permission': self.is_finance(request.user),
             'form': form,
-            'clients': Client.objects.exclude(products__isnull=True)
+            'areas': Area.objects.exclude(products__isnull=True)
                         .order_by('name').prefetch_related('products'),
         })
 
@@ -265,7 +265,7 @@ class ProductGroupAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Person, PersonAdmin)
-admin.site.register(Client, ClientAdmin)
+admin.site.register(Area, AreaAdmin)
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(LogEntry, ReadOnlyAdmin)

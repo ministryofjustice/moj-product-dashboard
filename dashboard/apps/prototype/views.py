@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 
 from dashboard.libs.date_tools import parse_date
-from .models import Product, Client, ProductGroup
+from .models import Product, Area, ProductGroup
 from .tasks import sync_float
 
 
@@ -89,11 +89,11 @@ def product_group_json(request):
 
 def service_html(request, id):
     if not id:
-        id = Client.objects.filter(visible=True).first().id
+        id = Area.objects.filter(visible=True).first().id
         return redirect(reverse(service_html, kwargs={'id': id}))
     try:
-        Client.objects.filter(visible=True).get(id=id)
-    except (ValueError, Client.DoesNotExist):
+        Area.objects.filter(visible=True).get(id=id)
+    except (ValueError, Area.DoesNotExist):
         raise Http404
     return render(request, 'common.html')
 
@@ -101,13 +101,13 @@ def service_html(request, id):
 def service_json(request):
     request_data = json.loads(request.body.decode())
     try:
-        client = Client.objects.filter(visible=True).get(id=request_data['id'])
-    except (ValueError, Client.DoesNotExist):
+        area = Area.objects.filter(visible=True).get(id=request_data['id'])
+    except (ValueError, Area.DoesNotExist):
         error = 'cannot find service area with id={}'.format(
             request_data['id'])
         return JsonResponse({'error': error}, status=404)
     # get the profile of the service
-    return JsonResponse(client.profile())
+    return JsonResponse(area.profile())
 
 
 def portfolio_html(request):
@@ -115,8 +115,8 @@ def portfolio_html(request):
 
 
 def portfolio_json(request):
-    result = {client.id: client.profile() for client
-              in Client.objects.filter(visible=True)}
+    result = {area.id: area.profile() for area
+              in Area.objects.filter(visible=True)}
     return JsonResponse(result)
 
 

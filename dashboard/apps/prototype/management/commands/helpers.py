@@ -5,7 +5,7 @@ import logging
 
 from django.db.models import Q
 
-from dashboard.apps.prototype.models import Person, Product, Client
+from dashboard.apps.prototype.models import Person, Product, Area
 
 
 class NoMatchFound(Exception):
@@ -64,10 +64,10 @@ def print_task(task, start_date, end_date, padding='  '):
     lines.append('task name: {}'.format(task.name or 'N/A'))
     if task.product.is_billable:
         lines.append('product: {}, area: {}'.format(
-            task.product, task.product.client.name))
+            task.product, task.product.area.name))
     else:
         lines.append('product: {} (non-billable), area: {}'.format(
-            task.product, task.product.client.name))
+            task.product, task.product.area.name))
     lines.append('task start: {}, end: {}, total: {:.5f} working days'.format(
         task.start_date, task.end_date, task.days))
     time_spent = task.time_spent(start_date, end_date)
@@ -105,8 +105,8 @@ def get_areas(names, as_filter=True):
         if as_filter:
             return []
         else:
-            return Client.objects.all()
-    areas = Client.objects.filter(contains_any('name', names))
+            return Area.objects.all()
+    areas = Area.objects.filter(contains_any('name', names))
     if not areas:
         raise NoMatchFound(
             'could not find any area with name(s) {}'.format(
@@ -126,9 +126,9 @@ def get_products(names, areas, as_filter=True):
     products = Product.objects.filter(contains_any('name', names))
 
     if areas:
-        if not isinstance(areas[0], Client):
+        if not isinstance(areas[0], Area):
             areas = get_areas(areas)
-        products = products.filter(client__in=areas)
+        products = products.filter(area__in=areas)
 
     if not products:
         area_names = ','.join([area.name for area in areas]) or 'all'

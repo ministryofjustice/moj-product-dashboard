@@ -282,7 +282,7 @@ class Rate(models.Model):
         return self.converter.rate_on(on)
 
 
-class Client(models.Model):
+class Area(models.Model):
     name = models.CharField(max_length=128)
     float_id = models.CharField(max_length=128, unique=True)
     visible = models.BooleanField(default=True)
@@ -317,7 +317,7 @@ class Client(models.Model):
         products = self.products.visible().exclude(
             id__in=product_ids_in_a_group)
         product_groups = [group for group in ProductGroup.objects.all()
-                          if group.client and group.client.id == self.id]
+                          if group.area and group.area.id == self.id]
         if product_ids is not None:
             products = products.filter(id__in=product_ids)
         result = {
@@ -342,7 +342,7 @@ class ProductManager(models.Manager):
 
     def visible(self):
         return self.get_queryset().filter(visible=True).filter(
-            models.Q(client=None) | models.Q(client__visible=True)
+            models.Q(area=None) | models.Q(area__visible=True)
         )
 
 
@@ -605,8 +605,8 @@ class BaseProduct(models.Model):
             result['product_manager'] = self.product_manager.name
         if self.delivery_manager:
             result['delivery_manager'] = self.delivery_manager.name
-        if self.client and self.client.manager:
-            result['service_manager'] = self.client.manager.name
+        if self.area and self.area.manager:
+            result['service_manager'] = self.area.manager.name
         return result
 
     def profile(self, start_date=None, end_date=None, freq=None):
@@ -621,10 +621,10 @@ class BaseProduct(models.Model):
         """
         status = self.status()
         status = status.as_dict() if status else {}
-        if self.client:
+        if self.area:
             service_area = {
-                'id': self.client.id,
-                'name': self.client.name,
+                'id': self.area.id,
+                'name': self.area.name,
             }
         else:
             service_area = {}
@@ -680,8 +680,8 @@ class Product(BaseProduct, AditionalCostsMixin):
     hr_id = models.CharField(max_length=12, unique=True, null=True)
     float_id = models.CharField(max_length=128, unique=True)
     is_billable = models.BooleanField(default=True)
-    client = models.ForeignKey('Client', related_name='products',
-                               verbose_name='service area', null=True)
+    area = models.ForeignKey('Area', related_name='products',
+                             verbose_name='service area', null=True)
     visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
 
@@ -993,10 +993,10 @@ class ProductGroup(BaseProduct):
         return sum([p.total_cost for p in self.products.all()])
 
     @property
-    def client(self):
-        clients = [p.client for p in self.products.all() if p.client]
-        if len({c.id for c in clients}) == 1:
-            return clients[0]
+    def area(self):
+        areas = [p.area for p in self.products.all() if p.area]
+        if len({c.id for c in areas}) == 1:
+            return areas[0]
 
     @property
     def links(self):

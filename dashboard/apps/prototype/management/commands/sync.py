@@ -15,11 +15,11 @@ from requests.exceptions import HTTPError
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
-from dashboard.apps.prototype.models import Client, Person, Product, Task
+from dashboard.apps.prototype.models import Area, Person, Product, Task
 from dashboard.libs.date_tools import get_workdays, parse_date
 from .helpers import logger
 
-FLOAT_DATA_DIR = settings.location('../var/float')
+FLOAT_DATA_DIR = settings.location('j../var/float')
 
 
 def export(token, start_date, weeks, output_dir):
@@ -91,11 +91,11 @@ def sync_clients(data_dir):
             'raw_data': item,
         }
         try:
-            client = Client.objects.get(float_id=useful_data['float_id'])
+            client = Area.objects.get(float_id=useful_data['float_id'])
             diff = compare(client, useful_data)
             update(client, diff)
-        except Client.DoesNotExist:
-            client = Client.objects.create(**useful_data)
+        except Area.DoesNotExist:
+            client = Area.objects.create(**useful_data)
             logger.info('new client found "%s"', client)
             client.save()
 
@@ -142,15 +142,15 @@ def sync_projects(data_dir):
         float_id = item['project_id']
         float_ids.append(float_id)
         if float_client_id:
-            client_id = Client.objects.get(float_id=float_client_id).id
+            area_id = Area.objects.get(float_id=float_client_id).id
         else:
-            client_id = None
+            area_id = None
         useful_data = {
             'name': item['project_name'],
             'float_id': float_id,
             'is_billable': item['non_billable'] == '0',
             'description': item['description'],
-            'client_id': client_id,
+            'area_id': area_id,
             'raw_data': item,
         }
         try:

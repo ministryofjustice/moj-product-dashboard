@@ -17,7 +17,7 @@ from dashboard.apps.prototype.views import (
     product_html, product_json, service_html, service_json,
     product_group_html, product_group_json, sync_from_float)
 from dashboard.apps.prototype.models import (
-    Client as Service, Product, ProductGroup)
+    Area, Product, ProductGroup)
 
 
 def make_login_client():
@@ -97,35 +97,35 @@ def test_product_json_with_invalid_id():
 @pytest.mark.django_db
 def test_service_html_without_id():
     client = make_login_client()
-    service = mommy.make(Service)
+    area = mommy.make(Area)
     rsp = client.get(reverse(service_html))
     assert rsp.status_code == 302
-    assert rsp.url == reverse(service_html, kwargs={'id': service.id})
+    assert rsp.url == reverse(service_html, kwargs={'id': area.id})
 
 
 @pytest.mark.django_db
 def test_service_html_with_valid_id():
     client = make_login_client()
-    service = mommy.make(Service)
-    rsp = client.get(reverse(service_html, kwargs={'id': service.id}))
+    area = mommy.make(Area)
+    rsp = client.get(reverse(service_html, kwargs={'id': area.id}))
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db
 def test_service_html_with_non_existing_id():
     client = make_login_client()
-    service = mommy.make(Service)
-    rsp = client.get(reverse(service_html, kwargs={'id': service.id + 1}))
+    area = mommy.make(Area)
+    rsp = client.get(reverse(service_html, kwargs={'id': area.id + 1}))
     assert rsp.status_code == 404
 
 
 @pytest.mark.django_db
 def test_service_json():
     client = make_login_client()
-    service = mommy.make(Service)
+    area = mommy.make(Area)
     rsp = client.post(
         reverse(service_json),
-        json.dumps({'id': service.id}),
+        json.dumps({'id': area.id}),
         content_type='application/json'
     )
     assert rsp.status_code == 200
