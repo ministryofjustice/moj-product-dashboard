@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 
 from dashboard.libs.date_tools import parse_date
-from .models import Project, Client, ProjectGroup
+from .models import Product, Client, ProductGroup
 from .tasks import sync_float
 
 
@@ -21,11 +21,11 @@ def _product_meta(request, product):
 
 def product_html(request, id):
     if not id:
-        id = Project.objects.visible().first().id
+        id = Product.objects.visible().first().id
         return redirect(reverse(product_html, kwargs={'id': id}))
     try:
-        Project.objects.visible().get(id=id)
-    except (ValueError, Project.DoesNotExist):
+        Product.objects.visible().get(id=id)
+    except (ValueError, Product.DoesNotExist):
         raise Http404
     return render(request, 'common.html')
 
@@ -37,8 +37,8 @@ def product_json(request):
     # TODO handle errors
     request_data = json.loads(request.body.decode())
     try:
-        product = Project.objects.visible().get(id=request_data['id'])
-    except (ValueError, Project.DoesNotExist):
+        product = Product.objects.visible().get(id=request_data['id'])
+    except (ValueError, Product.DoesNotExist):
         error = 'cannot find product with id={}'.format(request_data['id'])
         return JsonResponse({'error': error}, status=404)
 
@@ -59,11 +59,11 @@ def product_json(request):
 
 def product_group_html(request, id):
     if not id:
-        id = ProjectGroup.objects.first().id
+        id = ProductGroup.objects.first().id
         return redirect(reverse(product_group_html, kwargs={'id': id}))
     try:
-        ProjectGroup.objects.get(id=id)
-    except (ValueError, ProjectGroup.DoesNotExist):
+        ProductGroup.objects.get(id=id)
+    except (ValueError, ProductGroup.DoesNotExist):
         raise Http404
     return render(request, 'common.html')
 
@@ -75,8 +75,8 @@ def product_group_json(request):
     # TODO handle errors
     request_data = json.loads(request.body.decode())
     try:
-        product_group = ProjectGroup.objects.get(id=request_data['id'])
-    except (ValueError, ProjectGroup.DoesNotExist):
+        product_group = ProductGroup.objects.get(id=request_data['id'])
+    except (ValueError, ProductGroup.DoesNotExist):
         error = 'cannot find product group with id={}'.format(
             request_data['id'])
         return JsonResponse({'error': error}, status=404)

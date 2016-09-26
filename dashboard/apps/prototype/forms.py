@@ -22,7 +22,7 @@ from dashboard.libs.date_tools import get_workdays
 from dashboard.libs.rate_converter import last_date_in_month
 
 from .constants import COST_TYPES
-from .models import Person, Rate, Project, PersonCost
+from .models import Person, Rate, Product, PersonCost
 from .widgets import MonthYearDateWidget
 
 
@@ -201,14 +201,14 @@ class PayrollUploadForm(forms.Form):
 EXPORTS = (
     ('Adjustment_Journal', 'Adjustment Export'),
     ('Intercompany_Journal', 'Intercompany Export'),
-    ('Project_Detail', 'Project Detail Export'),
+    ('Product_Detail', 'Product Detail Export'),
 )
 
 
 class ExportForm(forms.Form):
     date = MonthYearField(required=True)
-    project = forms.ModelChoiceField(
-        queryset=Project.objects.all().order_by('client', 'name'),
+    product = forms.ModelChoiceField(
+        queryset=Product.objects.all().order_by('client', 'name'),
         required=True)
     export_type = forms.ChoiceField(choices=EXPORTS, widget=forms.RadioSelect())
 
@@ -240,7 +240,7 @@ class BaseExport():
     def write(self, workbook, ws=None):
         if ws is None:  # pragma: no cover
             ws = workbook.get_active_sheet()
-        project = self.cleaned_data['project']
+        product = self.cleaned_data['product']
         date = self.cleaned_data['date']
         month = date.strftime('%B \'%y')
         period_start = date if date.month < 4 else \
@@ -254,24 +254,24 @@ class BaseExport():
         start_date = date
         end_date = date.replace(day=last_business_day)
 
-        ws.cell(row=161, column=7).value = project.hr_id
-        ws.cell(row=162, column=7).value = project.hr_id
-        ws.cell(row=163, column=7).value = project.hr_id
-        ws.cell(row=164, column=7).value = project.hr_id
-        ws.cell(row=165, column=7).value = project.hr_id
+        ws.cell(row=161, column=7).value = product.hr_id
+        ws.cell(row=162, column=7).value = product.hr_id
+        ws.cell(row=163, column=7).value = product.hr_id
+        ws.cell(row=164, column=7).value = product.hr_id
+        ws.cell(row=165, column=7).value = product.hr_id
 
         ws.cell(row=161, column=10).value = \
-            '%s - %s Share of DS Agency Costs %s' % (project.name, project.client.name, month)
+            '%s - %s Share of DS Agency Costs %s' % (product.name, product.client.name, month)
         ws.cell(row=162, column=10).value = \
-            '%s - %s Share of DS Salary Costs %s' % (project.name, project.client.name, month)
+            '%s - %s Share of DS Salary Costs %s' % (product.name, product.client.name, month)
         ws.cell(row=163, column=10).value = \
-            '%s - %s Share of DS Allce Costs %s' % (project.name, project.client.name, month)
+            '%s - %s Share of DS Allce Costs %s' % (product.name, product.client.name, month)
         ws.cell(row=164, column=10).value = \
-            '%s - %s Share of DS ERNIC Costs %s' % (project.name, project.client.name, month)
+            '%s - %s Share of DS ERNIC Costs %s' % (product.name, product.client.name, month)
         ws.cell(row=165, column=10).value = \
-            '%s - %s Share of DS ASLC Costs %s' % (project.name, project.client.name, month)
+            '%s - %s Share of DS ASLC Costs %s' % (product.name, product.client.name, month)
         ws.cell(row=166, column=10).value = \
-            '%s - %s Share of DS Resource Costs %s' % (project.name, project.client.name, month)
+            '%s - %s Share of DS Resource Costs %s' % (product.name, product.client.name, month)
 
         ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
                                                     date.strftime('/%m/%Y'))
@@ -281,15 +281,15 @@ class BaseExport():
                                           date.strftime('%d%m%y')
 
         ws.cell(row=14, column=9).value = '%s - %s Share of DS Costs %s' % \
-                                          (project.name, project.client.name,
+                                          (product.name, product.client.name,
                                            month)
 
-        ws.cell(row=161, column=9).value = project.people_costs(start_date, end_date, contractor_only=True)
-        ws.cell(row=162, column=9).value = project.people_costs(start_date, end_date, non_contractor_only=True)
-        ws.cell(row=163, column=9).value = project.people_additional_costs(start_date, end_date, name='Misc.Allow.')
-        ws.cell(row=164, column=9).value = project.people_additional_costs(start_date, end_date, name='ERNIC')
-        ws.cell(row=165, column=9).value = project.people_additional_costs(start_date, end_date, name='ASLC')
-        ws.cell(row=166, column=9).value = project.people_costs(start_date, end_date)
+        ws.cell(row=161, column=9).value = product.people_costs(start_date, end_date, contractor_only=True)
+        ws.cell(row=162, column=9).value = product.people_costs(start_date, end_date, non_contractor_only=True)
+        ws.cell(row=163, column=9).value = product.people_additional_costs(start_date, end_date, name='Misc.Allow.')
+        ws.cell(row=164, column=9).value = product.people_additional_costs(start_date, end_date, name='ERNIC')
+        ws.cell(row=165, column=9).value = product.people_additional_costs(start_date, end_date, name='ASLC')
+        ws.cell(row=166, column=9).value = product.people_costs(start_date, end_date)
 
 
 class AdjustmentExport(BaseExport):
@@ -306,12 +306,12 @@ class IntercompanyExport(BaseExport):
         ws.cell(row=8, column=9).value = 'Intercompany Transfer'
 
 
-class ProjectDetailExport(BaseExport):
-    template = 'xls/ProjectDetail.xlsx'
+class ProductDetailExport(BaseExport):
+    template = 'xls/ProductDetail.xlsx'
 
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
-        project = self.cleaned_data['project']
+        product = self.cleaned_data['product']
         start_date = self.cleaned_data['date']
         last_business_day = monthrange(start_date.year, start_date.month)[1]
         end_date = start_date.replace(day=last_business_day)
@@ -331,20 +331,20 @@ class ProjectDetailExport(BaseExport):
                 task.person.base_rate_between(s, e) * \
                 details[task.person]['days']
 
-        list(map(add_cost, project.tasks.between(start_date, end_date)))
+        list(map(add_cost, product.tasks.between(start_date, end_date)))
 
         ws.cell(row=2, column=1).value = datetime.now().strftime('%d/%m/%Y %I:%M%p')
         ws.cell(row=3, column=7).value = '%s DRAFT' % \
                                          start_date.strftime('%b %Y').upper()
-        ws.cell(row=4, column=1).value = 'Project: %s' % project.name
+        ws.cell(row=4, column=1).value = 'Product: %s' % product.name
 
         initial_row = 8
         row = initial_row
         for person, detail in details.items():
             ws.cell(row=row, column=1).value = person.name
             ws.cell(row=row, column=2).value = person.job_title
-            ws.cell(row=row, column=3).value = project.name
-            ws.cell(row=row, column=4).value = project.client.name
+            ws.cell(row=row, column=3).value = product.name
+            ws.cell(row=row, column=4).value = product.client.name
 
             ws.cell(row=row, column=10).value = detail['days'] * Decimal('8')
             ws.cell(row=row, column=11).value = detail['days']
@@ -385,7 +385,7 @@ class ProjectDetailExport(BaseExport):
 EXPORT_CLASSES = {
     'Adjustment_Journal': AdjustmentExport,
     'Intercompany_Journal': IntercompanyExport,
-    'Project_Detail': ProjectDetailExport,
+    'Product_Detail': ProductDetailExport,
 }
 
 

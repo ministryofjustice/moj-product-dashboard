@@ -12,7 +12,7 @@
     {% if request.user.is_finance %}
       {% url 'admin:person_upload_payroll' as upload_url %}
       <li><a href="{{ upload_url }}" class="{% if request.path == upload_url %} active{% endif %}">Salary upload</a></li>
-      {% url 'admin:project_export' as export_url %}
+      {% url 'admin:product_export' as export_url %}
       <li><a href="{{ export_url }}" class="{% if request.path == export_url %} active{% endif %}">Export</a></li>
     {% endif %}
   </ul>

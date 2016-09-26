@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
-from dashboard.apps.prototype.models import Client, Person, Project, Task
+from dashboard.apps.prototype.models import Client, Person, Product, Task
 from dashboard.libs.date_tools import get_workdays, parse_date
 from .helpers import logger
 
@@ -154,18 +154,18 @@ def sync_projects(data_dir):
             'raw_data': item,
         }
         try:
-            project = Project.objects.get(float_id=float_id)
-            diff = compare(project, useful_data)
-            update(project, diff)
-        except Project.DoesNotExist:
-            project = Project.objects.create(**useful_data)
-            logger.info('new project found "%s"', project)
-            project.save()
-    deleted_projects = Project.objects.exclude(float_id__in=float_ids)
+            product = Product.objects.get(float_id=float_id)
+            diff = compare(product, useful_data)
+            update(product, diff)
+        except Product.DoesNotExist:
+            product = Product.objects.create(**useful_data)
+            logger.info('new product found "%s"', product)
+            product.save()
+    deleted_projects = Product.objects.exclude(float_id__in=float_ids)
     for deleted in deleted_projects:
         if not deleted.tasks.all():
             logger.info(
-                'found deleted project float_id=%s "%s"',
+                'found deleted product float_id=%s "%s"',
                 deleted.float_id, deleted)
             deleted.delete()
 
@@ -181,7 +181,7 @@ def sync_tasks(start_date, end_date, data_dir):
         person_id = Person.objects.get(float_id=float_person_id).id
         for task in item['tasks']:
             float_project_id = task['project_id']
-            project_id = Project.objects.get(float_id=float_project_id).id
+            product_id = Product.objects.get(float_id=float_project_id).id
             task_start_date = datetime.strptime(
                 task['start_date'], '%Y-%m-%d').date()
             task_end_date = datetime.strptime(
@@ -198,7 +198,7 @@ def sync_tasks(start_date, end_date, data_dir):
                 'name': task['task_name'],
                 'float_id': float_id,
                 'person_id': person_id,
-                'project_id': project_id,
+                'product_id': product_id,
                 'start_date': task_start_date,
                 'end_date': task_end_date,
                 'days': workdays * Decimal(task['hours_pd']) / Decimal('8'),

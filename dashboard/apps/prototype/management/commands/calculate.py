@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 from dashboard.libs.date_tools import parse_date
 from dashboard.apps.prototype.models import Task
 from .helpers import (print_person, print_task, logger, get_persons,
-                      get_projects, get_areas, NoMatchFound)
+                      get_products, get_areas, NoMatchFound)
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
                             default=this_monday)
         parser.add_argument('-e', '--end-date', type=parse_date,
                             default=this_friday)
-        parser.add_argument('-p', '--projects', nargs='*', type=str)
+        parser.add_argument('-p', '--products', nargs='*', type=str)
         parser.add_argument('-a', '--areas', nargs='*', type=str)
         parser.add_argument('-n', '--names', nargs='*', type=str)
 
@@ -63,15 +63,15 @@ class Command(BaseCommand):
         except NoMatchFound as exc:
             raise CommandError(exc.args)
         try:
-            projects = get_projects(options['projects'] or [], areas)
+            products = get_products(options['products'] or [], areas)
         except NoMatchFound as exc:
             raise CommandError(exc.args)
 
         tasks = Task.objects.between(start_date, end_date)
         if persons:
             tasks = tasks.filter(person__in=persons)
-        if projects:
-            tasks = tasks.filter(project__in=projects)
+        if products:
+            tasks = tasks.filter(product__in=products)
         person_to_task = {}
         for task in tasks:
             person_to_task.setdefault(task.person, []).append(task)

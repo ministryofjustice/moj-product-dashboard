@@ -6,16 +6,16 @@ from django.test import TestCase
 from model_mommy import mommy
 
 from ..constants import COST_TYPES
-from ..models import Cost, Project, Person, PersonCost, Rate, Task
+from ..models import Cost, Product, Person, PersonCost, Rate, Task
 
 
 class CostTestCase(TestCase):
 
     def test_zero_cost_outside_range(self):
-        project = mommy.make(Project)
+        product = mommy.make(Product)
         cost = mommy.make(
             Cost,
-            project=project,
+            product=product,
             start_date=date(2015, 1, 1),
             type=COST_TYPES.ONE_OFF,
             cost=Decimal('50')
@@ -26,10 +26,10 @@ class CostTestCase(TestCase):
             Decimal('0'))
 
     def test_cost_inside_range(self):
-        project = mommy.make(Project)
+        product = mommy.make(Product)
         cost = mommy.make(
             Cost,
-            project=project,
+            product=product,
             start_date=date(2015, 1, 1),
             type=COST_TYPES.ONE_OFF,
             cost=Decimal('50')
@@ -40,10 +40,10 @@ class CostTestCase(TestCase):
             Decimal('50'))
 
     def test_rate_between(self):
-        project = mommy.make(Project)
+        product = mommy.make(Product)
         cost = mommy.make(
             Cost,
-            project=project,
+            product=product,
             start_date=date(2015, 1, 1),
             type=COST_TYPES.MONTHLY,
             cost=Decimal('3000')
@@ -62,10 +62,10 @@ class CostTestCase(TestCase):
             Decimal('0'))
 
     def test_rate_between_one_off(self):
-        project = mommy.make(Project)
+        product = mommy.make(Product)
         cost = mommy.make(
             Cost,
-            project=project,
+            product=product,
             start_date=date(2015, 1, 1),
             type=COST_TYPES.ONE_OFF,
             cost=Decimal('3000')
@@ -78,10 +78,10 @@ class CostTestCase(TestCase):
             date(2015, 1, 2))
 
     def test_rate_between_anually(self):
-        project = mommy.make(Project)
+        product = mommy.make(Product)
         cost = mommy.make(
             Cost,
-            project=project,
+            product=product,
             start_date=date(2015, 1, 1),
             type=COST_TYPES.ANNUALLY,
             cost=Decimal('30000')
@@ -92,10 +92,10 @@ class CostTestCase(TestCase):
             Decimal('118.58'))
 
     def test_rate_between_anually_with_end(self):
-        project = mommy.make(Project)
+        product = mommy.make(Product)
         cost = mommy.make(
             Cost,
-            project=project,
+            product=product,
             start_date=date(2015, 1, 1),
             end_date=date(2015, 6, 1),
             type=COST_TYPES.ANNUALLY,
@@ -107,7 +107,7 @@ class CostTestCase(TestCase):
             Decimal('291.26'))
 
     def test_rate_between_anually_with_person_cost(self):
-        proj = mommy.make(Project)
+        proj = mommy.make(Product)
         p = mommy.make(Person)
 
         pc = mommy.make(
@@ -129,7 +129,7 @@ class CostTestCase(TestCase):
         mommy.make(
             Task,
             person=p,
-            project=proj,
+            product=proj,
             start_date=date(2015, 1, 1),
             end_date=date(2015, 1, 2),
             days=1

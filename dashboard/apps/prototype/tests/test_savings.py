@@ -6,7 +6,7 @@ from model_mommy import mommy
 import pytest
 from dashboard.apps.prototype.constants import COST_TYPES
 
-from ..models import Project, Saving
+from ..models import Product, Saving
 
 
 class NewDate(date):
@@ -18,17 +18,17 @@ class NewDate(date):
 @pytest.mark.django_db
 @patch('dashboard.apps.prototype.models.date', NewDate)
 def test_monthly_savings_no_start_end():
-    project = mommy.make(Project)
+    product = mommy.make(Product)
 
     mommy.make(
         Saving,
-        project=project,
+        product=product,
         start_date=date(2015, 4, 1),
         type=COST_TYPES.MONTHLY,
         cost=Decimal('100')
     )
 
-    savings = project.additional_costs(None, None,
+    savings = product.additional_costs(None, None,
                                        attribute='savings')
 
     assert savings == Decimal('500')

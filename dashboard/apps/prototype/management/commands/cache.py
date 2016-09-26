@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.core.cache import cache
 
 
-from ...tasks import cache_projects
+from ...tasks import cache_products
 
 
 class Command(BaseCommand):
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         """
         generate cache
         """
-        cache_projects.delay()
+        cache_products.delay()
 
     def remove(self):
         """

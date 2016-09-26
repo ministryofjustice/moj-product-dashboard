@@ -8,9 +8,9 @@ from django.test import TestCase, mock
 
 from model_mommy import mommy
 
-from ..admin import (RateAdmin, RateInline, ClientAdmin, ProjectAdmin,
+from ..admin import (RateAdmin, RateInline, ClientAdmin, ProductAdmin,
                      TaskAdmin, PersonAdmin)
-from ..models import Rate, Client, Project, Task, Person
+from ..models import Rate, Client, Product, Task, Person
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -81,7 +81,7 @@ class TaskTimeSpentTestCase(TestCase):
     def test_read_only(self):
         self.assertHasPermission(self.finance_admin, ClientAdmin, Client,
                                  add=False, delete=False)
-        self.assertHasPermission(self.finance_admin, ProjectAdmin, Project,
+        self.assertHasPermission(self.finance_admin, ProductAdmin, Product,
                                  add=False, delete=False)
         self.assertHasPermission(self.finance_admin, TaskAdmin, Task,
                                  add=False, delete=False)
@@ -102,7 +102,7 @@ class TaskTimeSpentTestCase(TestCase):
         self.assertFalse(can_upload)
 
     def test_users_cant_access_exports(self):
-        model_admin = ProjectAdmin(Project, admin.site)
+        model_admin = ProductAdmin(Product, admin.site)
         for user in [self.user_admin, self.other_admin, self.regular_user]:
             mock_request = mock.Mock(user=user)
 
@@ -112,7 +112,7 @@ class TaskTimeSpentTestCase(TestCase):
                 mock_request)
 
     def test_finance_users_can_access_exports(self):
-        model_admin = ProjectAdmin(Project, admin.site)
+        model_admin = ProductAdmin(Product, admin.site)
         mock_request = mock.Mock(spec=Request, user=self.finance_admin,
                                  method='GET', COOKIES={}, META={})
 

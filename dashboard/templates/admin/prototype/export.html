@@ -28,14 +28,14 @@
         </div>
 
         <div class="form-group">
-          <p class = errors">{{ form.project.errors }}</p>
-          <label class="form-label" for="id_project">Project:</label>
-          <select class="form-control" id="id_project" name="project">
+          <p class = errors">{{ form.product.errors }}</p>
+          <label class="form-label" for="id_product">Product:</label>
+          <select class="form-control" id="id_product" name="product">
             <option>--------</option>
             {% for client in clients %}
               <optgroup label="{{ client.name }}">
-                {% for project in client.projects.all %}
-                  <option value="{{ project.pk }}">{{ project.name }}</option>
+                {% for product in client.products.all %}
+                  <option value="{{ product.pk }}">{{ product.name }}</option>
                 {% endfor %}
               </optgroup>
             {% endfor %}
@@ -56,8 +56,8 @@
                 Intercompany Export
               </label>
               <label class="block-label" for="id_export_type_2">
-                <input id="id_export_type_2" name="export_type" type="radio" value="Project_Detail">
-                Project Detail Export
+                <input id="id_export_type_2" name="export_type" type="radio" value="Product_Detail">
+                Product Detail Export
               </label>
             </div>
           </fieldset>

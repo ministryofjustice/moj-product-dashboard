@@ -98,7 +98,7 @@ class BaseCost(models.Model):
             'end_date': self.end_date,
             'note': self.note,
             'cost': self.cost,
-            'project_id': self.project_id,
+            'product_id': self.product_id,
             'freq': dict(COST_TYPES.choices)[self.type]
         }
 
@@ -296,12 +296,12 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
-    def profile(self, project_ids=None, start_date=None, end_date=None,
+    def profile(self, product_ids=None, start_date=None, end_date=None,
                 freq=None):
         """
         get the profile of a service area in a time window.
-        :param project_ids: a list of project_ids, if the value is not
-        specified, get all projects.
+        :param product_ids: a list of product_ids, if the value is not
+        specified, get all products.
         :param start_date: start date of time window, a date object
         :param end_date: end date of time window, a date object
         :param freq: an optional parameter to slice the time window into
@@ -309,35 +309,35 @@ class Client(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
-        project_ids_in_a_group = [
+        product_ids_in_a_group = [
             p.id
-            for group in ProjectGroup.objects.all()
-            for p in group.projects.all()
+            for group in ProductGroup.objects.all()
+            for p in group.products.all()
         ]
-        projects = self.projects.visible().exclude(
-            id__in=project_ids_in_a_group)
-        project_groups = [group for group in ProjectGroup.objects.all()
+        products = self.products.visible().exclude(
+            id__in=product_ids_in_a_group)
+        product_groups = [group for group in ProductGroup.objects.all()
                           if group.client and group.client.id == self.id]
-        if project_ids is not None:
-            projects = projects.filter(id__in=project_ids)
+        if product_ids is not None:
+            products = products.filter(id__in=product_ids)
         result = {
             'id': self.id,
             'name': self.name
         }
-        result['projects'] = {
-            'project:{}'.format(project.id): project.profile(
+        result['products'] = {
+            'product:{}'.format(product.id): product.profile(
                 start_date, end_date, freq)
-            for project in projects
+            for product in products
         }
-        result['projects'].update({
-            'project-group:{}'.format(group.id): group.profile(
+        result['products'].update({
+            'product-group:{}'.format(group.id): group.profile(
                 start_date, end_date, freq)
-            for group in project_groups
+            for group in product_groups
         })
         return result
 
 
-class ProjectManager(models.Manager):
+class ProductManager(models.Manager):
     use_for_related_fields = True
 
     def visible(self):
@@ -346,7 +346,7 @@ class ProjectManager(models.Manager):
         )
 
 
-class BaseProject(models.Model):
+class BaseProduct(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(null=True, blank=True)
     product_manager = models.ForeignKey('Person', related_name='+', null=True)
@@ -410,7 +410,7 @@ class BaseProject(models.Model):
 
     def status(self, on=None):
         """
-        get the status for the project group on a date
+        get the status for the product group on a date
         :param on: optional date object. if empty use today's date
         :return: a rag object
         """
@@ -470,7 +470,7 @@ class BaseProject(models.Model):
 
     def key_dates(self, freq=None):
         """
-        key dates of the project. these include the start of
+        key dates of the product. these include the start of
         phases, today. if a frequency is specified, it also include
         start of time frames and end of last time frame sliced by frequency.
         :param freq: an optional parameter to slice the time window into
@@ -491,7 +491,7 @@ class BaseProject(models.Model):
                 ('beta start', self.beta_date),
                 ('live start', self.live_date),
                 ('today', date.today()),
-                # by convention, when we say the project ends on '31 Aug 16',
+                # by convention, when we say the product ends on '31 Aug 16',
                 # what we really mean is it ends on 'end of 31 Aug 16', i.e.
                 # 31/08/16 23:59:59, which is essentially beginning of
                 # '1 Sept 16'.
@@ -611,7 +611,7 @@ class BaseProject(models.Model):
 
     def profile(self, start_date=None, end_date=None, freq=None):
         """
-        get the profile of a project group in a time window.
+        get the profile of a product group in a time window.
         :param start_date: start date of time window, a date object
         :param end_date: end date of time window, a date object
         :param freq: an optional parameter to slice the time window into
@@ -676,16 +676,16 @@ class BaseProject(models.Model):
         abstract = True
 
 
-class Project(BaseProject, AditionalCostsMixin):
+class Product(BaseProduct, AditionalCostsMixin):
     hr_id = models.CharField(max_length=12, unique=True, null=True)
     float_id = models.CharField(max_length=128, unique=True)
     is_billable = models.BooleanField(default=True)
-    client = models.ForeignKey('Client', related_name='projects',
+    client = models.ForeignKey('Client', related_name='products',
                                verbose_name='service area', null=True)
     visible = models.BooleanField(default=True)
     raw_data = JSONField(null=True)
 
-    objects = ProjectManager()
+    objects = ProductManager()
 
     @property
     def first_task(self):
@@ -721,7 +721,7 @@ class Project(BaseProject, AditionalCostsMixin):
     def first_date(self):
         """
         default start date is the date when the first spend occurs or the
-        first budget allocated to the project or the specified discovery date
+        first budget allocated to the product or the specified discovery date
         it is the smallest of these four start dates:
         first task, first budget, first cost, discovery date
         :return: a date object
@@ -742,10 +742,10 @@ class Project(BaseProject, AditionalCostsMixin):
     def last_date(self):
         """
         default end date is the date when the last spend occurs or
-        the last budget allocated to the project or the specified end date
-        it is the greatest of these dates in the project:
+        the last budget allocated to the product or the specified end date
+        it is the greatest of these dates in the product:
         end date of the last task, start date of the last budget,
-        the start date and end date of the last cost, end date of the project
+        the start date and end date of the last cost, end date of the product
         :return: a date object
         :raises: ValueError when none of the dates are present.
         """
@@ -794,7 +794,7 @@ class Project(BaseProject, AditionalCostsMixin):
 
     def people_additional_costs(self, start_date, end_date, name=None):
         """
-        get the additional non salary people costs for a project
+        get the additional non salary people costs for a product
         :param start_date: start date of time window, a date object
         :param end_date: end date of time window, a date object
         :param name: only get the additional people costs of this name
@@ -808,7 +808,7 @@ class Project(BaseProject, AditionalCostsMixin):
     @property
     def cost_to_date(self):
         """
-        cost of the project from the start to today
+        cost of the product from the start to today
         """
         stats = self.stats_on(date.today())
         return sum(stats[item] for item in
@@ -817,7 +817,7 @@ class Project(BaseProject, AditionalCostsMixin):
     @property
     def total_cost(self):
         """
-        cost of the project from the beginning to the end of the end date
+        cost of the product from the beginning to the end of the end date
         """
         try:
             stats = self.stats_on(self.last_date + timedelta(days=1))
@@ -828,7 +828,7 @@ class Project(BaseProject, AditionalCostsMixin):
 
     def budget(self, on=None):
         """
-        get the budget for the project on a date
+        get the budget for the product on a date
         :param on: optional date object. if empty use today's date
         :return: a decimal for the budget
         """
@@ -850,7 +850,7 @@ class Project(BaseProject, AditionalCostsMixin):
 
     def time_spent(self, start_date=None, end_date=None):
         """
-        get the days spent on the project during a time window.
+        get the days spent on the product during a time window.
         :param start_date: start date of the time window, a date object
         :param end_date: end date of the time window, a date object
         :return: number of days, a decimal
@@ -860,7 +860,7 @@ class Project(BaseProject, AditionalCostsMixin):
                 start_date = self.first_task.start_date
             if not end_date:
                 end_date = self.last_task.end_date
-        except AttributeError:  # when there is no task in a project
+        except AttributeError:  # when there is no task in a product
             return Decimal('0')
 
         return sum(task.time_spent(start_date, end_date)
@@ -868,7 +868,7 @@ class Project(BaseProject, AditionalCostsMixin):
 
     def current_fte(self, start_date=None, end_date=None):
         """
-        current FTE measures the number of people working on the project.
+        current FTE measures the number of people working on the product.
         it is the total man-days / num of workday from a start date to
         an end date.
         :param start_date: date object for the start date.
@@ -887,10 +887,10 @@ class Project(BaseProject, AditionalCostsMixin):
 
     def savings_between(self, start_date=None, end_date=None):
         """
-        returns total savings for the project
+        returns total savings for the product
 
         :param start_date: date object for the start date.
-        if not specified, use the date of the first saving for the project.
+        if not specified, use the date of the first saving for the product.
         :param end_date: date object for the end date.
         if not specified, use the date of today.
         """
@@ -899,23 +899,23 @@ class Project(BaseProject, AditionalCostsMixin):
 
     class Meta:
         permissions = (
-            ('adjustmentexport_project', 'Can run Adjustment Export'),
-            ('intercompanyexport_project', 'Can run Intercompany Export'),
-            ('projectdetailexport_project', 'Can run Intercompany Export'),
+            ('adjustmentexport_product', 'Can run Adjustment Export'),
+            ('intercompanyexport_product', 'Can run Intercompany Export'),
+            ('productdetailexport_product', 'Can run Intercompany Export'),
         )
         verbose_name = ugettext_lazy('product')
 
 
 class Cost(BaseCost):
-    project = models.ForeignKey('Project', related_name='costs')
+    product = models.ForeignKey('Product', related_name='costs')
 
 
 class Saving(BaseCost):
-    project = models.ForeignKey('Project', related_name='savings')
+    product = models.ForeignKey('Product', related_name='savings')
 
 
 class Budget(models.Model):
-    project = models.ForeignKey('Project', related_name='budgets')
+    product = models.ForeignKey('Product', related_name='budgets')
     start_date = models.DateField()
     budget = models.DecimalField(
         max_digits=16, decimal_places=2,
@@ -944,73 +944,72 @@ class Status(models.Model):
         verbose_name_plural = "statuses"
 
 
-class ProjectStatus(Status):
-    project = models.ForeignKey('Project', related_name='statuses')
+class ProductStatus(Status):
+    product = models.ForeignKey('Product', related_name='statuses')
 
 
-class ProjectGroupStatus(Status):
-    project_group = models.ForeignKey('ProjectGroup', related_name='statuses')
+class ProductGroupStatus(Status):
+    product_group = models.ForeignKey('ProductGroup', related_name='statuses')
 
 
-class ProjectGroup(BaseProject):
-    projects = models.ManyToManyField(
-        Project,
-        related_name='project_groups',
-        limit_choices_to=lambda: {'id__in': Project.objects.visible()}
-    )
+class ProductGroup(BaseProduct):
+    products = models.ManyToManyField(
+        Product,
+        related_name='product_groups',
+        limit_choices_to=lambda: {'id__in': Product.objects.visible()})
 
     @property
     def budgets(self):
         return Budget.objects.filter(
-            project_id__in=[p.id for p in self.projects.all()])
+            product_id__in=[p.id for p in self.products.all()])
 
     @property
     def savings(self):
         return Saving.objects.filter(
-            project_id__in=[p.id for p in self.projects.all()])
+            product_id__in=[p.id for p in self.products.all()])
 
     @property
     def first_date(self):
-        return min([p.first_date for p in self.projects.all()])
+        return min([p.first_date for p in self.products.all()])
 
     @property
     def last_date(self):
-        return max([p.last_date for p in self.projects.all()])
+        return max([p.last_date for p in self.products.all()])
 
     def budget(self, on=None):
-        return sum([p.budget(on) for p in self.projects.all()])
+        return sum([p.budget(on) for p in self.products.all()])
 
     @property
     def costs(self):
         return Cost.objects.filter(
-            project_id__in=[p.id for p in self.projects.all()])
+            product_id__in=[p.id for p in self.products.all()])
 
     @property
     def cost_to_date(self):
-        return sum([p.cost_to_date for p in self.projects.all()])
+        return sum([p.cost_to_date for p in self.products.all()])
 
     @property
     def total_cost(self):
-        return sum([p.total_cost for p in self.projects.all()])
+        return sum([p.total_cost for p in self.products.all()])
 
     @property
     def client(self):
-        clients = [p.client for p in self.projects.all() if p.client]
+        clients = [p.client for p in self.products.all() if p.client]
         if len({c.id for c in clients}) == 1:
             return clients[0]
 
     @property
     def links(self):
         return Link.objects.filter(
-            project_id__in=[p.id for p in self.projects.visible()])
+            product_id__in=[p.id for p in self.products.visible()])
 
     @property
     def final_budget(self):
-        return sum(p.final_budget for p in self.projects.all())
+        return sum(p.final_budget for p in self.products.all())
 
     def current_fte(self, start_date=None, end_date=None):
         """
-        current FTE measures the number of people working on the project.
+        current FTE measures the number of people working on the product.
         it is the total man-days / num of workday from a start date to
         an end date.
         :param start_date: date object for the start date.
@@ -1019,7 +1018,7 @@ class ProjectGroup(BaseProject):
         if not specified, use the date of yesterday.
         """
         return sum(p.current_fte(start_date, end_date)
-                   for p in self.projects.all())
+                   for p in self.products.all())
 
     def people_costs(self, start_date, end_date, contractor_only=False,
                      non_contractor_only=False):
@@ -1034,23 +1033,23 @@ class ProjectGroup(BaseProject):
         """
         return sum(p.people_costs(start_date, end_date, contractor_only,
                                   non_contractor_only)
-                   for p in self.projects.filter(visible=True))
+                   for p in self.products.filter(visible=True))
 
     def additional_costs(self, start_date, end_date):
         return sum(p.additional_costs(start_date, end_date) for p in
-                   self.projects.filter(visible=True))
+                   self.products.filter(visible=True))
 
     def savings_between(self, start_date=None, end_date=None):
         """
-        returns total savings for the project
+        returns total savings for the product
 
         :param start_date: date object for the start date.
-        if not specified, use the date of the first saving for the project.
+        if not specified, use the date of the first saving for the product.
         :param end_date: date object for the end date.
         if not specified, use the date of today.
         """
         return sum(p.savings_between(start_date, end_date) for p in
-                   self.projects.filter(visible=True))
+                   self.products.filter(visible=True))
 
 
 class TaskManager(models.Manager):
@@ -1076,7 +1075,7 @@ class TaskManager(models.Manager):
 class Task(models.Model):
     name = models.CharField(max_length=128, null=True)
     person = models.ForeignKey('Person', related_name='tasks')
-    project = models.ForeignKey('Project', related_name='tasks')
+    product = models.ForeignKey('Product', related_name='tasks')
     start_date = models.DateField()
     end_date = models.DateField()
     days = models.DecimalField(max_digits=10, decimal_places=5)
@@ -1087,13 +1086,13 @@ class Task(models.Model):
     def __str__(self):
         if self.name:
             return '{} - {} on {} from {} to {} for {:.2g} days'.format(
-                self.name, self.person, self.project,
+                self.name, self.person, self.product,
                 self.start_date.strftime('%Y-%m-%d'),
                 self.end_date.strftime('%Y-%m-%d'),
                 self.days)
         else:
             return '{} on {} from {} to {} for {:.2g} days'.format(
-                self.person, self.project,
+                self.person, self.product,
                 self.start_date.strftime('%Y-%m-%d'),
                 self.end_date.strftime('%Y-%m-%d'),
                 self.days)
@@ -1173,7 +1172,7 @@ class Task(models.Model):
 
 
 class Link(models.Model):
-    project = models.ForeignKey('Project', related_name='links')
+    product = models.ForeignKey('Product', related_name='links')
     name = models.CharField(max_length=150, null=True, blank=True)
     url = models.URLField()
     note = models.TextField(null=True, blank=True)
