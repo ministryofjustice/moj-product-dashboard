@@ -352,3 +352,9 @@ ul.external-links li.github-com div.code-climate a {
 ul.external-links li span.external-link-note:before {
   content: ' - ';
 }
+
+/* Projects exports */
+
+div.projects-export {
+    float: right;
+}
