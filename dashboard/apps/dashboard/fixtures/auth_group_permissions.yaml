@@ -1,0 +1,81 @@
+- model: auth.group
+  pk: 1
+  fields:
+    name: Admin
+    permissions:
+      - ['change_user', 'auth', 'user']
+      - ['add_user', 'auth', 'user']
+      - ['delete_user', 'auth', 'user']
+      - ['change_accessattempt', 'axes', 'accessattempt']
+      - ['add_accessattempt', 'axes', 'accessattempt']
+      - ['delete_accessattempt', 'axes', 'accessattempt']
+      - ['change_accesslog', 'axes', 'accesslog']
+      - ['add_accesslog', 'axes', 'accesslog']
+      - ['delete_accesslog', 'axes', 'accesslog']
+      - ['change_logentry', 'admin', 'logentry']
+- model: auth.group
+  pk: 2
+  fields:
+    name: Finance
+    permissions:
+      - ['change_rate', 'dashboard', 'rate']
+      - ['add_rate', 'dashboard', 'rate']
+      - ['change_area', 'dashboard', 'area']
+      - ['change_person', 'dashboard', 'person']
+      - ['upload_person', 'dashboard', 'person']
+      - ['change_product', 'dashboard', 'product']
+      - ['adjustmentexport_product', 'dashboard', 'product']
+      - ['intercompanyexport_product', 'dashboard', 'product']
+      - ['productdetailexport_product', 'dashboard', 'product']
+      - ['change_task', 'dashboard', 'task']
+      - ['change_cost', 'dashboard', 'cost']
+      - ['add_cost', 'dashboard', 'cost']
+      - ['delete_cost', 'dashboard', 'cost']
+      - ['change_budget', 'dashboard', 'budget']
+      - ['add_budget', 'dashboard', 'budget']
+      - ['delete_budget', 'dashboard', 'budget']
+      - ['change_productstatus', 'dashboard', 'productstatus']
+      - ['add_productstatus', 'dashboard', 'productstatus']
+      - ['delete_productstatus', 'dashboard', 'productstatus']
+      - ['change_productgroupstatus', 'dashboard', 'productgroupstatus']
+      - ['add_productgroupstatus', 'dashboard', 'productgroupstatus']
+      - ['delete_productgroupstatus', 'dashboard', 'productgroupstatus']
+      - ['add_productgroup', 'dashboard', 'productgroup']
+      - ['change_productgroup', 'dashboard', 'productgroup']
+      - ['delete_productgroup', 'dashboard', 'productgroup']
+      - ['change_saving', 'dashboard', 'saving']
+      - ['add_saving', 'dashboard', 'saving']
+      - ['delete_saving', 'dashboard', 'saving']
+      - ['change_link', 'dashboard', 'link']
+      - ['add_link', 'dashboard', 'link']
+      - ['delete_link', 'dashboard', 'link']
+- model: auth.group
+  pk: 3
+  fields:
+    name: Delivery
+    permissions:
+      - ['change_area', 'dashboard', 'area']
+      - ['change_person', 'dashboard', 'person']
+      - ['change_product', 'dashboard', 'product']
+      - ['change_task', 'dashboard', 'task']
+      - ['change_cost', 'dashboard', 'cost']
+      - ['add_cost', 'dashboard', 'cost']
+      - ['delete_cost', 'dashboard', 'cost']
+      - ['change_budget', 'dashboard', 'budget']
+      - ['add_budget', 'dashboard', 'budget']
+      - ['delete_budget', 'dashboard', 'budget']
+      - ['change_productstatus', 'dashboard', 'productstatus']
+      - ['add_productstatus', 'dashboard', 'productstatus']
+      - ['delete_productstatus', 'dashboard', 'productstatus']
+      - ['change_productgroupstatus', 'dashboard', 'productgroupstatus']
+      - ['add_productgroupstatus', 'dashboard', 'productgroupstatus']
+      - ['delete_productgroupstatus', 'dashboard', 'productgroupstatus']
+      - ['add_productgroup', 'dashboard', 'productgroup']
+      - ['change_productgroup', 'dashboard', 'productgroup']
+      - ['delete_productgroup', 'dashboard', 'productgroup']
+      - ['change_saving', 'dashboard', 'saving']
+      - ['add_saving', 'dashboard', 'saving']
+      - ['delete_saving', 'dashboard', 'saving']
+      - ['change_link', 'dashboard', 'link']
+      - ['add_link', 'dashboard', 'link']
+      - ['delete_link', 'dashboard', 'link']

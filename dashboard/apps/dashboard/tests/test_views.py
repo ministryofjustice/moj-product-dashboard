@@ -13,10 +13,10 @@ import pytest
 from faker import Faker
 from model_mommy import mommy
 
-from dashboard.apps.prototype.views import (
+from dashboard.apps.dashboard.views import (
     product_html, product_json, service_html, service_json,
     product_group_html, product_group_json, sync_from_float)
-from dashboard.apps.prototype.models import (
+from dashboard.apps.dashboard.models import (
     Area, Product, ProductGroup)
 
 
@@ -197,7 +197,7 @@ def test_product_group_json_with_invalid_id():
 @override_settings(CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
                    CELERY_ALWAYS_EAGER=True,
                    BROKER_BACKEND='memory')
-@patch('dashboard.apps.prototype.views.sync_float.delay')
+@patch('dashboard.apps.dashboard.views.sync_float.delay')
 def test_sync_float(mock_sync_float):
     client = make_login_client()
     rsp = client.post(

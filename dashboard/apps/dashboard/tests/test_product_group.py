@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from model_mommy import mommy
 
-from dashboard.apps.prototype.models import ProductGroup, Area
+from dashboard.apps.dashboard.models import ProductGroup, Area
 from .test_product import make_product
 
 

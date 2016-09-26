@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.core.exceptions import ValidationError
 
-from dashboard.apps.prototype.permissions import user_is_finance
+from dashboard.apps.dashboard.permissions import user_is_finance
 
 
 class FinanceAuthFormMixin():

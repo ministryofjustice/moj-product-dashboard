@@ -84,7 +84,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
 
     @csrf_protect_m
     @transaction.atomic
-    @method_decorator(permission_required('prototype.upload_person',
+    @method_decorator(permission_required('dashboard.upload_person',
                                           raise_exception=True))
     def upoload_view(self, request, *args, **kwargs):
         if not self.has_upload_permission(request):
@@ -117,7 +117,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         })
 
         return render_to_response(
-            'admin/prototype/upload.html',
+            'admin/dashboard/upload.html',
             context,
             context_instance=RequestContext(request))
 
@@ -198,7 +198,7 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
 
     @csrf_protect_m
     @transaction.atomic
-    @method_decorator(permission_required('prototype.adjustmentexport_product',
+    @method_decorator(permission_required('dashboard.adjustmentexport_product',
                                           raise_exception=True))
     def export_view(self, request):
         if not self.is_finance(request.user):  # pragma: no cover
@@ -240,7 +240,7 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
         })
 
         return render_to_response(
-            'admin/prototype/export.html',
+            'admin/dashboard/export.html',
             context,
             context_instance=RequestContext(request))
 

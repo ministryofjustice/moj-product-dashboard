@@ -146,8 +146,8 @@
             <ul>
               <li class="portfolio"><a href="{% url 'portfolio_html' %}">Portfolio Summary</a></li>
               {% if request.user.is_authenticated %}
-                {% if perms.prototype.change_product %}
-                  <li class="admin"><a href="/admin/prototype/product/">Admin</a></li>
+                {% if perms.dashboard.change_product %}
+                  <li class="admin"><a href="/admin/dashboard/product/">Admin</a></li>
                 {% elif perms.auth.change_user %}
                   <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
                 {% endif %}

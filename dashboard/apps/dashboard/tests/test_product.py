@@ -6,9 +6,9 @@ import pytest
 from model_mommy import mommy
 
 from dashboard.libs.date_tools import parse_date, get_workdays
-from dashboard.apps.prototype.models import (
+from dashboard.apps.dashboard.models import (
     Product, Area, Task, Person, Rate, Cost, ProductStatus, Budget)
-from prototype.constants import COST_TYPES, STATUS_TYPES
+from dashboard.apps.dashboard.constants import COST_TYPES, STATUS_TYPES
 
 
 task_time_ranges = [
@@ -623,5 +623,5 @@ def test_product_financial_rag():
 @pytest.mark.django_db
 def test_admin_url():
     product = make_product()
-    expected = '/admin/prototype/product/{}/change/'.format(product.id)
+    expected = '/admin/dashboard/product/{}/change/'.format(product.id)
     assert product.admin_url == expected
