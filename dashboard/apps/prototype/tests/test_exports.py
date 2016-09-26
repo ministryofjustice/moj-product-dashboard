@@ -6,7 +6,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 
-from ..models import Product, Client, Person, PersonCost, Rate, Task
+from ..models import Product, Area, Person, PersonCost, Rate, Task
 from ..constants import COST_TYPES
 from ..forms import EXPORTS
 
@@ -15,8 +15,8 @@ class ExportTestCase(TestCase):
     fixtures = ['auth_group_permissions.yaml', 'test_users']
 
     def setUp(self):
-        client = mommy.make(Client)
-        self.product = mommy.make(Product, client=client)
+        area = mommy.make(Area)
+        self.product = mommy.make(Product, area=area)
 
         p = mommy.make(Person)
         c = mommy.make(Person, is_contractor=True)

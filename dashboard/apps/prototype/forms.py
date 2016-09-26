@@ -208,7 +208,7 @@ EXPORTS = (
 class ExportForm(forms.Form):
     date = MonthYearField(required=True)
     product = forms.ModelChoiceField(
-        queryset=Product.objects.all().order_by('client', 'name'),
+        queryset=Product.objects.all().order_by('area', 'name'),
         required=True)
     export_type = forms.ChoiceField(choices=EXPORTS, widget=forms.RadioSelect())
 
@@ -261,17 +261,17 @@ class BaseExport():
         ws.cell(row=165, column=7).value = product.hr_id
 
         ws.cell(row=161, column=10).value = \
-            '%s - %s Share of DS Agency Costs %s' % (product.name, product.client.name, month)
+            '%s - %s Share of DS Agency Costs %s' % (product.name, product.area.name, month)
         ws.cell(row=162, column=10).value = \
-            '%s - %s Share of DS Salary Costs %s' % (product.name, product.client.name, month)
+            '%s - %s Share of DS Salary Costs %s' % (product.name, product.area.name, month)
         ws.cell(row=163, column=10).value = \
-            '%s - %s Share of DS Allce Costs %s' % (product.name, product.client.name, month)
+            '%s - %s Share of DS Allce Costs %s' % (product.name, product.area.name, month)
         ws.cell(row=164, column=10).value = \
-            '%s - %s Share of DS ERNIC Costs %s' % (product.name, product.client.name, month)
+            '%s - %s Share of DS ERNIC Costs %s' % (product.name, product.area.name, month)
         ws.cell(row=165, column=10).value = \
-            '%s - %s Share of DS ASLC Costs %s' % (product.name, product.client.name, month)
+            '%s - %s Share of DS ASLC Costs %s' % (product.name, product.area.name, month)
         ws.cell(row=166, column=10).value = \
-            '%s - %s Share of DS Resource Costs %s' % (product.name, product.client.name, month)
+            '%s - %s Share of DS Resource Costs %s' % (product.name, product.area.name, month)
 
         ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
                                                     date.strftime('/%m/%Y'))
@@ -281,7 +281,7 @@ class BaseExport():
                                           date.strftime('%d%m%y')
 
         ws.cell(row=14, column=9).value = '%s - %s Share of DS Costs %s' % \
-                                          (product.name, product.client.name,
+                                          (product.name, product.area.name,
                                            month)
 
         ws.cell(row=161, column=9).value = product.people_costs(start_date, end_date, contractor_only=True)
@@ -344,7 +344,7 @@ class ProductDetailExport(BaseExport):
             ws.cell(row=row, column=1).value = person.name
             ws.cell(row=row, column=2).value = person.job_title
             ws.cell(row=row, column=3).value = product.name
-            ws.cell(row=row, column=4).value = product.client.name
+            ws.cell(row=row, column=4).value = product.area.name
 
             ws.cell(row=row, column=10).value = detail['days'] * Decimal('8')
             ws.cell(row=row, column=11).value = detail['days']

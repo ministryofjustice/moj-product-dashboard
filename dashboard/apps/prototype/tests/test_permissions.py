@@ -8,9 +8,9 @@ from django.test import TestCase, mock
 
 from model_mommy import mommy
 
-from ..admin import (RateAdmin, RateInline, ClientAdmin, ProductAdmin,
+from ..admin import (RateAdmin, RateInline, AreaAdmin, ProductAdmin,
                      TaskAdmin, PersonAdmin)
-from ..models import Rate, Client, Product, Task, Person
+from ..models import Rate, Area, Product, Task, Person
 
 
 class TaskTimeSpentTestCase(TestCase):
@@ -79,7 +79,7 @@ class TaskTimeSpentTestCase(TestCase):
         self.assertHasNoPermission(self.regular_user, ModelAdmin, User)
 
     def test_read_only(self):
-        self.assertHasPermission(self.finance_admin, ClientAdmin, Client,
+        self.assertHasPermission(self.finance_admin, AreaAdmin, Area,
                                  add=False, delete=False)
         self.assertHasPermission(self.finance_admin, ProductAdmin, Product,
                                  add=False, delete=False)

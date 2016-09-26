@@ -20,7 +20,7 @@
     permissions:
       - ['change_rate', 'prototype', 'rate']
       - ['add_rate', 'prototype', 'rate']
-      - ['change_client', 'prototype', 'client']
+      - ['change_area', 'prototype', 'area']
       - ['change_person', 'prototype', 'person']
       - ['upload_person', 'prototype', 'person']
       - ['change_product', 'prototype', 'product']
@@ -54,7 +54,7 @@
   fields:
     name: Delivery
     permissions:
-      - ['change_client', 'prototype', 'client']
+      - ['change_area', 'prototype', 'area']
       - ['change_person', 'prototype', 'person']
       - ['change_product', 'prototype', 'product']
       - ['change_task', 'prototype', 'task']
