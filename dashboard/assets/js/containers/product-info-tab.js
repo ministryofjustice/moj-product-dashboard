@@ -31,8 +31,8 @@ export class ProductInfo extends Component {
         <div className="banner">
           <span className={ className }>{ status || '-' }</span>
         </div>
-        <p>{ reason }</p>
-        <p>{ date ? `Last updated ${this.dateInNum(date)}` : null }</p>
+        <p className="font-small">{ reason }</p>
+        <p className="font-small">{ date ? `Last updated ${this.dateInNum(date)}` : null }</p>
       </div>
     );
   }
@@ -45,25 +45,25 @@ export class ProductInfo extends Component {
         <div className="grid-row">
           <div className="column-one-quarter">
             <p className="heading-small">Discovery start</p>
-            <p>{ discoveryStart ? this.dateInEnglish(discoveryStart) : '-' }</p>
+            <p className="font-small">{ discoveryStart ? this.dateInEnglish(discoveryStart) : '-' }</p>
           </div>
           <div className="column-one-quarter">
             <p className="heading-small">Alpha start</p>
-            <p>{ alphaStart ? this.dateInEnglish(alphaStart) : '-' }</p>
+            <p className="font-small">{ alphaStart ? this.dateInEnglish(alphaStart) : '-' }</p>
           </div>
           <div className="column-one-quarter">
             <p className="heading-small">Beta start</p>
-            <p>{ betaStart ? this.dateInEnglish(betaStart) : '-' }</p>
+            <p className="font-small">{ betaStart ? this.dateInEnglish(betaStart) : '-' }</p>
           </div>
           <div className="column-one-quarter">
             <p className="heading-small">Live start</p>
-            <p>{ liveStart? this.dateInEnglish(liveStart) : '-' }</p>
+            <p className="font-small">{ liveStart? this.dateInEnglish(liveStart) : '-' }</p>
           </div>
         </div>
         <div className="grid-row">
           <div className="column-one-quarter">
             <p className="heading-small">End date</p>
-            <p>{ endDate ? this.dateInEnglish(endDate) : '-' }</p>
+            <p className="font-small">{ endDate ? this.dateInEnglish(endDate) : '-' }</p>
           </div>
         </div>
       </div>
@@ -155,7 +155,7 @@ export class ProductInfo extends Component {
     const budgets = this.props.product.budgets
       .sort(Product.compareDate('date', 'desc'));
     if (budgets.length == 0) {
-      return (<p>-</p>);
+      return (<p className="font-small">-</p>);
     }
     return (
       <ul style={{marginTop: '20px'}}>
@@ -183,19 +183,19 @@ export class ProductInfo extends Component {
       <div className="grid-row">
         <div className="column-one-quarter">
             <p className="heading-small">Service manager</p>
-            <p>{ serviceManager || '-' }</p>
+            <p className="font-small">{ serviceManager || '-' }</p>
         </div>
         <div className="column-one-quarter">
             <p className="heading-small">Product manager</p>
-            <p>{ productManager || '-' }</p>
+            <p className="font-small">{ productManager || '-' }</p>
         </div>
         <div className="column-one-quarter">
             <p className="heading-small">Delivery manager</p>
-            <p>{ deliveryManager || '-' }</p>
+            <p className="font-small">{ deliveryManager || '-' }</p>
         </div>
         <div className="column-one-quarter">
             <p className="heading-small">Service area</p>
-            <p>{ serviceArea || '-' }</p>
+            <p className="font-small">{ serviceArea || '-' }</p>
         </div>
       </div>
     );
@@ -236,7 +236,7 @@ export class ProductInfo extends Component {
       <div id="product-info">
         { this.Status() }
         <h3 className="heading-small">Product description</h3>
-        <p>{ this.props.product.description || '-' }</p>
+        <p className="font-small">{ this.props.product.description || '-' }</p>
         <h3 className="heading-small">Phase dates</h3>
         { this.PhaseDates() }
         <h3 className="heading-small">Team description</h3>

@@ -112,8 +112,8 @@ export class ProductContainer extends Component {
         </h1>
         <Tabs className="product-tabs">
           <TabList>
-            <Tab>Overview</Tab>
-            <Tab>Product information</Tab>
+            <Tab><span className="font-small">Overview</span></Tab>
+            <Tab><span className="font-small">Product information</span></Tab>
           </TabList>
           <TabPanel>
             <ProductOverview
