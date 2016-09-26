@@ -13,7 +13,7 @@ module.exports = {
   output: {
     path: dist,
     publicPath: '/static/dist/',
-    filename: "prototype.[hash].js"
+    filename: "dashboard.[hash].js"
   },
 
   module: {
@@ -37,7 +37,7 @@ module.exports = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin("prototype.[hash].css"),
+    new ExtractTextPlugin("dashboard.[hash].css"),
     new BundleTracker({
       path: dist,
       filename: 'webpack-stats.json'
