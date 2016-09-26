@@ -13,6 +13,10 @@ strong {
   margin-left: 0;
 }
 
+#product-heading {
+  margin-top: 15px;
+}
+
 @media (min-width: 641px) {
   select#projects, select#services {
     width: 450px;

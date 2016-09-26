@@ -102,7 +102,7 @@ export class ProductContainer extends Component {
             </li>
           </ol>
         </div>
-        <h1 className="heading-xlarge">
+        <h1 className="heading-xlarge" id="product-heading">
           <div className="banner">
             <PhaseTag phase={ product.phase } />
             <RagTag rag={ product.rag } />
