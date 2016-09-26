@@ -73,6 +73,38 @@ export function TimeFrameSelector({
 }
 
 
+export class RadioWithLabel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { focused : false };
+  }
+
+  render() {
+    let className = 'block-label';
+    if (this.props.selected) {
+      className += ' selected';
+    };
+    if(this.state.focused) {
+      className += ' focused';
+    }
+    return (
+      <label className={ className } htmlFor={ this.props.id }>
+        <input
+          id={ this.props.id }
+          type="radio"
+          value={ this.props.value }
+          checked={ this.props.selected }
+          onChange={ (e) => this.props.handleChange(e) }
+          onFocus={ () => this.setState({ focused: true }) }
+          onBlur={ () => this.setState({ focused: false }) }
+        />
+        { this.props.label }
+      </label>
+    );
+  }
+}
+
+
 export function KeyStats({product, timeFrame, startDate, endDate}) {
   let budget = 0;
   let spend= 0;
@@ -175,26 +207,20 @@ export class ProductGraph extends Component {
       <div>
         <span>Show</span>
         <fieldset className="inline burn-down-toggle">
-          <label className="block-label" htmlFor="radio-burn-up">
-            <input
-              id="radio-burn-up"
-              type="radio"
-              value="burn-up"
-              checked={!this.props.showBurnDown}
-              onChange={this.props.onBurnDownChange}
-            />
-            Burn up
-          </label>
-          <label className="block-label" htmlFor="radio-burn-down">
-            <input
-              id="radio-burn-down"
-              type="radio"
-              value="burn-down"
-              checked={this.props.showBurnDown}
-              onChange={this.props.onBurnDownChange}
-            />
-            Burn down
-          </label>
+          <RadioWithLabel
+            id="radio-burn-up"
+            value="burn-up"
+            label="Burn up"
+            selected={ !this.props.showBurnDown }
+            handleChange={ (e) => this.props.onBurnDownChange(e) }
+          />
+          <RadioWithLabel
+            id="radio-burn-down"
+            value="burn-down"
+            label="Burn down"
+            selected={ this.props.showBurnDown }
+            handleChange={ (e) => this.props.onBurnDownChange(e) }
+          />
         </fieldset>
       </div>
     );
