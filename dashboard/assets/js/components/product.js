@@ -94,7 +94,7 @@ export class RadioWithLabel extends Component {
           type="radio"
           value={ this.props.value }
           checked={ this.props.selected }
-          onChange={ (e) => this.props.handleChange(e) }
+          onChange={ this.props.handleChange }
           onFocus={ () => this.setState({ focused: true }) }
           onBlur={ () => this.setState({ focused: false }) }
         />
@@ -212,14 +212,14 @@ export class ProductGraph extends Component {
             value="burn-up"
             label="Burn up"
             selected={ !this.props.showBurnDown }
-            handleChange={ (e) => this.props.onBurnDownChange(e) }
+            handleChange={ this.props.onBurnDownChange }
           />
           <RadioWithLabel
             id="radio-burn-down"
             value="burn-down"
             label="Burn down"
             selected={ this.props.showBurnDown }
-            handleChange={ (e) => this.props.onBurnDownChange(e) }
+            handleChange={ this.props.onBurnDownChange }
           />
         </fieldset>
       </div>
