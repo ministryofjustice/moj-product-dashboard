@@ -19,7 +19,7 @@ from dashboard.apps.dashboard.models import Area, Person, Product, Task
 from dashboard.libs.date_tools import get_workdays, parse_date
 from .helpers import logger
 
-FLOAT_DATA_DIR = settings.location('j../var/float')
+FLOAT_DATA_DIR = settings.location('../var/float')
 
 
 def export(token, start_date, weeks, output_dir):
