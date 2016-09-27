@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, Http404
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
 from dashboard.libs.date_tools import parse_date
@@ -124,3 +125,7 @@ def sync_from_float(request):
     return JsonResponse({
         'status': 'STARTED'
     })
+
+
+class PortfolioExportView(View):
+    pass
