@@ -194,6 +194,11 @@ h1 a.button {
   display: none
 }
 
+.griddle-body th.sort-ascending,
+.griddle-body th.sort-descending {
+  color: #2b8cc4;
+}
+
 .date-range > div {
   padding-top: 30px;
 }

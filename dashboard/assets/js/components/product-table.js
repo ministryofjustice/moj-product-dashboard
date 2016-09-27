@@ -10,21 +10,6 @@ import AmberImg from '../../img/amber.png';
 import GreenImg from '../../img/green.png';
 
 
-const FilterComponent = ({ changeFilter }) => (
-  <div className="filter-container">
-    <label className="form-label" htmlFor="filter-results">
-      Filter results
-    </label>
-    <input
-      type="text"
-      id="filter-results"
-      name="filter"
-      className="form-control"
-      onChange={(e) => changeFilter(e.target.value)}
-    />
-  </div>
-);
-
 /**
  * React component for a table of products
  */
@@ -151,9 +136,6 @@ export const ProductTable = ({ products, showService, showFilter }) => {
       resultsPerPage={ products.length }
       initialSort='name'
       showFilter={showFilter}
-      filterPlaceholderText=''
-      useCustomFilterComponent={true}
-      customFilterComponent={FilterComponent}
     />
   );
 }
