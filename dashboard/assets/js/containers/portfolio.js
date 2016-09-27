@@ -44,9 +44,6 @@ export class PortfolioContainer extends Component {
             MoJ Digital Portfolio
           </h1>
         </div>
-        <div className="projects-export">
-          <button className="button">EXPORT PROJECTS</button>
-        </div>
         <ProductTable
           products={this.state.products}
           showService={true}

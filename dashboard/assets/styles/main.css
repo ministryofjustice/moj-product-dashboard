@@ -355,6 +355,7 @@ ul.external-links li span.external-link-note:before {
 
 /* Projects exports */
 
-div.projects-export {
-    float: right;
+div.filter-container a.export-button {
+    margin-left: 10px;
+    margin-top: 1px;
 }
