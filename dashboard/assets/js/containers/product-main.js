@@ -188,3 +188,9 @@ export class ProductContainer extends Component {
     return this.normalMode();
   }
 }
+
+ProductContainer.propTypes = {
+  type: React.PropTypes.string.isRequired,
+  id: React.PropTypes.string.isRequired,
+  csrftoken: React.PropTypes.string.isRequired
+}

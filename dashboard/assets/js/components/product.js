@@ -5,6 +5,7 @@ import Plotly from '../libs/plotly-custom';
 import { plotCumulativeSpendings } from '../components/cumulative-graph';
 import { plotMonthlySpendings } from '../components/monthly-graph';
 import { numberWithCommas, isIE } from '../libs/utils';
+import { Product } from '../libs/models';
 
 import PrinterImg from '../../img/printer.png';
 
@@ -102,6 +103,13 @@ export class RadioWithLabel extends Component {
       </label>
     );
   }
+}
+
+RadioWithLabel.propTypes = {
+  id: React.PropTypes.string.isRequired,
+  value: React.PropTypes.string.isRequired,
+  selected: React.PropTypes.bool.isRequired,
+  handleChange: React.PropTypes.func.isRequired
 }
 
 
@@ -254,6 +262,14 @@ export class ProductGraph extends Component {
       </div>
     );
   }
+}
+
+ProductGraph.propTypes = {
+  product: React.PropTypes.instanceOf(Product).isRequired,
+  showBurnDown: React.PropTypes.bool.isRequired,
+  startDate: React.PropTypes.string.isRequired,
+  endDate: React.PropTypes.string.isRequired,
+  isPrinterFriendly: React.PropTypes.bool.isRequired
 }
 
 

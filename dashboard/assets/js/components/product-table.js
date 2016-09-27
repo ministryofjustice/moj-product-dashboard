@@ -140,6 +140,12 @@ export const ProductTable = ({ products, showService, showFilter }) => {
   );
 }
 
+ProductTable.propTypes = {
+  products: React.PropTypes.array.isRequired,
+  showService: React.PropTypes.bool.isRequired,
+  showFilter: React.PropTypes.bool.isRequired
+}
+
 /**
  * React component for a image which hides onError
  */
@@ -162,24 +168,32 @@ export class ImageDisappearOnError extends Component {
   }
 }
 
-export class ExternalLinkExtra extends Component {
-  render() {
-    if (this.props.baseURL.includes('github.com')) {
-      const codeClimateURL = codeClimateProjectURL(this.props.baseURL);
-      return (
-        <div className="code-climate">
-          <a href={ codeClimateURL }>
-            <ImageDisappearOnError alt="Code Climate" src={ codeClimateURL + "/badges/gpa.svg" } />
-          </a>
-          <a href={ codeClimateURL + '/coverage' }>
-            <ImageDisappearOnError alt="Test Coverage" src={ codeClimateURL + "/badges/coverage.svg" } />
-          </a>
-          <a href={ codeClimateURL }>
-            <ImageDisappearOnError alt="Issue Count" src={ codeClimateURL + "/badges/issue_count.svg" } />
-          </a>
-        </div>
-      )
-    }
-    return null;
+ImageDisappearOnError.propTypes = {
+  alt: React.PropTypes.string,
+  src: React.PropTypes.string.isRequired
+}
+
+
+export const ExternalLinkExtra = ({ baseURL }) => {
+  if (baseURL.includes('github.com')) {
+    const codeClimateURL = codeClimateProjectURL(baseURL);
+    return (
+      <div className="code-climate">
+        <a href={ codeClimateURL }>
+          <ImageDisappearOnError alt="Code Climate" src={ codeClimateURL + "/badges/gpa.svg" } />
+        </a>
+        <a href={ codeClimateURL + '/coverage' }>
+          <ImageDisappearOnError alt="Test Coverage" src={ codeClimateURL + "/badges/coverage.svg" } />
+        </a>
+        <a href={ codeClimateURL }>
+          <ImageDisappearOnError alt="Issue Count" src={ codeClimateURL + "/badges/issue_count.svg" } />
+        </a>
+      </div>
+    )
   }
+  return null;
+}
+
+ExternalLinkExtra.propTypes = {
+  baseURL: React.PropTypes.string.isRequired
 }

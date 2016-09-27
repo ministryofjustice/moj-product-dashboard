@@ -57,7 +57,7 @@ export function getServiceData(id, csrftoken) {
 /**
  * send a POST request to the backend to retrieve products profile
  */
-export function getPortfolioData(id, csrftoken) {
+export function getPortfolioData(csrftoken) {
   const init = {
     credentials: 'same-origin',
     method: 'GET',

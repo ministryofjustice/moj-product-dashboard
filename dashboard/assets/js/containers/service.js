@@ -64,3 +64,8 @@ export class ServiceContainer extends Component {
     );
   }
 }
+
+ServiceContainer.propTypes = {
+  id: React.PropTypes.string.isRequired,
+  csrftoken: React.PropTypes.string.isRequired
+}

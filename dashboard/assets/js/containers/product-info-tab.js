@@ -258,3 +258,7 @@ export class ProductInfo extends Component {
     );
   }
 }
+
+ProductInfo.propTypes = {
+  product: React.PropTypes.instanceOf(Product).isRequired
+}
