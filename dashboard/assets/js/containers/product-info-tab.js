@@ -218,7 +218,7 @@ export class ProductInfo extends Component {
           {
             links.map((link, index) => (
               <li key={index} className={ link.type }>
-                <a className={ link.type } href={ link.url } rel="external">
+                <a className={ link.type } href={ link.url } rel="external" target="_blank">
                   { link.name }
                 </a>{ this.LinkNote(link) }
                 <ExternalLinkExtra baseURL={ link.url } />

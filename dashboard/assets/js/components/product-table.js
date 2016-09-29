@@ -179,13 +179,13 @@ export const ExternalLinkExtra = ({ baseURL }) => {
     const codeClimateURL = codeClimateProjectURL(baseURL);
     return (
       <div className="code-climate">
-        <a href={ codeClimateURL }>
+        <a href={ codeClimateURL } target="_blank">
           <ImageDisappearOnError alt="Code Climate" src={ codeClimateURL + "/badges/gpa.svg" } />
         </a>
-        <a href={ codeClimateURL + '/coverage' }>
+        <a href={ codeClimateURL + '/coverage' } target="_blank">
           <ImageDisappearOnError alt="Test Coverage" src={ codeClimateURL + "/badges/coverage.svg" } />
         </a>
-        <a href={ codeClimateURL }>
+        <a href={ codeClimateURL } target="_blank">
           <ImageDisappearOnError alt="Issue Count" src={ codeClimateURL + "/badges/issue_count.svg" } />
         </a>
       </div>
