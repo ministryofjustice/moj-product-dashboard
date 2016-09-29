@@ -1,9 +1,14 @@
+from datetime import datetime
+import re
+
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
+
+from openpyxl.workbook import Workbook
 
 from dashboard.libs.date_tools import parse_date
 from .models import Product, Area, ProductGroup
@@ -128,4 +133,23 @@ def sync_from_float(request):
 
 
 class PortfolioExportView(View):
-    pass
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        filters = kwargs.get('filter', '')
+        now = datetime.now()
+        fname = '%s_%s_%s.xls' % (
+            'ProductData',
+            re.sub(
+                '[^0-9a-zA-Z]+',
+                '-',
+                filters),
+            now.strftime('%Y-%m-%d_%H:%M:%S'))
+
+        workbook = Workbook()
+        response = HttpResponse(
+            content_type="application/vnd.ms-excel")
+        response['Content-Disposition'] = 'attachment; filename=%s' \
+                                          % fname
+        workbook.save(response)
+        return response
