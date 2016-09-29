@@ -352,10 +352,3 @@ ul.external-links li.github-com div.code-climate a {
 ul.external-links li span.external-link-note:before {
   content: ' - ';
 }
-
-/* Projects exports */
-
-div.filter-container a.export-button {
-    margin-left: 10px;
-    margin-top: 1px;
-}

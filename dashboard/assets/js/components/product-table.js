@@ -127,16 +127,19 @@ export const ProductTable = ({ products, showService, showFilter }) => {
   };
 
   return (
-    <Griddle
-      results={products}
-      columns={columnMetadata.map(item => item['columnName'])}
-      columnMetadata={columnMetadata}
-      useGriddleStyles={false}
-      bodyHeight={800}
-      resultsPerPage={ products.length }
-      initialSort='name'
-      showFilter={showFilter}
-    />
+    <div>
+      <Griddle
+        results={products}
+        columns={columnMetadata.map(item => item['columnName'])}
+        columnMetadata={columnMetadata}
+        useGriddleStyles={false}
+        bodyHeight={800}
+        resultsPerPage={ products.length }
+        initialSort='name'
+        showFilter={showFilter}
+      />
+      <ExportProducts />
+    </div>
   );
 }
 
@@ -168,6 +171,7 @@ export class ImageDisappearOnError extends Component {
   }
 }
 
+
 ImageDisappearOnError.propTypes = {
   alt: React.PropTypes.string,
   src: React.PropTypes.string.isRequired
@@ -196,4 +200,21 @@ export const ExternalLinkExtra = ({ baseURL }) => {
 
 ExternalLinkExtra.propTypes = {
   baseURL: React.PropTypes.string.isRequired
+}
+
+/**
+ * Export projects component
+ */
+export class ExportProducts extends Component {
+  render() {
+    return (
+      <div className="export-container">
+        <h4 className="heading-medium">Export Products</h4>
+        <ul>
+          <li><a href="/products/export/" className="export-button">Export visible</a></li>
+          <li><a href="/products/export/" className="export-button">Export all</a></li>
+        </ul>
+      </div>
+    )
+  }
 }
