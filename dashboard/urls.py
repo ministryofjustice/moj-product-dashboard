@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^sync.json$', sync_from_float, name='sync'),
     url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
     url(r'^service.json', service_json, name='service_json'),
-    url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product'),
+    url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product_html'),
     url(r'^product-groups/(?P<id>[0-9]+)?$', product_group_html,
         name='product_group'),
     url(r'^product.json', product_json, name='product_json'),

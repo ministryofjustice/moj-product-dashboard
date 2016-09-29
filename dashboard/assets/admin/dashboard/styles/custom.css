@@ -459,3 +459,7 @@ div.inline-group div.inline-related fieldset.module table tr.toggle-collapsed-in
     font-weight: bold;
     text-align: center;
 }
+
+ul.object-tools li {
+    display: inline;
+}
