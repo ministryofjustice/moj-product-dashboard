@@ -102,7 +102,7 @@ export class ProductContainer extends Component {
             </li>
           </ol>
         </div>
-        <h1 className="heading-xlarge">
+        <h1 className="heading-xlarge" id="product-heading">
           <div className="banner">
             <PhaseTag phase={ product.phase } />
             <RagTag rag={ product.rag } />
@@ -112,8 +112,8 @@ export class ProductContainer extends Component {
         </h1>
         <Tabs className="product-tabs">
           <TabList>
-            <Tab>Overview</Tab>
-            <Tab>Product information</Tab>
+            <Tab><span className="font-small">Overview</span></Tab>
+            <Tab><span className="font-small">Product information</span></Tab>
           </TabList>
           <TabPanel>
             <ProductOverview
@@ -187,4 +187,10 @@ export class ProductContainer extends Component {
     }
     return this.normalMode();
   }
+}
+
+ProductContainer.propTypes = {
+  type: React.PropTypes.string.isRequired,
+  id: React.PropTypes.string.isRequired,
+  csrftoken: React.PropTypes.string.isRequired
 }

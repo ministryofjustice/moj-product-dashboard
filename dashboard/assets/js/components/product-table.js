@@ -10,21 +10,6 @@ import AmberImg from '../../img/amber.png';
 import GreenImg from '../../img/green.png';
 
 
-const FilterComponent = ({ changeFilter }) => (
-  <div className="filter-container">
-    <label className="form-label" htmlFor="filter-results">
-      Filter results
-    </label>
-    <input
-      type="text"
-      id="filter-results"
-      name="filter"
-      className="form-control"
-      onChange={(e) => changeFilter(e.target.value)}
-    />
-  </div>
-);
-
 /**
  * React component for a table of products
  */
@@ -151,11 +136,14 @@ export const ProductTable = ({ products, showService, showFilter }) => {
       resultsPerPage={ products.length }
       initialSort='name'
       showFilter={showFilter}
-      filterPlaceholderText=''
-      useCustomFilterComponent={true}
-      customFilterComponent={FilterComponent}
     />
   );
+}
+
+ProductTable.propTypes = {
+  products: React.PropTypes.array.isRequired,
+  showService: React.PropTypes.bool.isRequired,
+  showFilter: React.PropTypes.bool.isRequired
 }
 
 /**
@@ -180,24 +168,32 @@ export class ImageDisappearOnError extends Component {
   }
 }
 
-export class ExternalLinkExtra extends Component {
-  render() {
-    if (this.props.baseURL.includes('github.com')) {
-      const codeClimateURL = codeClimateProjectURL(this.props.baseURL);
-      return (
-        <div className="code-climate">
-          <a href={ codeClimateURL }>
-            <ImageDisappearOnError alt="Code Climate" src={ codeClimateURL + "/badges/gpa.svg" } />
-          </a>
-          <a href={ codeClimateURL + '/coverage' }>
-            <ImageDisappearOnError alt="Test Coverage" src={ codeClimateURL + "/badges/coverage.svg" } />
-          </a>
-          <a href={ codeClimateURL }>
-            <ImageDisappearOnError alt="Issue Count" src={ codeClimateURL + "/badges/issue_count.svg" } />
-          </a>
-        </div>
-      )
-    }
-    return null;
+ImageDisappearOnError.propTypes = {
+  alt: React.PropTypes.string,
+  src: React.PropTypes.string.isRequired
+}
+
+
+export const ExternalLinkExtra = ({ baseURL }) => {
+  if (baseURL.includes('github.com')) {
+    const codeClimateURL = codeClimateProjectURL(baseURL);
+    return (
+      <div className="code-climate">
+        <a href={ codeClimateURL } target="_blank">
+          <ImageDisappearOnError alt="Code Climate" src={ codeClimateURL + "/badges/gpa.svg" } />
+        </a>
+        <a href={ codeClimateURL + '/coverage' } target="_blank">
+          <ImageDisappearOnError alt="Test Coverage" src={ codeClimateURL + "/badges/coverage.svg" } />
+        </a>
+        <a href={ codeClimateURL } target="_blank">
+          <ImageDisappearOnError alt="Issue Count" src={ codeClimateURL + "/badges/issue_count.svg" } />
+        </a>
+      </div>
+    )
   }
+  return null;
+}
+
+ExternalLinkExtra.propTypes = {
+  baseURL: React.PropTypes.string.isRequired
 }

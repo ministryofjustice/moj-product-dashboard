@@ -13,6 +13,10 @@ strong {
   margin-left: 0;
 }
 
+#product-heading {
+  margin-top: 15px;
+}
+
 @media (min-width: 641px) {
   select#projects, select#services {
     width: 450px;
@@ -188,6 +192,11 @@ h1 a.button {
 
 .griddle-container .footer-container {
   display: none
+}
+
+.griddle-body th.sort-ascending,
+.griddle-body th.sort-descending {
+  color: #2b8cc4;
 }
 
 .date-range > div {

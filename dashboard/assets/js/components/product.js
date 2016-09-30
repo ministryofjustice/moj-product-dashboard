@@ -5,6 +5,7 @@ import Plotly from '../libs/plotly-custom';
 import { plotCumulativeSpendings } from '../components/cumulative-graph';
 import { plotMonthlySpendings } from '../components/monthly-graph';
 import { numberWithCommas, isIE } from '../libs/utils';
+import { Product } from '../libs/models';
 
 import PrinterImg from '../../img/printer.png';
 
@@ -70,6 +71,45 @@ export function TimeFrameSelector({
       </div>
     </div>
   );
+}
+
+
+export class RadioWithLabel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { focused : false };
+  }
+
+  render() {
+    let className = 'block-label';
+    if (this.props.selected) {
+      className += ' selected';
+    };
+    if(this.state.focused) {
+      className += ' focused';
+    }
+    return (
+      <label className={ className } htmlFor={ this.props.id }>
+        <input
+          id={ this.props.id }
+          type="radio"
+          value={ this.props.value }
+          checked={ this.props.selected }
+          onChange={ this.props.handleChange }
+          onFocus={ () => this.setState({ focused: true }) }
+          onBlur={ () => this.setState({ focused: false }) }
+        />
+        { this.props.label }
+      </label>
+    );
+  }
+}
+
+RadioWithLabel.propTypes = {
+  id: React.PropTypes.string.isRequired,
+  value: React.PropTypes.string.isRequired,
+  selected: React.PropTypes.bool.isRequired,
+  handleChange: React.PropTypes.func.isRequired
 }
 
 
@@ -175,26 +215,20 @@ export class ProductGraph extends Component {
       <div>
         <span>Show</span>
         <fieldset className="inline burn-down-toggle">
-          <label className="block-label" htmlFor="radio-burn-up">
-            <input
-              id="radio-burn-up"
-              type="radio"
-              value="burn-up"
-              checked={!this.props.showBurnDown}
-              onChange={this.props.onBurnDownChange}
-            />
-            Burn up
-          </label>
-          <label className="block-label" htmlFor="radio-burn-down">
-            <input
-              id="radio-burn-down"
-              type="radio"
-              value="burn-down"
-              checked={this.props.showBurnDown}
-              onChange={this.props.onBurnDownChange}
-            />
-            Burn down
-          </label>
+          <RadioWithLabel
+            id="radio-burn-up"
+            value="burn-up"
+            label="Burn up"
+            selected={ !this.props.showBurnDown }
+            handleChange={ this.props.onBurnDownChange }
+          />
+          <RadioWithLabel
+            id="radio-burn-down"
+            value="burn-down"
+            label="Burn down"
+            selected={ this.props.showBurnDown }
+            handleChange={ this.props.onBurnDownChange }
+          />
         </fieldset>
       </div>
     );
@@ -228,6 +262,14 @@ export class ProductGraph extends Component {
       </div>
     );
   }
+}
+
+ProductGraph.propTypes = {
+  product: React.PropTypes.instanceOf(Product).isRequired,
+  showBurnDown: React.PropTypes.bool.isRequired,
+  startDate: React.PropTypes.string.isRequired,
+  endDate: React.PropTypes.string.isRequired,
+  isPrinterFriendly: React.PropTypes.bool.isRequired
 }
 
 
