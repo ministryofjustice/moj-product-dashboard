@@ -8,6 +8,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.checks import messages
+from django.core import urlresolvers
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import HttpResponse
@@ -177,6 +178,9 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
     search_fields = ('name', 'float_id')
     list_filter = (IsVisibleFilter, 'area')
     actions = None
+
+    def view_on_site(self, obj):
+        return urlresolvers.reverse('product_html', args=[str(obj.id)])
 
     def float_link(self, obj):
         return format_html('<a href="{base}/products?active=1&product={name}"'
