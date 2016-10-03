@@ -146,7 +146,27 @@ class PortfolioExportView(View):
                 filters),
             now.strftime('%Y-%m-%d_%H:%M:%S'))
 
+        fields = [
+            'id',
+            'name',
+            'description',
+            'area__name',
+            'discovery_date',
+            'alpha_date',
+            'beta_date',
+            'live_date',
+            'end_date',
+            'visible',
+        ]
+
         workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Products info'
+        sheet.append([f.replace('_', ' ').capitalize() for f in fields])
+
+        for row in Product.objects.all().values(*fields):
+            sheet.append([row[f] for f in fields])
+
         response = HttpResponse(
             content_type="application/vnd.ms-excel")
         response['Content-Disposition'] = 'attachment; filename=%s' \
