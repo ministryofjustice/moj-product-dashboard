@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm, ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
 from dashboard.apps.dashboard.permissions import user_is_finance
 
@@ -23,7 +24,11 @@ class FinanceAuthFormMixin():
 
 
 class DashboardUserChangeForm(FinanceAuthFormMixin, UserChangeForm):
-    pass
+    password = ReadOnlyPasswordHashField(
+        label=_("Password"),
+        help_text=_("Raw passwords are not stored, so there is no way to see "
+                    "this user's password, but with the appropriate permission, you can change the password "
+                    "using <a href=\"../password/\">this form</a>."))
 
 
 class DashboardUserCreationForm(FinanceAuthFormMixin, UserCreationForm):
