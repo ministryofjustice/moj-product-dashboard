@@ -136,7 +136,8 @@ class PortfolioExportView(View):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        show_all = kwargs.get('all', False)
+        show_all = kwargs.get('show', 'visible') == 'all'
+        print(kwargs, args, show_all)
         now = datetime.now()
         fname = '%s_%s_%s.xls' % (
             'ProductData',
