@@ -150,12 +150,27 @@ class PortfolioExportView(View):
             'id',
             'name',
             'description',
-            'area__name',
+            'area_name',
             'discovery_date',
             'alpha_date',
             'beta_date',
             'live_date',
             'end_date',
+            'discovery_fte',
+            'alpha_fte',
+            'beta_fte',
+            'live_fte',
+            'final_budget',
+            'cost_of_discovery',
+            'cost_of_alpha',
+            'cost_of_beta',
+            'cost_in_14_15',
+            'cost_in_15_16',
+            'cost_in_16_17',
+            'cost_in_17_18',
+            'cost_of_sustaining',
+            'total_recurring_costs',
+            'savings_enabled',
             'visible',
         ]
 
@@ -164,8 +179,14 @@ class PortfolioExportView(View):
         sheet.title = 'Products info'
         sheet.append([f.replace('_', ' ').capitalize() for f in fields])
 
-        for row in Product.objects.all().values(*fields):
-            sheet.append([row[f] for f in fields])
+        for product in Product.objects.all():
+            row = []
+            for f in fields:
+                val = getattr(product, f)
+                if callable(val):
+                    val = val()
+                row.append(val)
+            sheet.append(row)
 
         response = HttpResponse(
             content_type="application/vnd.ms-excel")
