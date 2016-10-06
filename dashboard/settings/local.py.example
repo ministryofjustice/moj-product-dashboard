@@ -17,6 +17,16 @@ CACHES = {
 }
 
 
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG
+    }
+}
+
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+
 """
 ./manage.py reset_db
 ./manage.py migrate --run-syncdb
