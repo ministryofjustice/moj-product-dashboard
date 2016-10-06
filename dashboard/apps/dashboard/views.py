@@ -136,14 +136,11 @@ class PortfolioExportView(View):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        filters = kwargs.get('filter', '')
+        show_all = kwargs.get('all', False)
         now = datetime.now()
         fname = '%s_%s_%s.xls' % (
             'ProductData',
-            re.sub(
-                '[^0-9a-zA-Z]+',
-                '-',
-                filters),
+            'all' if show_all else 'visible',
             now.strftime('%Y-%m-%d_%H:%M:%S'))
 
         fields = [
@@ -179,7 +176,11 @@ class PortfolioExportView(View):
         sheet.title = 'Products info'
         sheet.append([f.replace('_', ' ').capitalize() for f in fields])
 
-        for product in Product.objects.all():
+        products = Product.objects.all()
+        if not show_all:
+            products = products.filter(visible=True)
+
+        for product in products:
             row = []
             for f in fields:
                 val = getattr(product, f)

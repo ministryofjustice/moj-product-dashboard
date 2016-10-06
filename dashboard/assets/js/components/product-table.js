@@ -212,7 +212,7 @@ export class ExportProducts extends Component {
         <h4 className="heading-medium">Export Products</h4>
         <ul>
           <li><a href="/products/export/" className="export-button">Export visible</a></li>
-          <li><a href="/products/export/" className="export-button">Export all</a></li>
+          <li><a href="/products/export/?all=true" className="export-button">Export all</a></li>
         </ul>
       </div>
     )
