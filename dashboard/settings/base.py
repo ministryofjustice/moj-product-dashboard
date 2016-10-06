@@ -262,7 +262,6 @@ WEBPACK_LOADER = {
 
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
-SECURE_SSL_REDIRECT = not DEBUG
 
 # .local.py overrides all the common settings.
 try:
