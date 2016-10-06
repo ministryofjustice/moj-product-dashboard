@@ -739,7 +739,7 @@ class Product(BaseProduct, AditionalCostsMixin):
             candidates.append(self.first_cost.start_date)
         if self.discovery_date:
             candidates.append(self.discovery_date)
-        return min(candidates) if candidates else None
+        return min(candidates)
 
     @property
     def last_date(self):
@@ -764,7 +764,7 @@ class Product(BaseProduct, AditionalCostsMixin):
                 candidates.append(self.last_cost.start_date)
         if self.end_date:
             candidates.append(self.end_date)
-        return max(candidates) if candidates else None
+        return max(candidates)
 
     def __str__(self):
         return self.name
@@ -962,22 +962,28 @@ class Product(BaseProduct, AditionalCostsMixin):
 
     @property
     def cost_of_sustaining(self):
-        if self.live_date:
+        try:
             start, end = self.live_date, date.today()
             return self.people_costs(start, end) + \
                 self.additional_costs(start, end, types=[COST_TYPES.ONE_OFF])
+        except ValueError:
+            pass
 
     @property
     def total_recurring_costs(self):
-        if self.live_date:
+        try:
             return self.additional_costs(
                 self.live_date, date.today(),
                 types=[COST_TYPES.MONTHLY, COST_TYPES.ANNUALLY])
+        except ValueError:
+            pass
 
     @property
     def savings_enabled(self):
-        if self.first_date:
+        try:
             return self.savings_between(self.first_date, date.today())
+        except ValueError:
+            pass
 
     class Meta:
         permissions = (
