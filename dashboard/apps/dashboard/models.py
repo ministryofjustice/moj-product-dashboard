@@ -965,7 +965,7 @@ class Product(BaseProduct, AditionalCostsMixin):
         if self.live_date:
             start, end = self.live_date, date.today()
             return self.people_costs(start, end) + \
-                   self.additional_costs(start, end, types=[COST_TYPES.ONE_OFF])
+                self.additional_costs(start, end, types=[COST_TYPES.ONE_OFF])
 
     @property
     def total_recurring_costs(self):

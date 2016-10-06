@@ -1,5 +1,4 @@
 from datetime import datetime
-import re
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, Http404, HttpResponse
