@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from .base import *
 
+SECURE_SSL_REDIRECT = False
 
 if 'dashboard.apps.testing' not in INSTALLED_APPS:
     INSTALLED_APPS += ['dashboard.apps.testing']
