@@ -13,7 +13,8 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_overlap, slice_time_window, dates_between)
+    get_workdays, get_overlap, slice_time_window, dates_between,
+    financial_year_tuple)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 from dashboard.libs.cache_tools import method_cache
@@ -946,19 +947,19 @@ class Product(BaseProduct, AditionalCostsMixin):
 
     @property
     def cost_in_14_15(self):
-        return self.cost_between(date(2014, 1, 1), date(2014, 12, 31))
+        return self.cost_between(*financial_year_tuple(2014))
 
     @property
     def cost_in_15_16(self):
-        return self.cost_between(date(2015, 1, 1), date(2015, 12, 31))
+        return self.cost_between(*financial_year_tuple(2015))
 
     @property
     def cost_in_16_17(self):
-        return self.cost_between(date(2016, 1, 1), date(2016, 12, 31))
+        return self.cost_between(*financial_year_tuple(2016))
 
     @property
     def cost_in_17_18(self):
-        return self.cost_between(date(2017, 1, 1), date(2017, 12, 31))
+        return self.cost_between(*financial_year_tuple(2017))
 
     @property
     def cost_of_sustaining(self):
