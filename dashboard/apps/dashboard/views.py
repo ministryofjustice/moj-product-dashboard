@@ -137,7 +137,7 @@ class PortfolioExportView(View):
     def get(self, request, *args, **kwargs):
         show_all = kwargs.get('show', 'visible') == 'all'
         now = datetime.now()
-        fname = '%s_%s_%s.xls' % (
+        fname = '%s_%s_%s.xlsx' % (
             'ProductData',
             'all' if show_all else 'visible',
             now.strftime('%Y-%m-%d_%H:%M:%S'))
