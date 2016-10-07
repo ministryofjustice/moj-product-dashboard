@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { createHistory } from 'history';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -13,11 +12,7 @@ import '../styles/main.css';
 
 function product(id) {
   ReactDOM.render(
-    <ProductContainer
-      type='product'
-      id={id}
-      csrftoken={Cookies.get('csrftoken')}
-    />,
+    <ProductContainer type='product' id={id} />,
     document.getElementById('container')
   );
 }
@@ -26,10 +21,7 @@ function product(id) {
 function service(id) {
   // product table
   ReactDOM.render(
-    <ServiceContainer
-      id={id}
-      csrftoken={Cookies.get('csrftoken')}
-    />,
+    <ServiceContainer id={id} />,
     document.getElementById('container')
   );
 }
@@ -38,7 +30,7 @@ function service(id) {
 function portfolio() {
   // product table
   ReactDOM.render(
-    <PortfolioContainer csrftoken={Cookies.get('csrftoken')} />,
+    <PortfolioContainer />,
     document.getElementById('container')
   );
 }
@@ -46,11 +38,7 @@ function portfolio() {
 
 function productGroup(id) {
   ReactDOM.render(
-    <ProductContainer
-      type='product-group'
-      id={id}
-      csrftoken={Cookies.get('csrftoken')}
-    />,
+    <ProductContainer type='product-group' id={id} />,
     document.getElementById('container')
   );
 }

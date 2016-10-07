@@ -65,18 +65,18 @@ describe('getProductData', () => {
     expect(window.fetch.polyfill).toBe(true);
   });
 
-  it(`does a POST to the /product.json endpoint.
+  it(`does a GET to the /product.json endpoint.
       when succeeds, returns a Promise with the product data`, () => {
     const data = {product: 'some data'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => resolve({json: () => data})));
-    return getProductData('product')
+    return getProductData('product', 1)
       .then(productData => {
         expect(window.fetch).toBeCalled();
         expect(productData).toEqual(data);
         const [url, init] = window.fetch.mock.calls[0];
-        expect(url).toEqual('/product.json');
-        expect(init.method).toEqual('POST');
+        expect(url).toEqual('/product.json?id=1');
+        expect(init.method).toEqual('GET');
       });
   });
 
@@ -84,13 +84,13 @@ describe('getProductData', () => {
     const error = {message: 'something went wrong'};
     window.fetch = jest.fn().mockReturnValueOnce(
         new Promise((resolve, reject) => reject(error)));
-    return getProductData('product')
+    return getProductData('product', 1)
       .catch(err => {
         expect(window.fetch).toBeCalled();
         expect(err).toEqual(error);
         const [url, init] = window.fetch.mock.calls[0];
-        expect(url).toEqual('/product.json');
-        expect(init.method).toEqual('POST');
+        expect(url).toEqual('/product.json?id=1');
+        expect(init.method).toEqual('GET');
       });
   });
 });

@@ -42,7 +42,7 @@ export class ServiceContainer extends Component {
   }
 
   componentDidMount() {
-    getServiceData(this.props.id, this.props.csrftoken)
+    getServiceData(this.props.id)
       .then(serviceData => {
         const products = values(serviceData.products);
         this.setState({products: products, hasData: true});
@@ -66,6 +66,5 @@ export class ServiceContainer extends Component {
 }
 
 ServiceContainer.propTypes = {
-  id: React.PropTypes.string.isRequired,
-  csrftoken: React.PropTypes.string.isRequired
+  id: React.PropTypes.string.isRequired
 }

@@ -16,7 +16,7 @@ export class PortfolioContainer extends Component {
   }
 
   componentDidMount() {
-    getPortfolioData(this.props.csrftoken)
+    getPortfolioData()
       .then(portfolioData => {
         // sort by service area and then name of product
         const products = values(portfolioData)
@@ -54,6 +54,4 @@ export class PortfolioContainer extends Component {
   }
 }
 
-PortfolioContainer.propTypes = {
-  csrftoken: React.PropTypes.string.isRequired
-}
+PortfolioContainer.propTypes = {}

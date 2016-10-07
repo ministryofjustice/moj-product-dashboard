@@ -27,7 +27,7 @@ export class ProductContainer extends Component {
   }
 
   componentDidMount() {
-    getProductData(this.props.type, this.props.id, this.props.csrftoken)
+    getProductData(this.props.type, this.props.id)
       .then(productJSON => {
         const product = new Product(productJSON);
         this.setState({
@@ -191,6 +191,5 @@ export class ProductContainer extends Component {
 
 ProductContainer.propTypes = {
   type: React.PropTypes.string.isRequired,
-  id: React.PropTypes.string.isRequired,
-  csrftoken: React.PropTypes.string.isRequired
+  id: React.PropTypes.string.isRequired
 }
