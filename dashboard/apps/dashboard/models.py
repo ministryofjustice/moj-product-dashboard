@@ -946,19 +946,19 @@ class Product(BaseProduct, AditionalCostsMixin):
         return self.cost_between(self.beta_date, self.live_date)
 
     @property
-    def cost_in_14_15(self):
+    def cost_in_fy_14_15(self):
         return self.cost_between(*financial_year_tuple(2014))
 
     @property
-    def cost_in_15_16(self):
+    def cost_in_fy_15_16(self):
         return self.cost_between(*financial_year_tuple(2015))
 
     @property
-    def cost_in_16_17(self):
+    def cost_in_fy_16_17(self):
         return self.cost_between(*financial_year_tuple(2016))
 
     @property
-    def cost_in_17_18(self):
+    def cost_in_fy_17_18(self):
         return self.cost_between(*financial_year_tuple(2017))
 
     @property

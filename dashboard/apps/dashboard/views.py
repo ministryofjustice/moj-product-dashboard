@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, Http404, HttpResponse
@@ -143,37 +144,37 @@ class PortfolioExportView(View):
             now.strftime('%Y-%m-%d_%H:%M:%S'))
 
         fields = [
-            'id',
-            'name',
-            'description',
-            'area_name',
-            'discovery_date',
-            'alpha_date',
-            'beta_date',
-            'live_date',
-            'end_date',
-            'discovery_fte',
-            'alpha_fte',
-            'beta_fte',
-            'live_fte',
-            'final_budget',
-            'cost_of_discovery',
-            'cost_of_alpha',
-            'cost_of_beta',
-            'cost_in_14_15',
-            'cost_in_15_16',
-            'cost_in_16_17',
-            'cost_in_17_18',
-            'cost_of_sustaining',
-            'total_recurring_costs',
-            'savings_enabled',
-            'visible',
+            'Id',
+            'Name',
+            'Description',
+            'Area name',
+            'Discovery date',
+            'Alpha_date',
+            'Beta date',
+            'Live date',
+            'End date',
+            'Discovery fte',
+            'Alpha fte',
+            'Beta fte',
+            'Live fte',
+            'Final budget',
+            'Cost of discovery',
+            'Cost of alpha',
+            'Cost of beta',
+            'Cost in FY 14-15',
+            'Cost in FY 15-16',
+            'Cost in FY 16-17',
+            'Cost in FY 17-18',
+            'Cost of sustaining',
+            'Total recurring costs',
+            'Savings enabled',
+            'Visible',
         ]
 
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Products info'
-        sheet.append([f.replace('_', ' ').capitalize() for f in fields])
+        sheet.append([f for f in fields])
 
         products = Product.objects.all()
         if not show_all:
@@ -182,7 +183,7 @@ class PortfolioExportView(View):
         for product in products:
             row = []
             for f in fields:
-                val = getattr(product, f)
+                val = getattr(product, re.sub('[^0-9a-zA-Z]+', '_', f).lower())
                 if callable(val):
                     val = val()
                 row.append(val)
