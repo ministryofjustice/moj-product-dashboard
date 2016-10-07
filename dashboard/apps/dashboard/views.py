@@ -1,5 +1,3 @@
-import json
-
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, Http404
 from django.core.urlresolvers import reverse
@@ -34,8 +32,7 @@ def product_json(request):
     """
     send json for a product profile
     """
-    # TODO handle errors
-    request_data = json.loads(request.body.decode())
+    request_data = request.GET
     try:
         product = Product.objects.visible().get(id=request_data['id'])
     except (ValueError, Product.DoesNotExist):
@@ -73,7 +70,7 @@ def product_group_json(request):
     send json for a product group profilet
     """
     # TODO handle errors
-    request_data = json.loads(request.body.decode())
+    request_data = request.GET
     try:
         product_group = ProductGroup.objects.get(id=request_data['id'])
     except (ValueError, ProductGroup.DoesNotExist):
@@ -99,7 +96,7 @@ def service_html(request, id):
 
 
 def service_json(request):
-    request_data = json.loads(request.body.decode())
+    request_data = request.GET
     try:
         area = Area.objects.filter(visible=True).get(id=request_data['id'])
     except (ValueError, Area.DoesNotExist):

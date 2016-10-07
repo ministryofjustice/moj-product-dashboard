@@ -16,20 +16,18 @@ export const statusMapping = {
 /**
  * send a POST request to the backend to retrieve product profile
  */
-export function getProductData(type, id, csrftoken) {
+export function getProductData(type, id) {
   const urls = {
-    'product': '/product.json',
-    'product-group': '/product-group.json'
+    'product': `/product.json?id=${id}`,
+    'product-group': `/product-group.json?id=${id}`
   };
   const init = {
     credentials: 'same-origin',
-    method: 'POST',
+    method: 'GET',
     headers: {
-      'X-CSRFToken': csrftoken,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({id: id})
+    }
   };
   return fetch(urls[type], init)
     .then(response => response.json());
@@ -38,18 +36,16 @@ export function getProductData(type, id, csrftoken) {
 /**
  * send a POST request to the backend to retrieve service area profile
  */
-export function getServiceData(id, csrftoken) {
+export function getServiceData(id) {
   const init = {
     credentials: 'same-origin',
-    method: 'POST',
+    method: 'GET',
     headers: {
-      'X-CSRFToken': csrftoken,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({id: id})
   };
-  return fetch('/service.json', init)
+  return fetch(`/service.json?${id}`, init)
     .then(response => response.json());
 }
 
@@ -57,7 +53,7 @@ export function getServiceData(id, csrftoken) {
 /**
  * send a POST request to the backend to retrieve products profile
  */
-export function getPortfolioData(csrftoken) {
+export function getPortfolioData() {
   const init = {
     credentials: 'same-origin',
     method: 'GET',
