@@ -1,4 +1,5 @@
-from datetime import datetime
+from collections import OrderedDict
+from datetime import datetime, date
 import re
 
 from django.shortcuts import render, redirect
@@ -7,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
+from openpyxl.styles import Style, Font
 
 from openpyxl.workbook import Workbook
 
@@ -135,6 +137,11 @@ def sync_from_float(request):
 class PortfolioExportView(View):
     http_method_names = ['get']
 
+    def format(self, value):
+        if isinstance(value, date):
+            return value.strftime('%d/%m/%Y')
+        return value
+
     def get(self, request, *args, **kwargs):
         show_all = kwargs.get('show', 'visible') == 'all'
         now = datetime.now()
@@ -143,51 +150,62 @@ class PortfolioExportView(View):
             'all' if show_all else 'visible',
             now.strftime('%Y-%m-%d_%H:%M:%S'))
 
-        fields = [
-            'Id',
-            'Name',
-            'Description',
-            'Area name',
-            'Discovery date',
-            'Alpha_date',
-            'Beta date',
-            'Live date',
-            'End date',
-            'Discovery fte',
-            'Alpha fte',
-            'Beta fte',
-            'Live fte',
-            'Final budget',
-            'Cost of discovery',
-            'Cost of alpha',
-            'Cost of beta',
-            'Cost in FY 14-15',
-            'Cost in FY 15-16',
-            'Cost in FY 16-17',
-            'Cost in FY 17-18',
-            'Cost of sustaining',
-            'Total recurring costs',
-            'Savings enabled',
-            'Visible',
-        ]
+        date_style = Style(number_format='DD/MM/YYYY')
+        bold_font = Font(bold=True)
+        bold_style = Style(font=bold_font)
+        currency_style = Style(number_format='£#,##0.00')
+
+        fields = OrderedDict((
+            ('Id', None),
+            ('Name', None),
+            ('Description', None),
+            ('Area name', None),
+            ('Discovery date', date_style),
+            ('Alpha_date', date_style),
+            ('Beta date', date_style),
+            ('Live date', date_style),
+            ('End date', date_style),
+            ('Discovery fte', None),
+            ('Alpha fte', None),
+            ('Beta fte', None),
+            ('Live fte', None),
+            ('Final budget', currency_style),
+            ('Cost of discovery', currency_style),
+            ('Cost of alpha', currency_style),
+            ('Cost of beta', currency_style),
+            ('Cost in FY 14-15', currency_style),
+            ('Cost in FY 15-16', currency_style),
+            ('Cost in FY 16-17', currency_style),
+            ('Cost in FY 17-18', currency_style),
+            ('Cost of sustaining', currency_style),
+            ('Total recurring costs', currency_style),
+            ('Savings enabled', currency_style),
+            ('Visible', None),
+        ))
 
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Products info'
-        sheet.append([f for f in fields])
+        for col, (f, style) in enumerate(fields.items()):
+            cell = sheet.cell(row=1, column=col + 1)
+            cell.style = bold_style
+            cell.value = f
+        sheet.freeze_panes = sheet['A2']
 
         products = Product.objects.all()
         if not show_all:
             products = products.filter(visible=True)
 
-        for product in products:
-            row = []
-            for f in fields:
+        for row, product in enumerate(products):
+            for col, (f, style) in enumerate(fields.items()):
                 val = getattr(product, re.sub('[^0-9a-zA-Z]+', '_', f).lower())
                 if callable(val):
                     val = val()
-                row.append(val)
-            sheet.append(row)
+                val = self.format(val)
+                cell = sheet.cell(row=row + 2, column=col + 1)
+                if style:
+                    cell.style = style
+                cell.value = val
 
         response = HttpResponse(
             content_type="application/vnd.ms-excel")
