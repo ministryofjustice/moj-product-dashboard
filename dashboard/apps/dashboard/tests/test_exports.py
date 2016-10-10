@@ -79,3 +79,9 @@ class ExportTestCase(TestCase):
                 {'date': date(2015, 1, 1), 'product': self.product.pk,
                  'export_type': export})
             self.assertEqual(response.status_code, 200)
+
+    def test_can_export_products(self):
+        for show in ['all', 'visible', self.product.pk]:
+            response = self.client.get(
+                '/products/export/%s/' % show)
+            self.assertEqual(response.status_code, 200)
