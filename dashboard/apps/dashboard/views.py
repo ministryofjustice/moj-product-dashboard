@@ -192,7 +192,7 @@ class PortfolioExportView(View):
         sheet.freeze_panes = sheet['A2']
 
         if show == 'visible':
-            products = Product.objects.filter(visible=True)
+            products = Product.objects.visible()
         elif show == 'all':
             products = Product.objects.all()
         else:
