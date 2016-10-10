@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from datetime import datetime, date
 import re
 
@@ -155,7 +154,7 @@ class PortfolioExportView(View):
         bold_style = Style(font=bold_font)
         currency_style = Style(number_format='£#,##0.00')
 
-        fields = OrderedDict((
+        fields = (
             ('Id', None),
             ('Name', None),
             ('Description', None),
@@ -181,12 +180,12 @@ class PortfolioExportView(View):
             ('Total recurring costs', currency_style),
             ('Savings enabled', currency_style),
             ('Visible', None),
-        ))
+        )
 
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Products info'
-        for col, (f, style) in enumerate(fields.items()):
+        for col, (f, style) in enumerate(fields):
             cell = sheet.cell(row=1, column=col + 1)
             cell.style = bold_style
             cell.value = f
@@ -200,7 +199,7 @@ class PortfolioExportView(View):
             products = Product.objects.filter(pk=show)
 
         for row, product in enumerate(products):
-            for col, (f, style) in enumerate(fields.items()):
+            for col, (f, style) in enumerate(fields):
                 val = getattr(product, re.sub('[^0-9a-zA-Z]+', '_', f).lower())
                 if callable(val):
                     val = val()
