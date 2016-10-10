@@ -3,7 +3,7 @@ import Spinner from 'react-spinkit';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import { Product, getProductData } from '../libs/models';
-import { PhaseTag, RagTag, PrintModeToggle } from '../components/product';
+import { PhaseTag, RagTag, PrintModeToggle, ExportProduct } from '../components/product';
 import { ProductOverview } from './product-overview-tab';
 import { ProductInfo } from './product-info-tab';
 import { ProductPrintMode } from './product-print-mode';
@@ -132,6 +132,8 @@ export class ProductContainer extends Component {
             <ProductInfo product={ product } />
           </TabPanel>
         </Tabs>
+        <hr/>
+        <ExportProduct productId={ product.id } />
         <hr/>
         <PrintModeToggle
           isPrintMode={ this.state.isPrintMode }

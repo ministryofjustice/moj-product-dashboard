@@ -143,11 +143,11 @@ class PortfolioExportView(View):
         return value
 
     def get(self, request, *args, **kwargs):
-        show_all = kwargs.get('show', 'visible') == 'all'
+        show = kwargs.get('show', 'visible')
         now = datetime.now()
         fname = '%s_%s_%s.xlsx' % (
             'ProductData',
-            'all' if show_all else 'visible',
+            show,
             now.strftime('%Y-%m-%d_%H:%M:%S'))
 
         date_style = Style(number_format='DD/MM/YYYY')
@@ -192,9 +192,12 @@ class PortfolioExportView(View):
             cell.value = f
         sheet.freeze_panes = sheet['A2']
 
-        products = Product.objects.all()
-        if not show_all:
-            products = products.filter(visible=True)
+        if show == 'visible':
+            products = Product.objects.filter(visible=True)
+        elif show == 'all':
+            products = Product.objects.all()
+        else:
+            products = Product.objects.filter(pk=show)
 
         for row, product in enumerate(products):
             for col, (f, style) in enumerate(fields.items()):

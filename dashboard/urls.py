@@ -29,7 +29,7 @@ urlpatterns = [
     url(r'^sync.json$', sync_from_float, name='sync'),
     url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
     url(r'^service.json', service_json, name='service_json'),
-    url(r'^products/export/(?P<show>[all|visible]+)?/$', PortfolioExportView.as_view(), name='product_export'),
+    url(r'^products/export/(?P<show>[all|visible|0-9]+)?/$', PortfolioExportView.as_view(), name='product_export'),
     url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product_html'),
     url(r'^product-groups/(?P<id>[0-9]+)?$', product_group_html,
         name='product_group'),
