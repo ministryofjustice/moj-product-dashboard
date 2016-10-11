@@ -153,42 +153,44 @@ class PortfolioExportView(View):
         bold_font = Font(bold=True)
         bold_style = Style(font=bold_font)
         currency_style = Style(number_format='£#,##0.00')
+        year = date.today().year
 
         fields = (
-            ('Id', None),
-            ('Name', None),
-            ('Description', None),
-            ('Area name', None),
-            ('Discovery date', date_style),
-            ('Alpha_date', date_style),
-            ('Beta date', date_style),
-            ('Live date', date_style),
-            ('End date', date_style),
-            ('Discovery fte', None),
-            ('Alpha fte', None),
-            ('Beta fte', None),
-            ('Live fte', None),
-            ('Final budget', currency_style),
-            ('Cost of discovery', currency_style),
-            ('Cost of alpha', currency_style),
-            ('Cost of beta', currency_style),
-            ('Cost in FY 14-15', currency_style),
-            ('Cost in FY 15-16', currency_style),
-            ('Cost in FY 16-17', currency_style),
-            ('Cost in FY 17-18', currency_style),
-            ('Cost of sustaining', currency_style),
-            ('Total recurring costs', currency_style),
-            ('Savings enabled', currency_style),
-            ('Visible', None),
+            # (header, style, method kwargs)
+            ('Id', None, {}),
+            ('Name', None, {}),
+            ('Description', None, {}),
+            ('Area name', None, {}),
+            ('Discovery date', date_style, {}),
+            ('Alpha_date', date_style, {}),
+            ('Beta date', date_style, {}),
+            ('Live date', date_style, {}),
+            ('End date', date_style, {}),
+            ('Discovery fte', None, {}),
+            ('Alpha fte', None, {}),
+            ('Beta fte', None, {}),
+            ('Live fte', None, {}),
+            ('Final budget', currency_style, {}),
+            ('Cost of discovery', currency_style, {}),
+            ('Cost of alpha', currency_style, {}),
+            ('Cost of beta', currency_style, {}),
+            ('Cost in FY', currency_style, {'year': year - 2}),
+            ('Cost in FY', currency_style, {'year': year - 1}),
+            ('Cost in FY', currency_style, {'year': year}),
+            ('Cost in FY', currency_style, {'year': year + 1}),
+            ('Cost of sustaining', currency_style, {}),
+            ('Total recurring costs', currency_style, {}),
+            ('Savings enabled', currency_style, {}),
+            ('Visible', None, {}),
         )
 
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = 'Products info'
-        for col, (f, style) in enumerate(fields):
+        for col, (f, style, kwargs) in enumerate(fields):
             cell = sheet.cell(row=1, column=col + 1)
             cell.style = bold_style
-            cell.value = f
+            cell.value = '%s %s' % (f, ' '.join(str(k) for k in kwargs.values()))
         sheet.freeze_panes = sheet['A2']
 
         if show == 'visible':
@@ -199,10 +201,10 @@ class PortfolioExportView(View):
             products = Product.objects.filter(pk=show)
 
         for row, product in enumerate(products):
-            for col, (f, style) in enumerate(fields):
+            for col, (f, style, kwargs) in enumerate(fields):
                 val = getattr(product, re.sub('[^0-9a-zA-Z]+', '_', f).lower())
                 if callable(val):
-                    val = val()
+                    val = val(**kwargs)
                 val = self.format(val)
                 cell = sheet.cell(row=row + 2, column=col + 1)
                 if style:
