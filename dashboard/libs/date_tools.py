@@ -3,7 +3,7 @@
 """
 tools for dealing with dates
 """
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from dateutil.rrule import rrule, MONTHLY
 from functools import lru_cache
 
@@ -157,3 +157,7 @@ def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None,
             rrule(freq, dtstart=start_date, until=end_date,
                   bymonthday=bymonthday, bysetpos=bysetpos,
                   byyearday=byyearday)]
+
+
+def financial_year_tuple(year):
+    return date(year, 4, 6), date(year + 1, 4, 5)

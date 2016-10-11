@@ -5,7 +5,8 @@ import pytest
 
 from dashboard.libs.date_tools import (
     get_workdays, get_workdays_list, get_bank_holidays, get_overlap,
-    parse_date, to_datetime, slice_time_window, dates_between)
+    parse_date, to_datetime, slice_time_window, dates_between,
+    financial_year_tuple)
 
 
 @pytest.mark.parametrize("start_date, end_date, expected", [
@@ -148,3 +149,11 @@ def test_to_datetime():
 def test_slice_on_date(start_date, end_date, freq, bymonthday, expected):
     dates = dates_between(start_date, end_date, freq, bymonthday=bymonthday)
     assert dates == expected
+
+
+@pytest.mark.parametrize("year, expected", [
+    [2014, (date(2014, 4, 6), date(2015, 4, 5))],
+    [2999, (date(2999, 4, 6), date(3000, 4, 5))],
+])
+def test_financial_year_tuple(year, expected):
+    assert financial_year_tuple(year) == expected

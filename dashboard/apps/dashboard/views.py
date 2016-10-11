@@ -1,8 +1,15 @@
+from datetime import datetime, date
+import re
+
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.views.generic import View
 from django.views.decorators.http import require_http_methods
+from openpyxl.styles import Style, Font
+
+from openpyxl.workbook import Workbook
 
 from dashboard.libs.date_tools import parse_date
 from .models import Product, Area, ProductGroup
@@ -124,3 +131,89 @@ def sync_from_float(request):
     return JsonResponse({
         'status': 'STARTED'
     })
+
+
+class PortfolioExportView(View):
+    http_method_names = ['get']
+
+    def format(self, value):
+        if isinstance(value, date):
+            return value.strftime('%d/%m/%Y')
+        return value
+
+    def get(self, request, *args, **kwargs):
+        show = kwargs.get('show', 'visible')
+        now = datetime.now()
+        fname = '%s_%s_%s.xlsx' % (
+            'ProductData',
+            show,
+            now.strftime('%Y-%m-%d_%H:%M:%S'))
+
+        date_style = Style(number_format='DD/MM/YYYY')
+        bold_font = Font(bold=True)
+        bold_style = Style(font=bold_font)
+        currency_style = Style(number_format='£#,##0.00')
+        year = date.today().year
+
+        fields = (
+            # (header, style, method kwargs)
+            ('Id', None, {}),
+            ('Name', None, {}),
+            ('Description', None, {}),
+            ('Area name', None, {}),
+            ('Discovery date', date_style, {}),
+            ('Alpha_date', date_style, {}),
+            ('Beta date', date_style, {}),
+            ('Live date', date_style, {}),
+            ('End date', date_style, {}),
+            ('Discovery fte', None, {}),
+            ('Alpha fte', None, {}),
+            ('Beta fte', None, {}),
+            ('Live fte', None, {}),
+            ('Final budget', currency_style, {}),
+            ('Cost of discovery', currency_style, {}),
+            ('Cost of alpha', currency_style, {}),
+            ('Cost of beta', currency_style, {}),
+            ('Cost in FY', currency_style, {'year': year - 2}),
+            ('Cost in FY', currency_style, {'year': year - 1}),
+            ('Cost in FY', currency_style, {'year': year}),
+            ('Cost in FY', currency_style, {'year': year + 1}),
+            ('Cost of sustaining', currency_style, {}),
+            ('Total recurring costs', currency_style, {}),
+            ('Savings enabled', currency_style, {}),
+            ('Visible', None, {}),
+        )
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'Products info'
+        for col, (f, style, kwargs) in enumerate(fields):
+            cell = sheet.cell(row=1, column=col + 1)
+            cell.style = bold_style
+            cell.value = '%s %s' % (f, ' '.join(str(k) for k in kwargs.values()))
+        sheet.freeze_panes = sheet['A2']
+
+        if show == 'visible':
+            products = Product.objects.visible()
+        elif show == 'all':
+            products = Product.objects.all()
+        else:
+            products = Product.objects.filter(pk=show)
+
+        for row, product in enumerate(products):
+            for col, (f, style, kwargs) in enumerate(fields):
+                val = getattr(product, re.sub('[^0-9a-zA-Z]+', '_', f).lower())
+                if callable(val):
+                    val = val(**kwargs)
+                val = self.format(val)
+                cell = sheet.cell(row=row + 2, column=col + 1)
+                if style:
+                    cell.style = style
+                cell.value = val
+
+        response = HttpResponse(
+            content_type="application/vnd.ms-excel")
+        response['Content-Disposition'] = 'attachment; filename=%s' \
+                                          % fname
+        workbook.save(response)
+        return response

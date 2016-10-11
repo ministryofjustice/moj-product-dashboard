@@ -13,7 +13,8 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_overlap, slice_time_window, dates_between)
+    get_workdays, get_overlap, slice_time_window, dates_between,
+    financial_year_tuple)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
     dec_workdays, average_rate_from_segments
 from dashboard.libs.cache_tools import method_cache
@@ -109,7 +110,7 @@ class BaseCost(models.Model):
 
 class AditionalCostsMixin():
     def get_costs_between(self, start_date, end_date, name=None,
-                          attribute='costs'):
+                          attribute='costs', types=[]):
         costs = getattr(self, attribute).all()
         if start_date and end_date:
             costs = costs.filter(
@@ -120,15 +121,18 @@ class AditionalCostsMixin():
         if name:
             costs = costs.filter(name=name)
 
+        if types:
+            costs = costs.filter(type__in=types)
+
         return costs
 
     def additional_costs(self, start_date, end_date, name=None,
-                         attribute='costs'):
+                         attribute='costs', types=[]):
         def cost_of_cost(cost):
             return cost.cost_between(start_date, end_date)
 
-        costs = self.get_costs_between(start_date, end_date, name=None,
-                                       attribute=attribute)
+        costs = self.get_costs_between(start_date, end_date, name=name,
+                                       attribute=attribute, types=types)
 
         return sum(map(cost_of_cost, costs)) or Decimal('0')
 
@@ -805,14 +809,20 @@ class Product(BaseProduct, AditionalCostsMixin):
                                 for task in tasks]
         return sum(additinal_task_costs)
 
+    def cost_to(self, d):
+        """
+        cost of the product from the start to date d
+        """
+        stats = self.stats_on(d)
+        return sum(stats[item] for item in
+                   ['contractor', 'non-contractor', 'additional'])
+
     @property
     def cost_to_date(self):
         """
         cost of the product from the start to today
         """
-        stats = self.stats_on(date.today())
-        return sum(stats[item] for item in
-                   ['contractor', 'non-contractor', 'additional'])
+        return self.cost_to(date.today())
 
     @property
     def total_cost(self):
@@ -820,11 +830,9 @@ class Product(BaseProduct, AditionalCostsMixin):
         cost of the product from the beginning to the end of the end date
         """
         try:
-            stats = self.stats_on(self.last_date + timedelta(days=1))
+            return self.cost_to(self.last_date + timedelta(days=1))
         except ValueError:  # when no last_date
             return Decimal('0')
-        return sum(stats[item] for item in
-                   ['contractor', 'non-contractor', 'additional'])
 
     def budget(self, on=None):
         """
@@ -896,6 +904,74 @@ class Product(BaseProduct, AditionalCostsMixin):
         """
         return self.additional_costs(start_date, end_date,
                                      attribute='savings')
+
+    @property
+    def discovery_fte(self):
+        return self.current_fte(start_date=self.discovery_date,
+                                end_date=self.alpha_date)
+
+    @property
+    def alpha_fte(self):
+        return self.current_fte(start_date=self.alpha_date,
+                                end_date=self.beta_date)
+
+    @property
+    def beta_fte(self):
+        return self.current_fte(start_date=self.beta_date,
+                                end_date=self.live_date)
+
+    @property
+    def live_fte(self):
+        return self.current_fte(start_date=self.live_date,
+                                end_date=self.end_date)
+
+    @property
+    def area_name(self):
+        return self.area.name if self.area else ''
+
+    def cost_between(self, start, end):
+        if start and end:
+            return self.cost_to(end) - self.cost_to(start)
+
+    @property
+    def cost_of_discovery(self):
+        return self.cost_between(self.discovery_date, self.alpha_date)
+
+    @property
+    def cost_of_alpha(self):
+        return self.cost_between(self.alpha_date, self.beta_date)
+
+    @property
+    def cost_of_beta(self):
+        return self.cost_between(self.beta_date, self.live_date)
+
+    def cost_in_fy(self, year):
+        return self.cost_between(*financial_year_tuple(year))
+
+    @property
+    def cost_of_sustaining(self):
+        try:
+            start, end = self.live_date, date.today()
+            return self.people_costs(start, end) + \
+                self.additional_costs(start, end, types=[COST_TYPES.ONE_OFF])
+        except ValueError:
+            pass
+
+    @property
+    def total_recurring_costs(self):
+        try:
+            return self.additional_costs(
+                self.live_date, date.today(),
+                types=[COST_TYPES.MONTHLY, COST_TYPES.ANNUALLY])
+        except ValueError:
+            pass
+
+    @property
+    def savings_enabled(self):
+        try:
+            return self.savings_between(self.first_date, date.today())
+        except ValueError:
+            pass
 
     class Meta:
         permissions = (
