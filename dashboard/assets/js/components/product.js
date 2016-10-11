@@ -347,16 +347,14 @@ export function PrintModeToggle({isPrintMode, onClick}) {
 /**
  * Export product component
  */
-export class ExportProduct extends Component {
-  render() {
-    return (
-      <div className="export-container">
-        <h4 className="heading-medium">Export Product</h4>
-        <ul>
-          <li><a href={ "/products/export/" + this.props.productId + "/" }
-                 className="export-button">Export data</a></li>
-        </ul>
-      </div>
-    )
-  }
+export function ExportProduct({ productId }) {
+  return (
+    <div className="export-container">
+      <h4 className="heading-medium">Export Product</h4>
+      <ul>
+        <li><a href={ "/products/export/" + productId + "/" }
+               className="export-button">Export data</a></li>
+      </ul>
+    </div>
+  )
 }
