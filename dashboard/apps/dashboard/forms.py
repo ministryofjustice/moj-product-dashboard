@@ -140,7 +140,7 @@ class PayrollUploadForm(forms.Form):
 
         for row in range(2, ws.nrows):
             row_data = ws.row_values(row)
-            if all(row_data[:len(headers) - 1]):
+            if all([str(v) for v in row_data[:len(headers) - 1]]):
                 data = dict(zip(headers, row_data))
                 person = self.get_person(row, data)
                 if person:
