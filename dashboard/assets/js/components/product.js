@@ -350,10 +350,10 @@ export function PrintModeToggle({isPrintMode, onClick}) {
 export function ExportProduct({ productId }) {
   return (
     <div className="export-container">
-      <h4 className="heading-medium">Export Product</h4>
+      <h4 className="heading-medium">Download product data</h4>
       <ul>
         <li><a href={ "/products/export/" + productId + "/" }
-               className="export-button">Export data</a></li>
+               className="export-button">Excel</a></li>
       </ul>
     </div>
   )
