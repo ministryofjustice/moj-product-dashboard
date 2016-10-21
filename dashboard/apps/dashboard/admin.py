@@ -48,6 +48,12 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     readonly_fields = ['float_link']
     actions = None
 
+    def get_readonly_fields(self, request, obj=None):
+        fields = super(PersonAdmin, self).get_readonly_fields(request, obj)
+        if not obj.staff_number:
+            fields.remove('staff_number')
+        return fields
+
     def contractor_civil_servant(self, obj):
         if obj.is_contractor:
             return 'Contractor'
