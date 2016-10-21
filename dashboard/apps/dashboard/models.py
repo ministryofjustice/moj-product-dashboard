@@ -105,7 +105,7 @@ class BaseCost(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['start_date']
+        ordering = ['start_date', 'id']
 
 
 class AditionalCostsMixin():
@@ -258,7 +258,7 @@ class Rate(models.Model):
             RATE_TYPES.for_value(self.rate_type).display, self.start_date)
 
     class Meta:
-        ordering = ('-start_date',)
+        ordering = ('-start_date', '-id')
         unique_together = ('start_date', 'person')
 
     @property
@@ -421,7 +421,7 @@ class BaseProduct(models.Model):
         if not on:
             on = date.today()
         status = self.statuses.filter(
-            start_date__lte=on).order_by('-start_date').first()
+            start_date__lte=on).order_by('-start_date', '-id').first()
         return status
 
     def stats_on(self, on):
@@ -1018,6 +1018,7 @@ class Status(models.Model):
     class Meta:
         abstract = True
         verbose_name_plural = "statuses"
+        ordering = ('-start_date', '-id')
 
 
 class ProductStatus(Status):
