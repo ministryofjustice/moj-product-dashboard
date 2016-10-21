@@ -133,6 +133,15 @@ def sync_from_float(request):
     })
 
 
+def kwarg_vals(kwargs):
+    vals = []
+    for k, v in kwargs.items():
+        if k == 'year':
+            v = '%s-%s' % (str(v)[2:], str(v + 1)[2:])
+        vals.append(v)
+    return vals
+
+
 class PortfolioExportView(View):
     http_method_names = ['get']
 
@@ -183,14 +192,6 @@ class PortfolioExportView(View):
             ('Savings enabled', currency_style, {}),
             ('Visible', None, {}),
         )
-
-        def kwarg_vals(kwargs):
-            vals = []
-            for k, v in kwargs.items():
-                if k == 'year':
-                    v = '%s-%s' % (str(v)[2:], str(v + 1)[2:])
-                vals.append(v)
-            return vals
 
         workbook = Workbook()
         sheet = workbook.active
