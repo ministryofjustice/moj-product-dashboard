@@ -19,7 +19,10 @@ CACHES = {
 
 WEBPACK_LOADER = {
     'DEFAULT': {
-        'CACHE': not DEBUG
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': location('assets/dist/'),
+        'STATS_FILE': location('assets/dist/webpack-stats.json'),
+        'IGNORE': ['.+\.hot-update.js', '.+\.map']
     }
 }
 
