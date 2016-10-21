@@ -125,7 +125,7 @@ class PayrollUploadForm(forms.Form):
 
         ws = workbook.sheet_by_index(0)
 
-        headers = ws.row_values(6)
+        headers = ws.row_values(1)
 
         missing_required = []
         for required in PAYROLL_COSTS + REQUIRED_COLS:
@@ -138,9 +138,9 @@ class PayrollUploadForm(forms.Form):
 
         payroll = []
 
-        for row in range(7, ws.nrows):
+        for row in range(2, ws.nrows):
             row_data = ws.row_values(row)
-            if row_data[0]:
+            if all(row_data[:len(headers) - 1]):
                 data = dict(zip(headers, row_data))
                 person = self.get_person(row, data)
                 if person:
