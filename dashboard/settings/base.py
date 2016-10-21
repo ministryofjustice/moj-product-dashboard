@@ -263,6 +263,9 @@ WEBPACK_LOADER = {
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = not DEBUG
+SESSION_COOKIE_AGE = 10 * 60
+
 # .local.py overrides all the common settings.
 try:
     from .local import *

@@ -83,9 +83,9 @@ def test_invalid_upload_form():
 
     assert form.is_valid() is False
     assert form.errors == {
-        'payroll_file': ['ERROR ROW 7: Multiple Civil Servants found with '
+        'payroll_file': ['ERROR ROW 2: Multiple Civil Servants found with '
                          'Surname "SURNAME1"',
-                         'ERROR ROW 12: Civil Servant not found with Surname '
+                         'ERROR ROW 7: Civil Servant not found with Surname '
                          '"SURNAME3" and initials "CN"']
     }
 

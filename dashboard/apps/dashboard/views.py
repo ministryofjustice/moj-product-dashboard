@@ -133,6 +133,15 @@ def sync_from_float(request):
     })
 
 
+def kwarg_vals(kwargs):
+    vals = []
+    for k, v in kwargs.items():
+        if k == 'year':
+            v = '%s-%s' % (str(v)[2:], str(v + 1)[2:])
+        vals.append(v)
+    return vals
+
+
 class PortfolioExportView(View):
     http_method_names = ['get']
 
@@ -190,7 +199,7 @@ class PortfolioExportView(View):
         for col, (f, style, kwargs) in enumerate(fields):
             cell = sheet.cell(row=1, column=col + 1)
             cell.style = bold_style
-            cell.value = '%s %s' % (f, ' '.join(str(k) for k in kwargs.values()))
+            cell.value = '%s %s' % (f, ' '.join(str(k) for k in kwarg_vals(kwargs)))
         sheet.freeze_panes = sheet['A2']
 
         if show == 'visible':

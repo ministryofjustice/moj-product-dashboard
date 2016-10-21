@@ -208,10 +208,10 @@ ExternalLinkExtra.propTypes = {
 export function ExportProducts() {
   return (
     <div className="export-container">
-      <h4 className="heading-medium">Export Products</h4>
+      <h4 className="heading-medium">Download product data</h4>
       <ul>
-        <li><a href="/products/export/visible/" className="export-button">Export visible</a></li>
-        <li><a href="/products/export/all/" className="export-button">Export all</a></li>
+        <li><a href="/products/export/visible/" className="export-button">Excel (visible products only)</a></li>
+        <li><a href="/products/export/all/" className="export-button">Excel (all products)</a></li>
       </ul>
     </div>
   )
