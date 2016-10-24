@@ -139,7 +139,7 @@ class AditionalCostsMixin():
 
 class Person(models.Model, AditionalCostsMixin):
     float_id = models.CharField(max_length=128, unique=True)
-    staff_number = models.PositiveIntegerField(null=True, unique=True)
+    staff_number = models.PositiveIntegerField(null=True, blank=True, unique=True)
     name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
