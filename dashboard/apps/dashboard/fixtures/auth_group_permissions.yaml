@@ -23,6 +23,7 @@
       - ['change_area', 'dashboard', 'area']
       - ['change_person', 'dashboard', 'person']
       - ['upload_person', 'dashboard', 'person']
+      - ['export_person_rates', 'dashboard', 'person']
       - ['change_product', 'dashboard', 'product']
       - ['adjustmentexport_product', 'dashboard', 'product']
       - ['intercompanyexport_product', 'dashboard', 'product']

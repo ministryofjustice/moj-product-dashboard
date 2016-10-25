@@ -76,6 +76,10 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
                 r'^upload/$',
                 self.admin_site.admin_view(self.upoload_view),
                 name='person_upload_payroll'),
+            url(
+                r'^export_rates/$',
+                self.admin_site.admin_view(self.export_person_rates_view),
+                name='person_export_rates'),
         ]
         return urls + super(PersonAdmin, self).get_urls()
 
@@ -124,6 +128,12 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
             'admin/dashboard/upload.html',
             context,
             context_instance=RequestContext(request))
+
+    @method_decorator(permission_required('dashboard.export_person_rates',
+                                          raise_exception=True))
+    def export_person_rates_view(self, request, *args, **kwargs):
+        if not self.is_finance(request.user):
+            raise PermissionDenied
 
 
 class RateAdmin(FinancePermissions, admin.ModelAdmin):
