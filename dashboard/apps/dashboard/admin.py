@@ -79,9 +79,6 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         ]
         return urls + super(PersonAdmin, self).get_urls()
 
-    def has_upload_permission(self, request, obj=None):
-        return self.is_finance(request.user)
-
     def get_model_perms(self, request):
         perms = super(PersonAdmin, self).get_model_perms(request)
         perms.update({
@@ -94,7 +91,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     @method_decorator(permission_required('dashboard.upload_person',
                                           raise_exception=True))
     def upoload_view(self, request, *args, **kwargs):
-        if not self.has_upload_permission(request):
+        if not self.is_finance(request.user):
             raise PermissionDenied
 
         initial = {
