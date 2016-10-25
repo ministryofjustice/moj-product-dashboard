@@ -39,7 +39,7 @@ def single_instance_task(timeout):
 @single_instance_task(60*10)
 def sync_float():
     ninety_days_ago = date.today() - timedelta(days=90)
-    min_start_date = date(2016, 9, 1)
+    min_start_date = date(2016, 10, 3)
     start_date = max([ninety_days_ago, min_start_date])
     call_command('sync', start_date=start_date)
     cache_products.delay()
