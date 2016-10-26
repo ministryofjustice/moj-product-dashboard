@@ -12,8 +12,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from dateutil.relativedelta import relativedelta
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 from openpyxl.cell import Cell
+from openpyxl.styles import Style, Font
 from openpyxl.utils import get_column_letter
 from xlrd import open_workbook, XLRDError
 
@@ -197,6 +198,51 @@ class PayrollUploadForm(forms.Form):
                 additional.save()
 
 
+class Export():
+    def __init__(self, cleaned_data, title='Export'):
+        self.cleaned_data = cleaned_data
+        self.title = title
+
+    def export(self):
+        wb = Workbook()
+        self.write(wb)
+        return wb
+
+    def write(self, wb):
+        bold_font = Font(bold=True)
+        bold_style = Style(font=bold_font)
+        currency_style = Style(number_format='£#,##0.00')
+
+        fields = (
+            ('Name', 'name', {}, None),
+            ('Type', 'type', {}, None),
+            ('Rate', 'base_rate_on', {'on': self.cleaned_data['date']},
+             currency_style),
+            ('Applied Rate', 'rate_on', {'on': self.cleaned_data['date']},
+             currency_style),
+        )
+
+        sheet = wb.active
+        sheet.title = self.title
+        for col, (heading, f, kwargs, style) in enumerate(fields):
+            cell = sheet.cell(row=1, column=col + 1)
+            cell.style = bold_style
+            cell.value = heading
+        sheet.freeze_panes = sheet['A2']
+
+        people = Person.objects.filter()
+
+        for row, product in enumerate(people):
+            for col, (heading, f, kwargs, style) in enumerate(fields):
+                val = getattr(product, f)
+                if callable(val):
+                    val = val(**kwargs)
+                cell = sheet.cell(row=row + 2, column=col + 1)
+                if style:
+                    cell.style = style
+                cell.value = val
+
+
 EXPORTS = (
     ('Adjustment_Journal', 'Adjustment Export'),
     ('Intercompany_Journal', 'Intercompany Export'),
@@ -217,11 +263,8 @@ class ExportForm(forms.Form):
         return export.export()
 
 
-class BaseExport():
+class TemplateExport(Export):
     template = 'xls/Journal_Template.xltm'
-
-    def __init__(self, cleaned_data):
-        self.cleaned_data = cleaned_data
 
     def export(self):
         wb = load_workbook(self._get_template(), keep_vba=True)
@@ -291,21 +334,21 @@ class BaseExport():
         ws.cell(row=166, column=9).value = product.people_costs(start_date, end_date)
 
 
-class AdjustmentExport(BaseExport):
+class AdjustmentExport(TemplateExport):
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
         super(AdjustmentExport, self).write(workbook, ws=ws)
         ws.cell(row=8, column=9).value = 'Adjustment'
 
 
-class IntercompanyExport(BaseExport):
+class IntercompanyExport(TemplateExport):
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
         super(IntercompanyExport, self).write(workbook, ws=ws)
         ws.cell(row=8, column=9).value = 'Intercompany Transfer'
 
 
-class ProductDetailExport(BaseExport):
+class ProductDetailExport(TemplateExport):
     template = 'xls/ProductDetail.xlsx'
 
     def write(self, workbook, ws=None):

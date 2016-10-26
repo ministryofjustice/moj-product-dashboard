@@ -20,8 +20,9 @@ from django.utils.html import format_html
 from dateutil.relativedelta import relativedelta
 
 from .models import (Person, Rate, Area, Product, Cost, Budget,
-                     ProductStatus, ProductGroupStatus, Saving, Link)
-from .forms import (PayrollUploadForm, ExportForm)
+                     ProductStatus, ProductGroupStatus, Saving, Link,
+                     PersonCost)
+from .forms import (PayrollUploadForm, ExportForm, Export)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 from .filters import (IsVisibleFilter, IsCivilServantFilter,
                       IsCurrentStaffFilter)
@@ -36,8 +37,13 @@ class RateInline(FinancePermissions, admin.TabularInline):
     extra = 0
 
 
+class PersonCostInline(FinancePermissions, admin.TabularInline):
+    model = PersonCost
+    extra = 0
+
+
 class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
-    inlines = [RateInline]
+    inlines = [RateInline, PersonCostInline]
     ordering = ('name',)
     list_display = ('name', 'job_title',
                     'contractor_civil_servant', 'is_current')
@@ -55,10 +61,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         return fields
 
     def contractor_civil_servant(self, obj):
-        if obj.is_contractor:
-            return 'Contractor'
-        else:
-            return 'Civil Servant'
+        return obj.type
     contractor_civil_servant.short_description = 'Contractor | Civil Servant'
 
     def float_link(self, obj):
@@ -83,6 +86,9 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         ]
         return urls + super(PersonAdmin, self).get_urls()
 
+    def has_upload_permission(self, request):
+        return self.is_finance(request.user)
+
     def get_model_perms(self, request):
         perms = super(PersonAdmin, self).get_model_perms(request)
         perms.update({
@@ -95,7 +101,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     @method_decorator(permission_required('dashboard.upload_person',
                                           raise_exception=True))
     def upoload_view(self, request, *args, **kwargs):
-        if not self.is_finance(request.user):
+        if not self.has_upload_permission(request):
             raise PermissionDenied
 
         initial = {
@@ -120,7 +126,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         context = self.admin_site.each_context(request)
         context.update({
             'opts': self.model._meta,
-            'has_permission': self.has_upload_permission(request),
+            'has_permission': self.is_finance(request.user),
             'form': form,
         })
 
@@ -132,8 +138,21 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     @method_decorator(permission_required('dashboard.export_person_rates',
                                           raise_exception=True))
     def export_person_rates_view(self, request, *args, **kwargs):
-        if not self.is_finance(request.user):
+        if not self.has_upload_permission(request):
             raise PermissionDenied
+        today = date.today()
+        export = Export({'date': today, 'title': 'Rate Export'})
+
+        fname = '%s_%s.xlsx' % (
+            'RateData',
+            today.strftime('%Y-%m-%d'))
+        workbook = export.export()
+        response = HttpResponse(
+            content_type="application/vnd.ms-excel")
+        response['Content-Disposition'] = 'attachment; filename=%s' \
+                                          % fname
+        workbook.save(response)
+        return response
 
 
 class RateAdmin(FinancePermissions, admin.ModelAdmin):
