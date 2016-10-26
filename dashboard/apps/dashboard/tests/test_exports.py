@@ -85,3 +85,15 @@ class ExportTestCase(TestCase):
             response = self.client.get(
                 '/products/export/%s/' % show)
             self.assertEqual(response.status_code, 200)
+
+    def test_can_export_person_rates(self):
+        self.client.login(username='test_dm', password='Admin123')
+        response = self.client.get(
+            '/admin/dashboard/products/export_rates/')
+        self.assertEqual(response.status_code, 404)
+        self.client.logout()
+
+        self.client.login(username='test_finance', password='Admin123')
+        response = self.client.get(
+            '/admin/dashboard/person/export_rates/')
+        self.assertEqual(response.status_code, 200)
