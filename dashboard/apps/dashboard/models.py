@@ -72,7 +72,8 @@ class BaseCost(models.Model):
 
         overlap_working_days = dec_workdays(*overlap)
 
-        return self.cost * overlap_working_days / cost_working_days
+        return self.cost / cost_working_days * \
+            overlap_working_days / dec_workdays(start_date, end_date)
 
     @property
     def byyearday(self):
