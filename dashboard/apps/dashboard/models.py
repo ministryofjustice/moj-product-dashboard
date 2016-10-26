@@ -16,7 +16,7 @@ from dashboard.libs.date_tools import (
     get_workdays, get_overlap, slice_time_window, dates_between,
     financial_year_tuple)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
-    dec_workdays, average_rate_from_segments
+    dec_workdays, average_rate_from_segments, last_date_in_month
 from dashboard.libs.cache_tools import method_cache
 
 from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
@@ -155,6 +155,13 @@ class Person(models.Model, AditionalCostsMixin):
     )
     raw_data = JSONField(null=True)
 
+    @property
+    def type(self):
+        if self.is_contractor:
+            return 'Contractor'
+        else:
+            return 'Civil Servant'
+
     def __str__(self):
         return self.name
 
@@ -162,10 +169,23 @@ class Person(models.Model, AditionalCostsMixin):
         verbose_name_plural = ugettext_lazy('People')
         permissions = (
             ('upload_person', 'Can upload monthly payroll'),
+            ('export_person_rates', 'Can export person rates'),
         )
 
     def additional_rate(self, start_date, end_date, name=None):
         costs = self.get_costs_between(start_date, end_date, name=name)
+
+        if not self.is_contractor and not costs:
+            # If additional costs haven't been added for the month then
+            # estimate of last set of additional costs
+            rate = self.rates.on(on=date.today())
+            if rate:
+                start_date = rate.start_date
+                end_date = last_date_in_month(rate.start_date)
+                costs = self.get_costs_between(
+                    rate.start_date,
+                    end_date,
+                    name=name)
 
         if not costs:
             return Decimal('0')
