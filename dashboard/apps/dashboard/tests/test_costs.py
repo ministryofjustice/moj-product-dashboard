@@ -6,6 +6,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 from ..constants import COST_TYPES
+from ..forms import PAYROLL_COSTS
 from ..models import Cost, Product, Person, PersonCost, Rate, Task
 
 
@@ -105,6 +106,36 @@ class CostTestCase(TestCase):
         self.assertEqual(
             round(cost.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),
             Decimal('291.26'))
+
+    def test_monthly_person_cost(self):
+        start_date = date(2016, 9, 1)
+        end_date = date(2016, 9, 30)
+
+        p = mommy.make(Person)
+
+        r = mommy.make(
+            Rate,
+            person=p,
+            rate=1,
+            start_date=start_date
+        )
+
+        for payrol_cost in PAYROLL_COSTS:
+            pc = mommy.make(
+                PersonCost,
+                person=p,
+                name=payrol_cost,
+                start_date=start_date,
+                type=COST_TYPES.MONTHLY,
+                cost=Decimal('1')
+            )
+            self.assertEqual(pc.rate_between(start_date, end_date),
+                             Decimal('0.04545454545454545454545454545'))
+
+        total_cost = (len(PAYROLL_COSTS) * Decimal('1') + r.rate * 22) / 22
+
+        self.assertEqual(round(p.rate_between(start_date, end_date), 8),
+                         round(total_cost, 8))
 
     def test_rate_between_anually_with_person_cost(self):
         proj = mommy.make(Product)
