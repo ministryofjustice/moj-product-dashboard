@@ -208,15 +208,25 @@ class Person(models.Model, AditionalCostsMixin):
         if average_rate:
             return average_rate + self.additional_rate(start_date, end_date)
 
+    def base_rate_on(self, on):
+        """
+        base rate at time of date
+        param: on: date object - if no start or end then rate on specific date
+        return: Decimal object - rate on date
+        """
+        rate = self.rates.on(on=on)
+        if rate:
+            return rate.rate_on(on)
+
     def rate_on(self, on):
         """
         rate at time of date
         param: on: date object - if no start or end then rate on specific date
         return: Decimal object - rate on date
         """
-        rate = self.rates.on(on=on)
-        if rate:
-            return rate.rate_on(on) + self.additional_rate(on, on)
+        base_rate = self.base_rate_on(on)
+        if base_rate:
+            return base_rate + self.additional_rate(on, on)
 
 
 class PersonCost(BaseCost):
