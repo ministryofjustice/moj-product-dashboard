@@ -162,6 +162,12 @@ class Person(models.Model, AditionalCostsMixin):
         else:
             return 'Civil Servant'
 
+    @property
+    def rate_type(self):
+        rate = self.rates.on(on=date.today())
+        if rate:
+            return RATE_TYPES.for_value(rate.rate_type).display
+
     def __str__(self):
         return self.name
 

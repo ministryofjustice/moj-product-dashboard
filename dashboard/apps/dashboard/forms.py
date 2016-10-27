@@ -216,10 +216,12 @@ class Export():
         fields = (
             ('Name', 'name', {}, None),
             ('Type', 'type', {}, None),
+            ('Current', 'is_current', {}, None),
             ('Rate', 'base_rate_on', {'on': self.cleaned_data['date']},
              currency_style),
             ('Applied Rate', 'rate_on', {'on': self.cleaned_data['date']},
              currency_style),
+            ('Rate Type', 'rate_type', {}, None),
         )
 
         sheet = wb.active
