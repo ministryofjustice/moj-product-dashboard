@@ -185,7 +185,8 @@ class Person(models.Model, AditionalCostsMixin):
                 costs = self.get_costs_between(
                     rate.start_date,
                     end_date,
-                    name=name)
+                    name=name,
+                    types=[COST_TYPES.MONTHLY])
 
         if not costs:
             return Decimal('0')
