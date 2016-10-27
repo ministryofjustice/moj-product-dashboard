@@ -8,9 +8,11 @@
 
 {% block object-tools %}
   {{ block.super }}
-  <ul class="object-tools">
-    <li>
-      <a href="/admin/dashboard/person/export_rates/" class="addlink">Export Rates</a>
-    </li>
-  </ul>
+  {% if request.user.is_finance %}
+    <ul class="object-tools">
+      <li>
+        <a href="/admin/dashboard/person/export_rates/" class="addlink">Export Rates</a>
+      </li>
+    </ul>
+  {% endif %}
 {% endblock %}
