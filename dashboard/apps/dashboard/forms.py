@@ -219,9 +219,9 @@ class Export():
             ('Current', 'is_current', {}, None),
             ('Rate', 'base_rate_on', {'on': self.cleaned_data['date']},
              currency_style),
-            ('Applied Rate', 'rate_on', {'on': self.cleaned_data['date']},
-             currency_style),
             ('Rate Type', 'rate_type', {}, None),
+            ('Applied Daily Rate', 'rate_on', {'on': self.cleaned_data['date']},
+             currency_style),
         )
 
         sheet = wb.active
