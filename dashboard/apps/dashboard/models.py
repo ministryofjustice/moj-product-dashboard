@@ -16,7 +16,7 @@ from dashboard.libs.date_tools import (
     get_workdays, get_overlap, slice_time_window, dates_between,
     financial_year_tuple)
 from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
-    dec_workdays, average_rate_from_segments
+    dec_workdays, average_rate_from_segments, last_date_in_month
 from dashboard.libs.cache_tools import method_cache
 
 from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
@@ -72,7 +72,8 @@ class BaseCost(models.Model):
 
         overlap_working_days = dec_workdays(*overlap)
 
-        return self.cost * overlap_working_days / cost_working_days
+        return self.cost / cost_working_days * \
+            overlap_working_days / dec_workdays(start_date, end_date)
 
     @property
     def byyearday(self):
@@ -154,6 +155,19 @@ class Person(models.Model, AditionalCostsMixin):
     )
     raw_data = JSONField(null=True)
 
+    @property
+    def type(self):
+        if self.is_contractor:
+            return 'Contractor'
+        else:
+            return 'Civil Servant'
+
+    @property
+    def rate_type(self):
+        rate = self.rates.on(on=date.today())
+        if rate:
+            return RATE_TYPES.for_value(rate.rate_type).display
+
     def __str__(self):
         return self.name
 
@@ -161,10 +175,24 @@ class Person(models.Model, AditionalCostsMixin):
         verbose_name_plural = ugettext_lazy('People')
         permissions = (
             ('upload_person', 'Can upload monthly payroll'),
+            ('export_person_rates', 'Can export person rates'),
         )
 
     def additional_rate(self, start_date, end_date, name=None):
         costs = self.get_costs_between(start_date, end_date, name=name)
+
+        if not self.is_contractor and not costs:
+            # If additional costs haven't been added for the month then
+            # estimate of last set of additional costs
+            rate = self.rates.on(on=date.today())
+            if rate:
+                start_date = rate.start_date
+                end_date = last_date_in_month(rate.start_date)
+                costs = self.get_costs_between(
+                    rate.start_date,
+                    end_date,
+                    name=name,
+                    types=[COST_TYPES.MONTHLY])
 
         if not costs:
             return Decimal('0')
@@ -208,15 +236,25 @@ class Person(models.Model, AditionalCostsMixin):
         if average_rate:
             return average_rate + self.additional_rate(start_date, end_date)
 
+    def base_rate_on(self, on):
+        """
+        base rate at time of date
+        param: on: date object - if no start or end then rate on specific date
+        return: Decimal object - rate on date
+        """
+        rate = self.rates.on(on=on)
+        if rate:
+            return rate.rate_on(on)
+
     def rate_on(self, on):
         """
         rate at time of date
         param: on: date object - if no start or end then rate on specific date
         return: Decimal object - rate on date
         """
-        rate = self.rates.on(on=on)
-        if rate:
-            return rate.rate_on(on) + self.additional_rate(on, on)
+        base_rate = self.base_rate_on(on)
+        if base_rate:
+            return base_rate + self.additional_rate(on, on)
 
 
 class PersonCost(BaseCost):
