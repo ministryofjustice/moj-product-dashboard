@@ -181,6 +181,7 @@ Set other env vars
 
 ::
     heroku config:set DEBUG=True --app moj-product-dashboard
+    heroku config:set PORT=8000 --app moj-product-dashboard
 
 Then push and start the app
 
