@@ -155,6 +155,7 @@ Start Docker
 check the repo out and run these commands once you have creates your app
 
 ::
+
     heroku plugins:install heroku-container-tools
     heroku plugins:install heroku-container-registry
     heroku container:login
@@ -164,11 +165,13 @@ check the repo out and run these commands once you have creates your app
 Then run
 
 ::
+
     heroku config --app moj-product-dashboard
 
 to get the DATABASE_URL and CLOUDAMQP_URL to set up application env vars
 
 ::
+
     heroku config:set DB_HOST=xx --app moj-product-dashboard
     heroku config:set DB_NAME=xx --app moj-product-dashboard
     heroku config:set DB_PASSWORD=xx --app moj-product-dashboard
@@ -180,11 +183,13 @@ to get the DATABASE_URL and CLOUDAMQP_URL to set up application env vars
 Set other env vars
 
 ::
+
     heroku config:set DEBUG=True --app moj-product-dashboard
     heroku config:set PORT=8000 --app moj-product-dashboard
 
 Then push and start the app
 
 ::
+
     heroku container:push web --app moj-product-dashboard
 
