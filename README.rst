@@ -161,6 +161,7 @@ check the repo out and run these commands once you have creates your app
     heroku container:login
     heroku addons:create heroku-postgresql:standard-2x --app moj-product-dashboard
     heroku addons:create cloudamqp:lemur --app moj-product-dashboard
+    heroku addons:create heroku-redis:hobby-dev --app moj-product-dashboard
 
 Then run
 
@@ -179,6 +180,8 @@ to get the DATABASE_URL and CLOUDAMQP_URL to set up application env vars
     heroku config:set DB_USERNAME=xx --app moj-product-dashboard
 
     heroku config:set CELERY_BROKER_URL=amqp://xx:xxM@buck.rmq.cloudamqp.com/xx --app moj-product-dashboard
+
+    heroku config:set REDIS_URL:redis://xx:xx@xx.compute-1.amazonaws.com:10109  --app moj-product-dashboard
 
 Set other env vars
 
