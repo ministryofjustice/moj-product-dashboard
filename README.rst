@@ -159,7 +159,7 @@ check the repo out and run these commands once you have creates your app
     heroku plugins:install heroku-container-tools
     heroku plugins:install heroku-container-registry
     heroku container:login
-    heroku addons:create heroku-postgresql:hobby-dev --app moj-product-dashboard
+    heroku addons:create heroku-postgresql:standard-2x --app moj-product-dashboard
     heroku addons:create cloudamqp:lemur --app moj-product-dashboard
 
 Then run
