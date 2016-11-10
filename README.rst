@@ -169,7 +169,7 @@ Then run
 
     heroku config --app moj-product-dashboard
 
-to get the DATABASE_URL and CLOUDAMQP_URL to set up application env vars
+to get the DATABASE_URL, REDIS_URL and CLOUDAMQP_URL to set up application env vars
 
 ::
 
@@ -183,12 +183,14 @@ to get the DATABASE_URL and CLOUDAMQP_URL to set up application env vars
 
     heroku config:set REDIS_URL:redis://xx:xx@xx.compute-1.amazonaws.com:10109  --app moj-product-dashboard
 
+    heroku config:set FLOAT_API_TOKEN:xx --app moj-product-dashboard
+    heroku config:set FLOAT_URL:xx --app moj-product-dashboard
+
 Set other env vars
 
 ::
 
     heroku config:set DEBUG=True --app moj-product-dashboard
-    heroku config:set PORT=8000 --app moj-product-dashboard
 
 Then push and start the app
 
