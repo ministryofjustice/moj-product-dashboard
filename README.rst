@@ -147,12 +147,7 @@ and finally run cellery with
 Heroku
 ======
 
-Start Docker
-
-::
-    docker-machine start default
-
-check the repo out and run these commands once you have creates your app
+Check the repo out and run these commands once you have created your app
 
 ::
 
