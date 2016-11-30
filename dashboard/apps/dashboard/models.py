@@ -222,6 +222,9 @@ class Person(models.Model, AditionalCostsMixin):
 
         average_rate = average_rate_from_segments(segments, total_workdays)
 
+        if not average_rate:
+            return Decimal('0')
+
         return average_rate
 
     def rate_between(self, start_date, end_date):
@@ -233,8 +236,10 @@ class Person(models.Model, AditionalCostsMixin):
         """
         average_rate = self.base_rate_between(start_date, end_date)
 
-        if average_rate:
-            return average_rate + self.additional_rate(start_date, end_date)
+        if not average_rate:
+            return Decimal('0')
+
+        return average_rate + self.additional_rate(start_date, end_date)
 
     def base_rate_on(self, on):
         """
@@ -243,8 +248,11 @@ class Person(models.Model, AditionalCostsMixin):
         return: Decimal object - rate on date
         """
         rate = self.rates.on(on=on)
-        if rate:
-            return rate.rate_on(on)
+
+        if not rate:
+            return Decimal('0')
+
+        return rate.rate_on(on)
 
     def rate_on(self, on):
         """
@@ -253,8 +261,11 @@ class Person(models.Model, AditionalCostsMixin):
         return: Decimal object - rate on date
         """
         base_rate = self.base_rate_on(on)
-        if base_rate:
-            return base_rate + self.additional_rate(on, on)
+
+        if not base_rate:
+            return Decimal('0')
+
+        return base_rate + self.additional_rate(on, on)
 
 
 class PersonCost(BaseCost):
