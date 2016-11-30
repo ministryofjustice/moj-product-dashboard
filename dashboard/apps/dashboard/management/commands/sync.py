@@ -12,6 +12,7 @@ from decimal import Decimal
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from requests.exceptions import HTTPError
+import shutil
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
@@ -301,4 +302,5 @@ class Command(BaseCommand):
                 raise CommandError(exc.args)
         logger.info('- sync database with exported Float data.')
         sync(start_date, end_date, data_dir=output_dir)
+        shutil.rmtree(output_dir, ignore_errors=True)
         logger.info('- job complete.')
