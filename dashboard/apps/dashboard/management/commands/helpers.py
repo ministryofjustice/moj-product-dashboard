@@ -27,7 +27,7 @@ def get_logger():
                 'formatter': 'simple'
             },
             'file': {
-                'level': 'DEBUG',
+                'level': 'WARN',
                 'class': 'logging.FileHandler',
                 'filename': 'output.log',
                 'formatter': 'basic'
@@ -36,7 +36,7 @@ def get_logger():
         'loggers': {
             __name__: {
                 'handlers': ['console', 'file'],
-                'level': 'DEBUG'
+                'level': 'WARN'
             }
         }
     }
