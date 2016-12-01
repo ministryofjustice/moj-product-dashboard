@@ -26,6 +26,9 @@ from .models import Person, Rate, Product, PersonCost
 from .widgets import MonthYearDateWidget
 
 
+CURRENCY_FORMAT = '£#,##0.00'
+
+
 PAYROLL_COSTS = [
     'ASLC',
     'A/L Sacrifice',
@@ -211,7 +214,7 @@ class Export():
     def write(self, wb):
         bold_font = Font(bold=True)
         bold_style = Style(font=bold_font)
-        currency_style = Style(number_format='£#,##0.00')
+        currency_style = Style(number_format=CURRENCY_FORMAT)
 
         fields = (
             ('Name', 'name', {}, None),
@@ -316,8 +319,9 @@ class TemplateExport(Export):
         self.row = 161
 
         def write_content_row(ct, cost, cc=9):
-            ws.cell(row=self.row, column=10).value = desc(ct)
             ws.cell(row=self.row, column=cc).value = cost
+            ws.cell(row=self.row, column=cc).number_format = CURRENCY_FORMAT
+            ws.cell(row=self.row, column=10).value = desc(ct)
             ws.cell(row=self.row, column=7).value = product.hr_id
             self.row += 1
 
