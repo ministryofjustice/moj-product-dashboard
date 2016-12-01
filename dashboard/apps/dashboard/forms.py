@@ -339,7 +339,7 @@ class TemplateExport(Export):
                 start_date, end_date, name=cost_type))
 
         # Total Write Offs
-        write_content_row('Write Offs', product.people_additional_costs(
+        write_content_row('Write Offs', -product.people_additional_costs(
             start_date, end_date, name='Write Offs'), 8)
 
         # Total People costs for project
