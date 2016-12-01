@@ -330,8 +330,8 @@ class TemplateExport(Export):
             start_date, end_date, contractor_only=True))
 
         # Total Salary Costs
-        write_content_row('Salary', product.people_costs(
-            start_date, end_date, non_contractor_only=True))
+        write_content_row('Salary', product.people_additional_costs(
+            start_date, end_date, name='Salary'))
 
         # Other Costs
         for cost_type in PAYROLL_COSTS:
