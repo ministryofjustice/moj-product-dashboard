@@ -304,19 +304,6 @@ class TemplateExport(Export):
         ws.cell(row=164, column=7).value = product.hr_id
         ws.cell(row=165, column=7).value = product.hr_id
 
-        ws.cell(row=161, column=10).value = \
-            '%s - %s Share of DS Agency Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=162, column=10).value = \
-            '%s - %s Share of DS Salary Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=163, column=10).value = \
-            '%s - %s Share of DS Allce Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=164, column=10).value = \
-            '%s - %s Share of DS ERNIC Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=165, column=10).value = \
-            '%s - %s Share of DS ASLC Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=166, column=10).value = \
-            '%s - %s Share of DS Resource Costs %s' % (product.name, product.area.name, month)
-
         ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
                                                     date.strftime('/%m/%Y'))
         ws.cell(row=12, column=9).value = '%s%s' % (date.strftime('%B'),
@@ -328,12 +315,36 @@ class TemplateExport(Export):
                                           (product.name, product.area.name,
                                            month)
 
+        def desc(t):
+            return '%s - %s Share of DS %s Costs %s' % (
+                product.name, product.area.name, t, month)
+
+        # Total Contractor costs
+        ws.cell(row=161, column=10).value = desc('Agency')
         ws.cell(row=161, column=9).value = product.people_costs(start_date, end_date, contractor_only=True)
+
+        # Total Salary Costs
+        ws.cell(row=162, column=10).value = desc('Salary')
         ws.cell(row=162, column=9).value = product.people_costs(start_date, end_date, non_contractor_only=True)
-        ws.cell(row=163, column=9).value = product.people_additional_costs(start_date, end_date, name='Misc.Allow.')
-        ws.cell(row=164, column=9).value = product.people_additional_costs(start_date, end_date, name='ERNIC')
-        ws.cell(row=165, column=9).value = product.people_additional_costs(start_date, end_date, name='ASLC')
-        ws.cell(row=166, column=9).value = product.people_costs(start_date, end_date)
+
+        # Other Costs
+        row = 161
+        for cost_type in PAYROLL_COSTS:
+            cost = product.people_additional_costs(start_date, end_date,
+                                                   name=cost_type)
+            if cost or True:
+                ws.cell(row=row, column=10).value = desc(cost_type)
+                ws.cell(row=row, column=9).value = cost or 0
+                row += 1
+
+        # Total Write Offs
+        ws.cell(row=row, column=10).value = desc('Write Offs')
+        ws.cell(row=row, column=8).value = product.people_additional_costs(start_date, end_date, name='Write Offs') or 0
+        row += 1
+
+        # Total People costs for project
+        ws.cell(row=row, column=10).value = desc('Resource')
+        ws.cell(row=row, column=8).value = product.people_costs(start_date, end_date) or 0
 
 
 class AdjustmentExport(TemplateExport):
