@@ -176,7 +176,7 @@ class CostTestCase(TestCase):
 
         self.assertEqual(
             round(proj.people_additional_costs(date(2015, 1, 1), date(2015, 1, 2)), 2),
-            Decimal('119.58'))
+            Decimal('118.58'))
 
         self.assertEqual(
             round(p.rate_between(date(2015, 1, 1), date(2015, 1, 2)), 2),

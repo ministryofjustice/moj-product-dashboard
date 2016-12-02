@@ -26,6 +26,9 @@ from .models import Person, Rate, Product, PersonCost
 from .widgets import MonthYearDateWidget
 
 
+CURRENCY_FORMAT = '£#,##0.00'
+
+
 PAYROLL_COSTS = [
     'ASLC',
     'A/L Sacrifice',
@@ -211,7 +214,7 @@ class Export():
     def write(self, wb):
         bold_font = Font(bold=True)
         bold_style = Style(font=bold_font)
-        currency_style = Style(number_format='£#,##0.00')
+        currency_style = Style(number_format=CURRENCY_FORMAT)
 
         fields = (
             ('Name', 'name', {}, None),
@@ -298,25 +301,6 @@ class TemplateExport(Export):
         start_date = date
         end_date = date.replace(day=last_business_day)
 
-        ws.cell(row=161, column=7).value = product.hr_id
-        ws.cell(row=162, column=7).value = product.hr_id
-        ws.cell(row=163, column=7).value = product.hr_id
-        ws.cell(row=164, column=7).value = product.hr_id
-        ws.cell(row=165, column=7).value = product.hr_id
-
-        ws.cell(row=161, column=10).value = \
-            '%s - %s Share of DS Agency Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=162, column=10).value = \
-            '%s - %s Share of DS Salary Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=163, column=10).value = \
-            '%s - %s Share of DS Allce Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=164, column=10).value = \
-            '%s - %s Share of DS ERNIC Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=165, column=10).value = \
-            '%s - %s Share of DS ASLC Costs %s' % (product.name, product.area.name, month)
-        ws.cell(row=166, column=10).value = \
-            '%s - %s Share of DS Resource Costs %s' % (product.name, product.area.name, month)
-
         ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
                                                     date.strftime('/%m/%Y'))
         ws.cell(row=12, column=9).value = '%s%s' % (date.strftime('%B'),
@@ -324,16 +308,43 @@ class TemplateExport(Export):
         ws.cell(row=13, column=9).value = 'MA100_LW_%s_13' % \
                                           date.strftime('%d%m%y')
 
-        ws.cell(row=14, column=9).value = '%s - %s Share of DS Costs %s' % \
-                                          (product.name, product.area.name,
-                                           month)
+        def desc(t):
+            return '%s - %s Share of DS %s Costs %s' % (
+                product.name, product.area.name, t, month)
 
-        ws.cell(row=161, column=9).value = product.people_costs(start_date, end_date, contractor_only=True)
-        ws.cell(row=162, column=9).value = product.people_costs(start_date, end_date, non_contractor_only=True)
-        ws.cell(row=163, column=9).value = product.people_additional_costs(start_date, end_date, name='Misc.Allow.')
-        ws.cell(row=164, column=9).value = product.people_additional_costs(start_date, end_date, name='ERNIC')
-        ws.cell(row=165, column=9).value = product.people_additional_costs(start_date, end_date, name='ASLC')
-        ws.cell(row=166, column=9).value = product.people_costs(start_date, end_date)
+        # Journal Description
+        ws.cell(row=14, column=9).value = desc('')
+
+        # Content Rows
+        self.row = 161
+
+        def write_content_row(ct, cost, cc=9):
+            ws.cell(row=self.row, column=cc).value = cost
+            ws.cell(row=self.row, column=cc).number_format = CURRENCY_FORMAT
+            ws.cell(row=self.row, column=10).value = desc(ct)
+            ws.cell(row=self.row, column=7).value = product.hr_id
+            self.row += 1
+
+        # Total Contractor costs
+        write_content_row('Agency', product.people_costs(
+            start_date, end_date, contractor_only=True))
+
+        # Total Salary Costs
+        write_content_row('Salary', product.non_contractor_salary_costs(
+            start_date, end_date))
+
+        # Other Costs
+        for cost_type in PAYROLL_COSTS:
+            write_content_row(cost_type, product.people_additional_costs(
+                start_date, end_date, name=cost_type))
+
+        # Total Write Offs
+        write_content_row('Write Offs', -product.people_additional_costs(
+            start_date, end_date, name='Write Offs'), 8)
+
+        # Total People costs for project
+        write_content_row('Resource', product.people_costs(
+            start_date, end_date), 8)
 
 
 class AdjustmentExport(TemplateExport):

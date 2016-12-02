@@ -7,7 +7,8 @@ from model_mommy import mommy
 
 from dashboard.libs.date_tools import parse_date, get_workdays
 from dashboard.apps.dashboard.models import (
-    Product, Area, Task, Person, Rate, Cost, ProductStatus, Budget)
+    Product, Area, Task, Person, Rate, Cost, ProductStatus, Budget,
+    PersonCost)
 from dashboard.apps.dashboard.constants import COST_TYPES, STATUS_TYPES
 
 
@@ -625,3 +626,57 @@ def test_admin_url():
     product = make_product()
     expected = '/admin/dashboard/product/{}/change/'.format(product.id)
     assert product.admin_url == expected
+
+
+@pytest.mark.django_db
+def test_non_contractor_salary_costs():
+    product = make_product()
+    contractor = mommy.make(Person, is_contractor=True)
+    non_contractor = mommy.make(Person, is_contractor=False)
+    # 20 working days
+    start_date = date(2017, 2, 1)
+    end_date = date(2017, 2, 28)
+    today = date(2017, 2, 18)
+    mommy.make(
+        Rate,
+        start_date=today - timedelta(days=30),
+        rate=Decimal('80'),
+        person=contractor
+    )
+    mommy.make(
+        Rate,
+        start_date=today - timedelta(days=30),
+        rate=Decimal('120'),
+        person=non_contractor
+    )
+    mommy.make(
+        Task,
+        person=contractor,
+        product=product,
+        start_date=today - timedelta(days=7),
+        end_date=today - timedelta(days=1),
+        days=2
+    )
+    mommy.make(
+        Task,
+        person=non_contractor,
+        product=product,
+        start_date=today - timedelta(days=7),
+        end_date=today - timedelta(days=1),
+        days=2
+    )
+    mommy.make(
+        PersonCost,
+        person=non_contractor,
+        name='ASLC',
+        start_date=start_date,
+        end_date=end_date,
+        type=COST_TYPES.MONTHLY,
+        cost=Decimal('20')
+    )
+
+    assert product.people_additional_costs(start_date, end_date) == Decimal('2')
+
+    assert product.people_costs(start_date, end_date) == Decimal('402')
+
+    assert product.non_contractor_salary_costs(start_date, end_date) == Decimal('240')
