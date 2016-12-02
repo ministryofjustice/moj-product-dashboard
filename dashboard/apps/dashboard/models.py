@@ -119,7 +119,7 @@ class AditionalCostsMixin():
                 start_date__lte=end_date
             )
 
-        if name:
+        if name and isinstance(name, str):
             costs = costs.filter(name=name)
 
         if types:
@@ -845,7 +845,7 @@ class Product(BaseProduct, AditionalCostsMixin):
                              for task in tasks]
         return sum(spending_per_task)
 
-    def people_additional_costs(self, start_date, end_date, name=None):
+    def people_additional_costs(self, start_date, end_date, name=True):
         """
         get the additional non salary people costs for a product
         :param start_date: start date of time window, a date object
@@ -857,6 +857,12 @@ class Product(BaseProduct, AditionalCostsMixin):
         additinal_task_costs = [task.people_costs(start_date, end_date, name)
                                 for task in tasks]
         return sum(additinal_task_costs)
+
+    def non_contractor_salary_costs(self, start_date, end_date):
+        aditional_costs = self.people_additional_costs(
+            start_date, end_date)
+        return self.people_costs(
+            start_date, end_date, non_contractor_only=True) - aditional_costs
 
     def cost_to(self, d):
         """
