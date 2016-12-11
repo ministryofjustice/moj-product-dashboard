@@ -116,7 +116,7 @@
                 "t2.small",
                 "t2.medium"
             ],
-            "Default": "t2.micro",
+            "Default": "t2.medium",
             "Description": "The container instance type",
             "Type": "String"
         },
@@ -134,14 +134,14 @@
                 "db.t2.medium"
             ],
             "ConstraintDescription": "must select a valid database instance type.",
-            "Default": "db.t2.small",
+            "Default": "db.t2.medium",
             "Description": "Database instance class",
             "Type": "String"
         },
         "DatabaseName": {
             "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
             "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters.",
-            "Default": "app",
+            "Default": "dashboard",
             "Description": "The database name",
             "MaxLength": "64",
             "MinLength": "1",
@@ -159,14 +159,14 @@
         "DatabaseUser": {
             "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
             "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters.",
-            "Default": "app",
+            "Default": "dashboard",
             "Description": "The database admin account username",
             "MaxLength": "16",
             "MinLength": "1",
             "Type": "String"
         },
         "DesiredScale": {
-            "Default": "3",
+            "Default": "2",
             "Description": "Desired container instances count",
             "Type": "Number"
         },
@@ -189,7 +189,7 @@
             "Type": "String"
         },
         "WebWorkerCPU": {
-            "Default": "512",
+            "Default": "1024",
             "Description": "Web worker CPU units",
             "Type": "Number"
         },
@@ -199,7 +199,7 @@
             "Type": "Number"
         },
         "WebWorkerMemory": {
-            "Default": "700",
+            "Default": "2048",
             "Description": "Web worker memory",
             "Type": "Number"
         },
