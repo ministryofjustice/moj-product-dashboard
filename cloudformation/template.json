@@ -661,7 +661,7 @@
                                         "",
                                         [
                                             "[main]\n",
-                                            "template=",
+                                            "stack=",
                                             {
                                                 "Ref": "AWS::StackId"
                                             },
@@ -678,7 +678,7 @@
                                 "mode": "000400",
                                 "owner": "root"
                             },
-                            "/etc/cfn/hooks.d/cfn-auto-reload.conf": {
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
                                 "content": {
                                     "Fn::Join": [
                                         "",
@@ -688,7 +688,7 @@
                                             "path=Resources.ContainerLaunchConfiguration.",
                                             "Metadata.AWS::CloudFormation::Init\n",
                                             "action=/opt/aws/bin/cfn-init -v ",
-                                            "         --stack",
+                                            "         --stack ",
                                             {
                                                 "Ref": "AWS::StackName"
                                             },
@@ -748,6 +748,21 @@
                                 "#!/bin/bash -xe\n",
                                 "yum install -y aws-cfn-bootstrap\n",
                                 "/opt/aws/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource ContainerLaunchConfiguration ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "/opt/aws/bin/cfn-signal -e $? ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
                                 "         --stack",
                                 {
                                     "Ref": "AWS::StackName"
@@ -1178,6 +1193,33 @@
                                             }
                                         ]
                                     ]
+                                }
+                            },
+                            {
+                                "Name": "DB_HOST",
+                                "Value": {
+                                    "Fn::GetAtt": [
+                                        "PostgreSQL",
+                                        "Endpoint.Address"
+                                    ]
+                                }
+                            },
+                            {
+                                "Name": "DB_NAME",
+                                "Value": {
+                                    "Ref": "DatabaseName"
+                                }
+                            },
+                            {
+                                "Name": "DB_USERNAME",
+                                "Value": {
+                                    "Ref": "DatabaseUser"
+                                }
+                            },
+                            {
+                                "Name": "DB_PASSWORD",
+                                "Value": {
+                                    "Ref": "DatabasePassword"
                                 }
                             }
                         ],
