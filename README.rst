@@ -142,3 +142,54 @@ and finally run cellery with
 ::
 
     celery -A dashboard worker -B -l info
+
+
+Heroku
+======
+
+Check the repo out and run these commands once you have created your app
+
+::
+
+    heroku plugins:install heroku-container-tools
+    heroku plugins:install heroku-container-registry
+    heroku container:login
+    heroku addons:create heroku-postgresql:standard-2x --app moj-product-dashboard
+    heroku addons:create cloudamqp:lemur --app moj-product-dashboard
+    heroku addons:create heroku-redis:hobby-dev --app moj-product-dashboard
+
+Then run
+
+::
+
+    heroku config --app moj-product-dashboard
+
+to get the DATABASE_URL, REDIS_URL and CLOUDAMQP_URL to set up application env vars
+
+::
+
+    heroku config:set DB_HOST=xx --app moj-product-dashboard
+    heroku config:set DB_NAME=xx --app moj-product-dashboard
+    heroku config:set DB_PASSWORD=xx --app moj-product-dashboard
+    heroku config:set DB_PORT=5432 --app moj-product-dashboard
+    heroku config:set DB_USERNAME=xx --app moj-product-dashboard
+
+    heroku config:set CELERY_BROKER_URL=amqp://xx:xxM@buck.rmq.cloudamqp.com/xx --app moj-product-dashboard
+
+    heroku config:set REDIS_URL:redis://xx:xx@xx.compute-1.amazonaws.com:10109  --app moj-product-dashboard
+
+    heroku config:set FLOAT_API_TOKEN:xx --app moj-product-dashboard
+    heroku config:set FLOAT_URL:xx --app moj-product-dashboard
+
+Set other env vars
+
+::
+
+    heroku config:set DEBUG=True --app moj-product-dashboard
+
+Then push and start the app
+
+::
+
+    heroku container:push web --app moj-product-dashboard
+
