@@ -875,11 +875,10 @@
                         "Fn::Join": [
                             "",
                             [
-                                "HTTP:",
+                                "TCP:",
                                 {
                                     "Ref": "WebWorkerPort"
-                                },
-                                "/health-check"
+                                }
                             ]
                         ]
                     },
