@@ -8,4 +8,4 @@ set -e
 /usr/bin/python3 manage.py loaddata auth_group_permissions
 
 # Run server
-/usr/local/bin/uwsgi --http 0.0.0.0:$1 --pythonpath /usr/bin/python3 --ini /app/conf/uwsgi.ini
+/usr/local/bin/uwsgi --http-socket :$1 --pythonpath /usr/bin/python3 --ini /app/conf/uwsgi.ini
