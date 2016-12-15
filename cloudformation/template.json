@@ -174,6 +174,11 @@
             "Description": "The domain name",
             "Type": "String"
         },
+        "KeyName": {
+            "Default": "",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "String"
+        },
         "MaxScale": {
             "Default": "3",
             "Description": "Maximum container instances count",
@@ -459,14 +464,11 @@
         "ContainerASubnet": {
             "Properties": {
                 "AvailabilityZone": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "a"
-                        ]
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": ""
+                        }
                     ]
                 },
                 "CidrBlock": "10.0.10.0/24",
@@ -490,14 +492,11 @@
         "ContainerBSubnet": {
             "Properties": {
                 "AvailabilityZone": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "b"
-                        ]
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": ""
+                        }
                     ]
                 },
                 "CidrBlock": "10.0.11.0/24",
@@ -735,6 +734,9 @@
                 "InstanceType": {
                     "Ref": "ContainerInstanceType"
                 },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
                 "SecurityGroups": [
                     {
                         "Ref": "ContainerSecurityGroup"
@@ -875,10 +877,11 @@
                         "Fn::Join": [
                             "",
                             [
-                                "TCP:",
+                                "HTTP:",
                                 {
                                     "Ref": "WebWorkerPort"
-                                }
+                                },
+                                "/healthcheck.json"
                             ]
                         ]
                     },
@@ -934,14 +937,11 @@
         "LoadbalancerASubnet": {
             "Properties": {
                 "AvailabilityZone": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "a"
-                        ]
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": ""
+                        }
                     ]
                 },
                 "CidrBlock": "10.0.2.0/24",
@@ -965,14 +965,11 @@
         "LoadbalancerBSubnet": {
             "Properties": {
                 "AvailabilityZone": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "b"
-                        ]
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": ""
+                        }
                     ]
                 },
                 "CidrBlock": "10.0.3.0/24",
