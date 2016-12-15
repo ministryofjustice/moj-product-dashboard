@@ -1,7 +1,8 @@
 #
 # MoJ Product Dashboard Dockerfile all environments
 #
-FROM ubuntu:xenial
+FROM python:3.5
+ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && \
     apt-get install -y software-properties-common python-software-properties \
@@ -33,8 +34,4 @@ RUN cd /app && npm install --unsafe-perm && npm run build
 
 RUN cd /app && /usr/bin/python manage.py collectstatic --noinput
 
-EXPOSE ${PORT:-8000}
-
-CMD bash /app/docker/run.sh ${PORT:-8000}
-
-
+ENTRYPOINT bash /app/docker/run.sh ${PORT:-8000}
