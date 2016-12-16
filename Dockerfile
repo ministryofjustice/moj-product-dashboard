@@ -1,7 +1,8 @@
 #
 # MoJ Product Dashboard Dockerfile all environments
 #
-FROM python:3.5
+# FROM python:3.5
+FROM ubuntu:xenial
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && \
