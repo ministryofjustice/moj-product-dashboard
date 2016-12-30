@@ -150,6 +150,10 @@ h1 a.button {
   color: #B10E1E;
 }
 
+.status-grey {
+  color: #808080;
+}
+
 .status-green-inverse {
   background-color: #006435;
 }
@@ -161,6 +165,10 @@ h1 a.button {
 
 .status-red-inverse {
   background-color: #B10E1E;
+}
+
+.status-grey-inverse {
+  background-color: #808080;
 }
 
 .griddle-filter {

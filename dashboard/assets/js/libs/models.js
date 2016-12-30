@@ -10,7 +10,8 @@ import { startOfMonth, endOfMonth, thisCalendarYear,
 export const statusMapping = {
   'OK': 'status-green',
   'At risk': 'status-amber',
-  'In trouble': 'status-red'
+  'In trouble': 'status-red',
+  'Paused': 'status-grey'
 };
 
 /**
