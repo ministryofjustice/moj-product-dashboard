@@ -38,21 +38,22 @@ export function getServiceFinancials(serviceData, productIds) {
 export class ServiceContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {products: [], hasData: false};
+    this.state = {name: '', products: [], hasData: false};
   }
 
   componentDidMount() {
     getServiceData(this.props.id)
       .then(serviceData => {
         const products = values(serviceData.products);
-        this.setState({products: products, hasData: true});
+        const name = serviceData.name;
+        this.setState({products, name, hasData: true});
       });
   }
 
   render() {
     if (! this.state.hasData) {
       return (
-        <div className="products-spinkit">
+        <div className="spinkit">
           <Spinner
             spinnerName='three-bounce'
           />
@@ -60,7 +61,18 @@ export class ServiceContainer extends Component {
       );
     };
     return (
-      <ProductsTable products={this.state.products} />
+      <div>
+        <div className="portfolio-header">
+          <h1 className="heading-xlarge">
+            { this.state.name }
+          </h1>
+        </div>
+        <ProductTable
+          products={this.state.products}
+          showService={false}
+          showFilter={true}
+        />
+      </div>
     );
   }
 }

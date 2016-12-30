@@ -45,7 +45,7 @@ export function getServiceData(id) {
       'Content-Type': 'application/json'
     },
   };
-  return fetch(`/service.json?${id}`, init)
+  return fetch(`/service.json?id=${id}`, init)
     .then(response => response.json());
 }
 
