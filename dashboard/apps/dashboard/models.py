@@ -209,7 +209,7 @@ class Person(models.Model, AditionalCostsMixin):
         rate_list = self.rates.between(start_date, end_date)
         segments = []
         for n, rate in enumerate(rate_list):
-            start = rate.start_date
+            start = max(rate.start_date, start_date)
             try:
                 end = rate_list[n + 1].start_date - timedelta(days=1)
             except IndexError:
@@ -219,13 +219,8 @@ class Person(models.Model, AditionalCostsMixin):
             )
 
         total_workdays = dec_workdays(start_date, end_date)
-
         average_rate = average_rate_from_segments(segments, total_workdays)
-
-        if not average_rate:
-            return Decimal('0')
-
-        return average_rate
+        return average_rate or Decimal('0')
 
     def rate_between(self, start_date, end_date):
         """
