@@ -4,6 +4,7 @@ from datetime import date
 from django.test import TestCase
 from model_mommy import mommy
 from faker import Faker
+import pytest
 
 from dashboard.apps.dashboard.models import Person, Product, Task, Rate
 from dashboard.libs.date_tools import parse_date, to_datetime
@@ -104,6 +105,73 @@ class TaskMoneySpentTestCase(TestCase):
     def test_task_spending_before_staart_date_is_zero(self):
         assert self.task_0.people_costs(
             date(2016, 5, 25), date(2016, 5, 31)) == 0
+
+
+rate1 = Decimal('400')
+rate2 = Decimal('500')
+rate3 = Decimal('600')
+
+
+@pytest.mark.parametrize("sday,eday,expected", [
+    (17, 17, rate1 * 1),
+    (17, 18, rate1 * 2),
+    (17, 19, rate1 * 3),
+    (17, 20, rate1 * 4),
+    (17, 21, rate1 * 4),
+    (17, 22, rate1 * 4),
+    (17, 23, rate1 * 4 + rate2 * 1),
+    (17, 24, rate1 * 4 + rate2 * 2),
+    (17, 25, rate1 * 4 + rate2 * 3),
+    (17, 26, rate1 * 4 + rate2 * 4),
+    (17, 27, rate1 * 4 + rate2 * 5),
+    (17, 28, rate1 * 4 + rate2 * 5),
+    (17, 29, rate1 * 4 + rate2 * 5),
+    (17, 30, rate1 * 4 + rate2 * 5),
+    (17, 31, rate1 * 4 + rate2 * 5 + rate3),
+
+    (22, 22, rate2 * 0),
+    (22, 23, rate2 * 1),
+    (22, 24, rate2 * 2),
+    (22, 25, rate2 * 3),
+    (22, 26, rate2 * 4),
+    (22, 27, rate2 * 5),
+    (22, 28, rate2 * 5),
+    (22, 29, rate2 * 5),
+    (22, 30, rate2 * 5),
+    (22, 31, rate2 * 5 + rate3),
+])
+@pytest.mark.django_db
+def test_multiple_rates(sday, eday, expected):
+    """
+                    May 2016
+               Su Mo Tu We Th Fr Sa
+    400/day     1  2  3  4  5  6  7
+    400/day     8  9 10 11 12 13 14
+    400/day    15 16 17 18 19 20 21
+    500/day    22 23 24 25 26 27 28
+    600/day    29 30 31
+
+    task starts from 17th, lasts for 10 working days and ends on 31st.
+    30th is a bank holiday.
+    """
+    person = mommy.make(Person)
+    mommy.make(Rate, start_date=date(2016, 5, 1), rate=rate1,
+               person=person)  # 4 days of the task
+    mommy.make(Rate, start_date=date(2016, 5, 22), rate=rate2,
+               person=person)  # 5 days of the task
+    mommy.make(Rate, start_date=date(2016, 5, 29), rate=rate3,
+               person=person)  # 1 day of the task
+    task_0 = mommy.make(
+        Task, product=mommy.make(Product),
+        person=person,
+        start_date=date(2016, 5, 17),
+        end_date=date(2016, 5, 31),
+        days=10)
+
+    people_cost = task_0.people_costs(
+        date(2016, 5, sday), date(2016, 5, eday)
+    )
+    assert round(people_cost, 0) == expected
 
 
 class TaskString(TestCase):
