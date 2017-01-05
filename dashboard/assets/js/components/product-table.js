@@ -120,9 +120,9 @@ export const ProductTable = ({ products, showService, showFilter }) => {
       'order': 2,
       'displayName': 'Service area',
       'customCompareFn': (serv) => serv.name,
-      'customComponent': (props) => (
-        <span>{props.data.name}</span>
-      )
+      'customComponent': (props) => {
+        return (<a href={`/services/${props.data.id}`}>{props.data.name}</a>);
+      },
     });
   };
 
