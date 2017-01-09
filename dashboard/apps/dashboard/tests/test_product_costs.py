@@ -88,6 +88,11 @@ class ProductCostTestCase(TestCase):
         )
 
     def test_product_costs_with_part_time_people(self):
+        """
+        This tests product costs with multiple people working part time.
+
+        It is quite long but I wanted to test everything together.
+        """
         self.assertEqual(
             self.product1.people_costs(month_one_start,
                                        last_date_in_month(month_one_start)),
@@ -155,3 +160,31 @@ class ProductCostTestCase(TestCase):
         self.assertEqual(
             self.product1.total_cost,
             Decimal('331.25'))
+
+        # 0.5 x (110 + 21/21 + 42/21) = 56.5
+        mommy.make(
+            Task,
+            person=self.non_contractor,
+            product=self.product1,
+            start_date=date(2017, 2, 1),
+            end_date=date(2017, 2, 2),
+            days=Decimal('0.5')
+        )
+
+        self.assertEqual(
+            self.product1.people_costs(month_two_start,
+                                       last_date_in_month(month_two_start)),
+            Decimal('56.5'))
+
+        self.assertEqual(
+            self.product1.people_costs(month_one_start,
+                                       last_date_in_month(month_one_start)),
+            Decimal('331.25'))
+
+        self.assertEqual(
+            self.product1.cost_to(last_date_in_month(month_two_start)),
+            Decimal('387.75'))
+
+        self.assertEqual(
+            self.product1.total_cost,
+            Decimal('387.75'))
