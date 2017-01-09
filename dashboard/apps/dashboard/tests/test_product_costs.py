@@ -88,6 +88,10 @@ class ProductCostTestCase(TestCase):
         )
 
     def test_product_costs_with_part_time_people(self):
+        self.assertEqual(
+            self.product1.people_costs(month_one_start,
+                                       last_date_in_month(month_one_start)),
+            Decimal('0'))
 
         # 1 x 100 = 100
         mommy.make(
@@ -123,3 +127,31 @@ class ProductCostTestCase(TestCase):
             self.product1.people_costs(month_one_start,
                                        last_date_in_month(month_one_start)),
             Decimal('246.5'))
+
+        self.assertEqual(
+            self.product2.people_costs(month_one_start,
+                                       last_date_in_month(month_one_start)),
+            Decimal('0'))
+
+        # 1 x (110 + 21/21 + 42/21) = 84.75
+        mommy.make(
+            Task,
+            person=self.non_contractor,
+            product=self.product1,
+            start_date=date(2017, 1, 4),
+            end_date=date(2017, 1, 5),
+            days=0.75
+        )
+
+        self.assertEqual(
+            self.product1.people_costs(month_one_start,
+                                       last_date_in_month(month_one_start)),
+            Decimal('331.25'))
+
+        self.assertEqual(
+            self.product1.cost_to(last_date_in_month(month_two_start)),
+            Decimal('331.25'))
+
+        self.assertEqual(
+            self.product1.total_cost,
+            Decimal('331.25'))
