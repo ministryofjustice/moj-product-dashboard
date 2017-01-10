@@ -406,8 +406,10 @@ class ProductManager(models.Manager):
 class BaseProduct(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(null=True, blank=True)
-    product_manager = models.ForeignKey('Person', related_name='+', null=True)
-    delivery_manager = models.ForeignKey('Person', related_name='+', null=True)
+    product_manager = models.ForeignKey(
+        'Person', related_name='+', null=True, blank=True)
+    delivery_manager = models.ForeignKey(
+        'Person', related_name='+', null=True, blank=True)
     discovery_date = models.DateField(null=True, blank=True,
                                       verbose_name='discovery start')
     alpha_date = models.DateField(null=True, blank=True,
