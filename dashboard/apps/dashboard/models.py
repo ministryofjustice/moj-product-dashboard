@@ -178,13 +178,16 @@ class Person(models.Model, AditionalCostsMixin):
             ('export_person_rates', 'Can export person rates'),
         )
 
-    def additional_rate(self, start_date, end_date, name=None):
+    def additional_rate(self, start_date, end_date, name=None,
+                        predict_based_on=None):
         costs = self.get_costs_between(start_date, end_date, name=name)
-
         if not self.is_contractor and not costs:
             # If additional costs haven't been added for the month then
             # estimate of last set of additional costs
-            rate = self.rates.on(on=date.today())
+            if predict_based_on:
+                rate = self.rates.on(on=predict_based_on)
+            else:
+                rate = self.rates.on(on=date.today())
             if rate:
                 start_date = rate.start_date
                 end_date = last_date_in_month(rate.start_date)
@@ -197,6 +200,12 @@ class Person(models.Model, AditionalCostsMixin):
         if not costs:
             return Decimal('0')
 
+        last_cost = costs.order_by('-end_date')[0]
+        if last_cost.end_date:
+            if last_cost.end_date <= end_date:
+                end_date = last_cost.end_date
+            if last_cost.end_date <= start_date:
+                start_date = last_cost.start_date
         return sum([c.rate_between(start_date, end_date) for c in costs])
 
     def base_rate_between(self, start_date, end_date):

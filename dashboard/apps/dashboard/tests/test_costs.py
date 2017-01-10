@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 from decimal import Decimal
-from django.test import TestCase
 
+from django.test import TestCase
 from model_mommy import mommy
+import pytest
 
 from ..constants import COST_TYPES
 from ..forms import PAYROLL_COSTS
@@ -193,3 +194,45 @@ class CostTestCase(TestCase):
         self.assertEqual(
             round(p.additional_rate(date(2015, 1, 1), date(2015, 1, 2), 'ASLC'), 2),
             Decimal('118.58'))
+
+
+@pytest.mark.parametrize("start_date, end_date", [
+    (date(2015, 5, 1), date(2015, 5, 1)),
+    (date(2015, 5, 1), date(2015, 5, 15)),
+    (date(2015, 5, 1), date(2015, 5, 31)),
+    (date(2015, 5, 1), date(2015, 6, 1)),
+    (date(2015, 5, 1), date(2015, 6, 15)),
+    (date(2015, 5, 1), date(2015, 6, 30)),
+
+    (date(2015, 5, 15), date(2015, 6, 15)),
+    (date(2015, 5, 31), date(2015, 6, 30)),
+    (date(2015, 5, 31), date(2015, 6, 1)),
+
+    (date(2015, 6, 1), date(2015, 6, 1)),
+    (date(2015, 6, 1), date(2015, 6, 15)),
+    (date(2015, 6, 1), date(2015, 6, 30)),
+])
+@pytest.mark.django_db
+def test_person_cost_prediction(start_date, end_date):
+    rate = Decimal('50')
+    p = mommy.make(Person)
+
+    mommy.make(
+        PersonCost,
+        person=p,
+        name='ASLC',
+        start_date=date(2015, 5, 1),
+        end_date=date(2015, 5, 31),
+        type=COST_TYPES.MONTHLY,
+        cost=Decimal('950')
+    )
+    mommy.make(
+        Rate,
+        person=p,
+        start_date=date(2015, 5, 1),
+        rate_type=COST_TYPES.MONTHLY,
+        rate=Decimal('2000')
+    )
+
+    assert rate == p.additional_rate(
+        start_date, end_date, predict_based_on=date(2015, 5, 31))
