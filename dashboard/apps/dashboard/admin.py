@@ -216,10 +216,10 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
 
     def float_link(self, obj):
         return format_html('<a href="{base}/products?active=1&product={name}"'
-                           ' target="_blank" rel="external">{pk}</a>',
+                           ' target="_blank" rel="external">{float_id}</a>',
                            base=settings.FLOAT_URL,
                            name=obj.name,
-                           pk=obj.pk)
+                           float_id=obj.float_id)
     float_link.short_description = 'Float Id'
     float_link.allow_tags = True
 
