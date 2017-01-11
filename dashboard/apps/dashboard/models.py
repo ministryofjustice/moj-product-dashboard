@@ -2,7 +2,7 @@
 from datetime import timedelta, date
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
-from dateutil.rrule import MONTHLY, YEARLY
+from dateutil.rrule import MONTHLY, YEARLY, DAILY
 from urllib.parse import urlparse
 
 from django.db import models
@@ -91,6 +91,7 @@ class BaseCost(models.Model):
             return MONTHLY
         elif self.type == COST_TYPES.ANNUALLY:
             return YEARLY
+        return DAILY
 
     def as_dict(self):
         return {
