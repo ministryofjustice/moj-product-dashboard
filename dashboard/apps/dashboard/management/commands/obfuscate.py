@@ -3,7 +3,9 @@ from django.core.management import BaseCommand
 
 from dashboard_auth.models import DashboardUser
 
-from ...models import *
+from ...models import (Person, PersonCost, Rate, Task, Product, Cost, Saving,
+                       Budget, ProductStatus, ProductGroupStatus,
+                       ProductGroup, Link, Area)
 
 
 class Command(BaseCommand):
@@ -32,7 +34,7 @@ class Command(BaseCommand):
         Link.objects.exclude(product_id=other_than).delete()
         Area.objects.filter(products__isnull=True).delete()
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options):  # noqa
         """
         deletes all except person and product and obfuscates naming data
         """
