@@ -1,0 +1,98 @@
+- model: dashboard.person
+  pk: 118
+  fields: {float_id: '118', staff_number: 118, name: Fake Name, email: fake@email.com,
+    avatar: null, is_contractor: false, job_title: null, is_current: true, raw_data: null}
+- model: dashboard.personcost
+  pk: 1
+  fields: {type: 2, name: ASLC, start_date: 2016-10-01, end_date: 2016-10-31, cost: '50.00',
+    note: '', person: 118}
+- model: dashboard.personcost
+  pk: 2
+  fields: {type: 2, name: ASLC, start_date: 2016-11-01, end_date: 2016-11-30, cost: '50.00',
+    note: '', person: 118}
+- model: dashboard.personcost
+  pk: 3
+  fields: {type: 2, name: ASLC, start_date: 2016-12-01, end_date: 2016-12-31, cost: '50.00',
+    note: '', person: 118}
+- model: dashboard.personcost
+  pk: 4
+  fields: {type: 2, name: ERNIC, start_date: 2016-10-01, end_date: 2016-10-31, cost: '30.00',
+    note: '', person: 118}
+- model: dashboard.personcost
+  pk: 5
+  fields: {type: 2, name: ERNIC, start_date: 2016-11-01, end_date: 2016-11-30, cost: '30.00',
+    note: '', person: 118}
+- model: dashboard.personcost
+  pk: 6
+  fields: {type: 2, name: ERNIC, start_date: 2016-12-01, end_date: 2016-12-31, cost: '30.00',
+    note: '', person: 118}
+- model: dashboard.rate
+  pk: 2248
+  fields: {rate_type: 1, rate: '300.00', person: 118, start_date: 2016-09-01}
+- model: dashboard.rate
+  pk: 2249
+  fields: {rate_type: 1, rate: '310.00', person: 118, start_date: 2016-10-01}
+- model: dashboard.rate
+  pk: 2250
+  fields: {rate_type: 1, rate: '290.00', person: 118, start_date: 2016-11-01}
+- model: dashboard.rate
+  pk: 2251
+  fields: {rate_type: 1, rate: '300.00', person: 118, start_date: 2016-12-01}
+- model: dashboard.rate
+  pk: 2252
+  fields: {rate_type: 1, rate: '310.00', person: 118, start_date: 2017-01-01}
+- model: dashboard.rate
+  pk: 2253
+  fields: {rate_type: 1, rate: '290.00', person: 118, start_date: 2017-02-01}
+- model: dashboard.area
+  pk: 1
+  fields: {name: Fake Area Name, float_id: '1', visible: true, manager: null, raw_data: null}
+- model: dashboard.product
+  pk: 79
+  fields: {name: Fake Product Name, description: null, product_manager: null, delivery_manager: null,
+    discovery_date: null, alpha_date: null, beta_date: null, live_date: null, end_date: null,
+    hr_id: null, float_id: '79', is_billable: true, area: 1, visible: true, raw_data: null}
+- model: dashboard.task
+  pk: 35
+  fields: {name: null, person: 118, product: 79, start_date: 2016-10-10, end_date: 2016-10-12,
+    days: '3.00000', float_id: '35', raw_data: null}
+- model: dashboard.task
+  pk: 38
+  fields: {name: null, person: 118, product: 79, start_date: 2016-10-14, end_date: 2016-10-14,
+    days: '1.00000', float_id: '38', raw_data: null}
+- model: dashboard.task
+  pk: 39
+  fields: {name: null, person: 118, product: 79, start_date: 2016-10-17, end_date: 2016-10-20,
+    days: '4.00000', float_id: '39', raw_data: null}
+- model: dashboard.task
+  pk: 41
+  fields: {name: null, person: 118, product: 79, start_date: 2016-10-24, end_date: 2016-10-27,
+    days: '4.00000', float_id: '41', raw_data: null}
+- model: dashboard.task
+  pk: 43
+  fields: {name: null, person: 118, product: 79, start_date: 2016-10-31, end_date: 2016-11-02,
+    days: '3.00000', float_id: '43', raw_data: null}
+- model: dashboard.task
+  pk: 46
+  fields: {name: null, person: 118, product: 79, start_date: 2016-11-07, end_date: 2016-11-10,
+    days: '4.00000', float_id: '46', raw_data: null}
+- model: dashboard.task
+  pk: 49
+  fields: {name: null, person: 118, product: 79, start_date: 2016-11-21, end_date: 2016-11-23,
+    days: '3.00000', float_id: '49', raw_data: null}
+- model: dashboard.task
+  pk: 52
+  fields: {name: null, person: 118, product: 79, start_date: 2016-11-30, end_date: 2016-12-01,
+    days: '2.00000', float_id: '52', raw_data: null}
+- model: dashboard.task
+  pk: 54
+  fields: {name: null, person: 118, product: 79, start_date: 2016-12-05, end_date: 2016-12-07,
+    days: '3.00000', float_id: '54', raw_data: null}
+- model: dashboard.task
+  pk: 58
+  fields: {name: null, person: 118, product: 79, start_date: 2016-12-12, end_date: 2016-12-14,
+    days: '3.00000', float_id: '58', raw_data: null}
+- model: dashboard.task
+  pk: 60
+  fields: {name: null, person: 118, product: 79, start_date: 2016-12-19, end_date: 2016-12-21,
+    days: '3.00000', float_id: '60', raw_data: null}
