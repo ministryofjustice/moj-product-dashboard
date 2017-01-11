@@ -991,24 +991,24 @@ class Product(BaseProduct, AditionalCostsMixin):
     def area_name(self):
         return self.area.name if self.area else ''
 
-    def cost_between(self, start, end):
+    def cost_of_stage(self, start, end):
         if start and end:
-            return self.cost_to(end) - self.cost_to(start)
+            return self.stats_between(start, end - timedelta(days=1))['total']
 
     @property
     def cost_of_discovery(self):
-        return self.cost_between(self.discovery_date, self.alpha_date)
+        return self.cost_of_stage(self.discovery_date, self.alpha_date)
 
     @property
     def cost_of_alpha(self):
-        return self.cost_between(self.alpha_date, self.beta_date)
+        return self.cost_of_stage(self.alpha_date, self.beta_date)
 
     @property
     def cost_of_beta(self):
-        return self.cost_between(self.beta_date, self.live_date)
+        return self.cost_of_stage(self.beta_date, self.live_date)
 
     def cost_in_fy(self, year):
-        return self.cost_between(*financial_year_tuple(year))
+        return self.stats_between(*financial_year_tuple(year))['total']
 
     @property
     def cost_of_sustaining(self):
