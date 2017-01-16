@@ -355,7 +355,7 @@ class Area(models.Model):
         return self.name
 
     def profile(self, product_ids=None, start_date=None, end_date=None,
-                freq=None):
+                freq='MS'):
         """
         get the profile of a service area in a time window.
         :param product_ids: a list of product_ids, if the value is not
@@ -669,7 +669,7 @@ class BaseProduct(models.Model):
             result['service_manager'] = self.area.manager.name
         return result
 
-    def profile(self, start_date=None, end_date=None, freq=None):
+    def profile(self, start_date=None, end_date=None, freq='MS'):
         """
         get the profile of a product group in a time window.
         :param start_date: start date of time window, a date object
@@ -678,6 +678,14 @@ class BaseProduct(models.Model):
         sub windows. value of freq should be an offset aliases supported by
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
+        """
+        return self._profile(start_date, end_date, freq)
+
+    @method_cache(timeout=24 * 60 * 60)
+    def _profile(self, start_date, end_date, freq):
+        """
+        this method does not have default value for params
+        hence more suitable for caching.
         """
         status = self.status()
         status = status.as_dict() if status else {}
@@ -826,7 +834,6 @@ class Product(BaseProduct, AditionalCostsMixin):
     def __str__(self):
         return self.name
 
-    @method_cache(timeout=24 * 60 * 60)
     def people_costs(self, start_date, end_date, contractor_only=False,
                      non_contractor_only=False):
         """

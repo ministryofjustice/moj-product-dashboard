@@ -10,7 +10,6 @@ from celery.task import periodic_task
 
 from .models import Product
 from .management.commands.helpers import logger
-from dashboard.libs.date_tools import slice_time_window
 
 
 def single_instance_task(timeout):
@@ -64,30 +63,4 @@ def cache_product(product_id):
     product = Product.objects.get(pk=product_id)
 
     logger.info('- generating caching for product "%s"', product)
-    logger.info('  * people costs monthly and on key dates')
-    product.profile(freq='MS')
-    try:
-        start_date = product.first_date
-        end_date = product.last_date
-    except ValueError:
-        return
-    # monthly people costs
-    time_windows = slice_time_window(
-        start_date, end_date, freq='MS', extend=True)
-    # people cost to key dates
-    time_windows += [
-        (start_date, key_date['date']) for key_date
-        in product.key_dates(freq='MS').values()
-    ]
-    for sdate, edate in time_windows:
-        product.people_costs(
-            sdate, edate,
-            ignore_cache=True)
-        product.people_costs(
-            sdate, edate,
-            contractor_only=True,
-            ignore_cache=True)
-        product.people_costs(
-            sdate, edate,
-            non_contractor_only=True,
-            ignore_cache=True)
+    product.profile()

@@ -104,7 +104,7 @@ def test_product_without_tasks():
 
 @pytest.mark.django_db
 def test_product_profiles_without_frequency():
-    profile = make_product().profile()
+    profile = make_product().profile(freq=None)
     contractor = contractor_rate * man_days
     non_contractor = non_contractor_rate * man_days
     financial = {
