@@ -35,4 +35,4 @@ RUN cd /app && npm install --unsafe-perm && npm run build
 
 RUN cd /app && /usr/bin/python3 manage.py collectstatic --noinput
 
-ENTRYPOINT bash /app/docker/run.sh ${PORT:-8000}
+CMD bash /app/docker/run.sh ${PORT:-8000}
