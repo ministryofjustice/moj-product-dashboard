@@ -63,4 +63,4 @@ def cache_product(product_id):
     product = Product.objects.get(pk=product_id)
 
     logger.info('- generating caching for product "%s"', product)
-    product.profile()
+    product.profile(ignore_cache=True)
