@@ -246,7 +246,7 @@ class Command(BaseCommand):
         three_month_in_the_past = today - timedelta(days=90)
         parser.add_argument('-s', '--start-date', type=parse_date,
                             default=three_month_in_the_past)
-        parser.add_argument('-w', '--weeks', type=int, default=52)
+        parser.add_argument('-w', '--weeks', type=int, default=104)  # 2 years
         parser.add_argument('-t', '--token', type=str)
         parser.add_argument('-o', '--output-dir', type=ensure_directory,
                             default=self._default_output_dir())
