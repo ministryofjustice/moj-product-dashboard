@@ -669,7 +669,8 @@ class BaseProduct(models.Model):
             result['service_manager'] = self.area.manager.name
         return result
 
-    def profile(self, start_date=None, end_date=None, freq='MS'):
+    def profile(self, start_date=None, end_date=None, freq='MS',
+                ignore_cache=False):
         """
         get the profile of a product group in a time window.
         :param start_date: start date of time window, a date object
@@ -679,7 +680,8 @@ class BaseProduct(models.Model):
         pandas date_range, e.g. MS for month start.
         :return: a dictionary representing the profile
         """
-        return self._profile(start_date, end_date, freq)
+        return self._profile(
+            start_date, end_date, freq, ignore_cache=ignore_cache)
 
     @method_cache(timeout=24 * 60 * 60)
     def _profile(self, start_date, end_date, freq):
