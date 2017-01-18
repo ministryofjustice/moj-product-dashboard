@@ -200,25 +200,12 @@ Amazon ECS
 
 You can get this running on Amazon ECS but creating a stack with the cloudformation template in ```cloudformation/template.yaml```
 
-1. Create a Hosted Zone in AWS Route53 for the domain you would like
-2. Upload the cloudformation template to AWS either via the AWS Console or via the AWS CLI. You will have to confirm the Certificate creation - maybe via email.
-3. Create an A Record in the hosted zone and point it to the load balancer created in the stack
-4. Create a local.py file in the dashboard/settings directory
-5. Create an IAM user and give it permissions to the SQS Queue created in the stack
- - Create an API key and token from the IAM user and and add the following to the local.py file
-
-::
-
-    BROKER_URL = 'sqs://{API_TOKEN}:{API_KEY}@'
-
-6. Add your Float API key to local.py
-
-::
-
-    FLOAT_API_TOKEN = '{YOUR_FLOAT_API_TOKEN}'
-    FLOAT_URL = '{URL TO YOUR FLOAT API}'
-
-7. Build a docker image - find your image repository from ECS Management in AWS Console
+1. Create a Key Pair that you want your instances to have so you can ssh in to them - need to enter this when creating the stack
+2. Create a Hosted Zone in AWS Route53 for the domain you would like
+3. Upload the cloudformation template to AWS either via the AWS Console or via the AWS CLI. You will have to confirm the Certificate creation - maybe via email.
+4. Create an A Record in the hosted zone and point it to the load balancer created in the stack
+5. Create a local.py file in the dashboard/settings directory
+6. Build a docker image - find your image repository from ECS Management in AWS Console
 
 ::
 
@@ -226,4 +213,4 @@ You can get this running on Amazon ECS but creating a stack with the cloudformat
     docker tag dashboard:latest {YOUR IMAGE REPOSITRY}/dashboard:latest
     docker push {YOUR IMAGE REPOSITRY}/dashboard:latest
 
-8. Re-run the task for the Cluster in ECS Management in AWS Console
+7. Re-run the task for the Cluster in ECS Management in AWS Console

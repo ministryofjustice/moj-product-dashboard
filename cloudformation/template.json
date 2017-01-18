@@ -54,15 +54,6 @@
                 ]
             }
         },
-        "AssetsDistributionDomainName": {
-            "Description": "The assest CDN domain name",
-            "Value": {
-                "Fn::GetAtt": [
-                    "AssetsDistribution",
-                    "DomainName"
-                ]
-            }
-        },
         "DashboardQueueARN": {
             "Description": "ARN of the source queue",
             "Value": {
@@ -175,6 +166,16 @@
             "Description": "The domain name",
             "Type": "String"
         },
+        "FloatApiToken": {
+            "Default": "",
+            "Description": "Float API token",
+            "Type": "String"
+        },
+        "FloatApiUrl": {
+            "Default": "",
+            "Description": "Float API URL",
+            "Type": "String"
+        },
         "KeyName": {
             "Default": "",
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
@@ -276,7 +277,8 @@
                                         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
                                         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
                                         "ec2:Describe*",
-                                        "ec2:AuthorizeSecurityGroupIngress"
+                                        "ec2:AuthorizeSecurityGroupIngress",
+                                        "sqs:*"
                                     ],
                                     "Effect": "Allow",
                                     "Resource": "*"
@@ -369,35 +371,6 @@
             },
             "Type": "AWS::S3::Bucket"
         },
-        "AssetsDistribution": {
-            "Properties": {
-                "DistributionConfig": {
-                    "DefaultCacheBehavior": {
-                        "ForwardedValues": {
-                            "QueryString": "false"
-                        },
-                        "TargetOriginId": "Assets",
-                        "ViewerProtocolPolicy": "allow-all"
-                    },
-                    "Enabled": "true",
-                    "Origins": [
-                        {
-                            "DomainName": {
-                                "Fn::GetAtt": [
-                                    "AssetsBucket",
-                                    "DomainName"
-                                ]
-                            },
-                            "Id": "Assets",
-                            "S3OriginConfig": {
-                                "OriginAccessIdentity": ""
-                            }
-                        }
-                    ]
-                }
-            },
-            "Type": "AWS::CloudFront::Distribution"
-        },
         "AutoScalingGroup": {
             "Properties": {
                 "DesiredCapacity": {
@@ -429,6 +402,43 @@
                 ]
             },
             "Type": "AWS::AutoScaling::AutoScalingGroup"
+        },
+        "CacheSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Cache security group.",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "10.0.10.0/24",
+                        "FromPort": "6379",
+                        "IpProtocol": "tcp",
+                        "ToPort": "6379"
+                    },
+                    {
+                        "CidrIp": "10.0.11.0/24",
+                        "FromPort": "6379",
+                        "IpProtocol": "tcp",
+                        "ToPort": "6379"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "Vpc"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "CacheSubnetGroup": {
+            "Properties": {
+                "Description": "Subnets available for the Cache Cluster",
+                "SubnetIds": [
+                    {
+                        "Ref": "ContainerASubnet"
+                    },
+                    {
+                        "Ref": "ContainerBSubnet"
+                    }
+                ]
+            },
+            "Type": "AWS::ElastiCache::SubnetGroup"
         },
         "Certificate": {
             "Properties": {
@@ -625,6 +635,20 @@
                             ]
                         },
                         "PolicyName": "LoggingPolicy"
+                    },
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "sqs:*"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                }
+                            ]
+                        },
+                        "PolicyName": "SQSManagementPolicy"
                     }
                 ]
             },
@@ -1108,6 +1132,24 @@
             },
             "Type": "AWS::EC2::SubnetRouteTableAssociation"
         },
+        "RedisCacheCluster": {
+            "Properties": {
+                "CacheNodeType": "cache.t2.micro",
+                "CacheSubnetGroupName": {
+                    "Ref": "CacheSubnetGroup"
+                },
+                "Engine": "redis",
+                "NumCacheNodes": 1,
+                "Port": "6379",
+                "PreferredAvailabilityZone": "eu-west-1a",
+                "VpcSecurityGroupIds": [
+                    {
+                        "Ref": "CacheSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::ElastiCache::CacheCluster"
+        },
         "Vpc": {
             "Properties": {
                 "CidrBlock": "10.0.0.0/16"
@@ -1137,11 +1179,35 @@
                                 }
                             },
                             {
-                                "Name": "CDN_DOMAIN_NAME",
+                                "Name": "REDIS_URL",
+                                "Value": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "redis://",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "RedisCacheCluster",
+                                                    "RedisEndpoint.Address"
+                                                ]
+                                            },
+                                            ":",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "RedisCacheCluster",
+                                                    "RedisEndpoint.Port"
+                                                ]
+                                            }
+                                        ]
+                                    ]
+                                }
+                            },
+                            {
+                                "Name": "REDIS_PORT",
                                 "Value": {
                                     "Fn::GetAtt": [
-                                        "AssetsDistribution",
-                                        "DomainName"
+                                        "RedisCacheCluster",
+                                        "RedisEndpoint.Port"
                                     ]
                                 }
                             },
@@ -1217,6 +1283,18 @@
                                 "Name": "DB_PASSWORD",
                                 "Value": {
                                     "Ref": "DatabasePassword"
+                                }
+                            },
+                            {
+                                "Name": "FLOAT_API_TOKEN",
+                                "Value": {
+                                    "Ref": "FloatApiToken"
+                                }
+                            },
+                            {
+                                "Name": "FLOAT_URL",
+                                "Value": {
+                                    "Ref": "FloatApiUrl"
                                 }
                             }
                         ],
