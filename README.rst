@@ -193,3 +193,34 @@ Then push and start the app
 
     heroku container:push web --app moj-product-dashboard
 
+
+
+Amazon ECS
+==========
+
+You can get this running on Amazon ECS but creating a stack with the cloudformation template in ```cloudformation/template.yaml```
+
+The Template can also be produced/edited with this repository
+
+`https://github.com/s-block/ecs/ <https://github.com/s-block/ecs/>`__ (by running :code:`python create.py`)
+
+1. Create a Key Pair that you want your instances to have so you can ssh in to them - need to enter this when creating the stack
+2. Create a Hosted Zone in AWS Route53 for the domain you would like
+3. Upload the cloudformation template to AWS either via the AWS Console or via the AWS CLI. You will have to confirm the Certificate creation - maybe via email. Most of the fields are obvious but some that aren't are:
+ - Stack name: can be anything, will be used as the repository name
+ - DomainName: domain to create the Certificate for
+ - KeyName: name of Key Pair created in step one. Will bee needed to ssh in to any instances
+ - SecretKey: Used to set the ENV var SECRET_KEY to be used by the Django app
+ - WebAppRevision: Docker tag to automatically build when updated. 'master' or 'prod' or anything you like.
+
+4. Create an A Record in the hosted zone and point it to the load balancer created in the stack
+5. Create a local.py file in the dashboard/settings directory
+6. Build a docker image - find your image repository from ECS Management in AWS Console
+
+::
+
+    docker build -t {STACK_NAME} .
+    docker tag {STACK_NAME}:{WebAppRevision} {YOUR_IMAGE_REPOSITRY}/{STACK_NAME}:{WebAppRevision}
+    docker push {YOUR_IMAGE_REPOSITRY}/{STACK_NAME}:{WebAppRevision}
+
+7. Re-run the task for the Cluster in ECS Management in AWS Console
