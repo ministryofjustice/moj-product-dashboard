@@ -612,6 +612,8 @@ Resources:
           Value: {Ref: FloatApiToken}
         - Name: FLOAT_URL
           Value: {Ref: FloatApiUrl}
+        - Name: ALLOWED_HOSTS
+          Value: {Ref: DomainName}
         Essential: 'true'
         Image:
           Fn::Join:
