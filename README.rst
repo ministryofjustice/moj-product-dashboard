@@ -198,6 +198,8 @@ Then push and start the app
 Amazon ECS
 ==========
 
+To use the AWS CLI you will need to create an IAM user in your AWS account and configure a profile. See `CLI - getting started <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`__ For more info on how to do this. Remember your profile name as you will need it when running the login command below.
+
 You can get this running on Amazon ECS but creating a stack with the cloudformation template in ```cloudformation/template.yaml```
 
 The Template can also be produced/edited with this repository
@@ -218,6 +220,9 @@ The Template can also be produced/edited with this repository
 6. Build a docker image - find your image repository from ECS Management in AWS Console
 
 ::
+
+    aws ecr get-login --profile {YOUR_PROFILE_NAME} --region eu-west-1
+    {RUN_COMMAND_RETURNED_FROM_ABOVE}
 
     docker build -t {STACK_NAME} .
     docker tag {STACK_NAME}:{WebAppRevision} {YOUR_IMAGE_REPOSITRY}/{STACK_NAME}:{WebAppRevision}
