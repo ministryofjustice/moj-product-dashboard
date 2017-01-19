@@ -15,11 +15,11 @@
 
     <div class="form-group">
       <label class="form-label" for="{{ form.username.id_for_label  }}">Username</label>
-      <input class="form-control js-remove-readonly-onfocus" readonly="true" id="{{ form.username.id_for_label }}" name="username" type="text">
+      <input class="form-control js-remove-readonly-onfocus" readonly="true" autocomplete="off" id="{{ form.username.id_for_label }}" name="username" type="text">
     </div>
     <div class="form-group">
       <label class="form-label" for="{{ form.password.id_for_label  }}">Password</label>
-      <input class="form-control js-remove-readonly-onfocus" readonly="true" id="{{ form.password.id_for_label }}" name="password" type="password">
+      <input class="form-control js-remove-readonly-onfocus" readonly="true" autocomplete="off" id="{{ form.password.id_for_label }}" name="password" type="password">
     </div>
     <input class="button" type="submit" value="Sign in"/>
     <input type="hidden" name="next" value="{{ next }}"/>
