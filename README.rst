@@ -200,6 +200,10 @@ Amazon ECS
 
 You can get this running on Amazon ECS but creating a stack with the cloudformation template in ```cloudformation/template.yaml```
 
+The Template can also be produced/edited with this repository
+
+`https://github.com/s-block/ecs/ <https://github.com/s-block/ecs/>`__ (by running :code:`python create.py`)
+
 1. Create a Key Pair that you want your instances to have so you can ssh in to them - need to enter this when creating the stack
 2. Create a Hosted Zone in AWS Route53 for the domain you would like
 3. Upload the cloudformation template to AWS either via the AWS Console or via the AWS CLI. You will have to confirm the Certificate creation - maybe via email. Most of the fields are obvious but some that aren't are:
