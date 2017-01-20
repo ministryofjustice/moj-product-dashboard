@@ -16,7 +16,7 @@ class NewDate(date):
 
 
 @pytest.mark.django_db
-@patch('dashboard.apps.dashboard.models.date', NewDate)
+@patch('dashboard.apps.dashboard.models.cost.date', NewDate)
 def test_monthly_savings_no_start_end():
     product = mommy.make(Product)
 

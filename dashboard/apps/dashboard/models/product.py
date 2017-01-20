@@ -1,407 +1,19 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta, date
+from datetime import date, timedelta
 from decimal import Decimal
-from dateutil.relativedelta import relativedelta
-from dateutil.rrule import MONTHLY, YEARLY, DAILY
-from urllib.parse import urlparse
 
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from django.core import urlresolvers
 from django.contrib.postgres.fields import JSONField
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.date_tools import (
-    get_workdays, get_overlap, slice_time_window, dates_between,
-    financial_year_tuple)
-from dashboard.libs.rate_converter import RATE_TYPES, RateConverter, \
-    dec_workdays, average_rate_from_segments, last_date_in_month
+    financial_year_tuple, slice_time_window, get_workdays)
 from dashboard.libs.cache_tools import method_cache
-
-from .constants import RAG_TYPES, COST_TYPES, STATUS_TYPES
-
-
-class BaseCost(models.Model):
-    type = models.PositiveSmallIntegerField(
-        choices=COST_TYPES, default=COST_TYPES.ONE_OFF)
-    name = models.CharField(max_length=128, null=True)
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    cost = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=ugettext_lazy('Amount'))
-    note = models.TextField(null=True, blank=True)
-
-    def cost_between(self, start_date, end_date):
-        start_date = max(start_date, self.start_date) if start_date else \
-            self.start_date
-        end_date = min(end_date, self.end_date or end_date) if end_date else \
-            self.end_date
-        # If there is no end date then set it for today
-        end_date = end_date or date.today()
-        if self.type == COST_TYPES.ONE_OFF:
-            if start_date <= self.start_date <= end_date:
-                return self.cost
-            return Decimal('0')
-
-        dates = dates_between(start_date, end_date, self.freq,
-                              bymonthday=self.bymonthday,
-                              byyearday=self.byyearday)
-
-        return len(dates) * self.cost
-
-    def rate_between(self, start_date, end_date):
-        if not self.end_date:
-            if self.type == COST_TYPES.MONTHLY:
-                cost_end_date = self.start_date + relativedelta(months=1)
-            elif self.type == COST_TYPES.ANNUALLY:
-                cost_end_date = self.start_date + relativedelta(years=1)
-            else:
-                raise Exception('Cant get rate on one off cost')
-        else:
-            cost_end_date = self.end_date
-
-        cost_working_days = dec_workdays(self.start_date, cost_end_date)
-
-        overlap = get_overlap(
-            (self.start_date, cost_end_date),
-            (start_date, end_date))
-
-        if not overlap:
-            return Decimal('0')
-
-        overlap_working_days = dec_workdays(*overlap)
-
-        return self.cost / cost_working_days * \
-            overlap_working_days / dec_workdays(start_date, end_date)
-
-    @property
-    def byyearday(self):
-        if self.type == COST_TYPES.ANNUALLY:
-            return self.start_date.timetuple().tm_yday
-
-    @property
-    def bymonthday(self):
-        if self.type == COST_TYPES.MONTHLY:
-            return self.start_date.day
-
-    @property
-    def freq(self):
-        if self.type == COST_TYPES.MONTHLY:
-            return MONTHLY
-        elif self.type == COST_TYPES.ANNUALLY:
-            return YEARLY
-        return DAILY
-
-    def as_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'start_date': self.start_date,
-            'end_date': self.end_date,
-            'note': self.note,
-            'cost': self.cost,
-            'product_id': self.product_id,
-            'freq': dict(COST_TYPES.choices)[self.type]
-        }
-
-    class Meta:
-        abstract = True
-        ordering = ['start_date', 'id']
-
-
-class AditionalCostsMixin():
-    def get_costs_between(self, start_date, end_date, name=None,
-                          attribute='costs', types=[]):
-        costs = getattr(self, attribute).all()
-        if start_date and end_date:
-            costs = costs.filter(
-                Q(end_date__gte=start_date) | Q(end_date__isnull=True),
-                start_date__lte=end_date
-            )
-
-        if name and isinstance(name, str):
-            costs = costs.filter(name=name)
-
-        if types:
-            costs = costs.filter(type__in=types)
-
-        return costs
-
-    def additional_costs(self, start_date, end_date, name=None,
-                         attribute='costs', types=[]):
-        def cost_of_cost(cost):
-            return cost.cost_between(start_date, end_date)
-
-        costs = self.get_costs_between(start_date, end_date, name=name,
-                                       attribute=attribute, types=types)
-
-        return sum(map(cost_of_cost, costs)) or Decimal('0')
-
-
-class Person(models.Model, AditionalCostsMixin):
-    float_id = models.CharField(max_length=128, unique=True)
-    staff_number = models.PositiveIntegerField(null=True, blank=True, unique=True)
-    name = models.CharField(max_length=128)
-    email = models.EmailField(null=True)
-    avatar = models.URLField(null=True)
-    is_contractor = models.BooleanField(
-        default=False,
-        verbose_name='is contractor?'
-    )
-    job_title = models.CharField(max_length=128, null=True)
-    is_current = models.BooleanField(
-        default=True,
-        verbose_name='is current staff?'
-    )
-    raw_data = JSONField(null=True)
-
-    @property
-    def type(self):
-        if self.is_contractor:
-            return 'Contractor'
-        else:
-            return 'Civil Servant'
-
-    @property
-    def rate_type(self):
-        rate = self.rates.on(on=date.today())
-        if rate:
-            return RATE_TYPES.for_value(rate.rate_type).display
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = ugettext_lazy('People')
-        permissions = (
-            ('upload_person', 'Can upload monthly payroll'),
-            ('export_person_rates', 'Can export person rates'),
-        )
-
-    def additional_rate(self, start_date, end_date, name=None,
-                        predict_based_on=None):
-        costs = self.get_costs_between(start_date, end_date, name=name)
-        if not self.is_contractor and not costs:
-            # If additional costs haven't been added for the month then
-            # estimate of last set of additional costs
-            if predict_based_on:
-                rate = self.rates.on(on=predict_based_on)
-            else:
-                rate = self.rates.on(on=date.today())
-            if rate:
-                start_date = rate.start_date
-                end_date = last_date_in_month(rate.start_date)
-                costs = self.get_costs_between(
-                    rate.start_date,
-                    end_date,
-                    name=name,
-                    types=[COST_TYPES.MONTHLY])
-
-        if not costs:
-            return Decimal('0')
-
-        last_cost = costs.order_by('-end_date')[0]
-        if last_cost.end_date:
-            if last_cost.end_date <= end_date:
-                end_date = last_cost.end_date
-            if last_cost.end_date <= start_date:
-                start_date = last_cost.start_date
-        return sum([c.rate_between(start_date, end_date) for c in costs])
-
-    def base_rate_between(self, start_date, end_date):
-        """
-        average base day rate in range
-        param: start_date: date object - beginning of time period for average
-        param: end_date: date object - end of time period for average
-        return: Decimal object - average day rate
-        """
-        rate_list = self.rates.between(start_date, end_date)
-        segments = []
-        for n, rate in enumerate(rate_list):
-            start = max(rate.start_date, start_date)
-            try:
-                end = rate_list[n + 1].start_date - timedelta(days=1)
-            except IndexError:
-                end = end_date
-            segments.append(
-                (start, end, rate.rate_between(start, end))
-            )
-
-        total_workdays = dec_workdays(start_date, end_date)
-        average_rate = average_rate_from_segments(segments, total_workdays)
-        return average_rate or Decimal('0')
-
-    def rate_between(self, start_date, end_date):
-        """
-        average day with aditional costs day rate rate in range
-        param: start_date: date object - beginning of time period for average
-        param: end_date: date object - end of time period for average
-        return: Decimal object - average day rate
-        """
-        average_rate = self.base_rate_between(start_date, end_date)
-
-        if not average_rate:
-            return Decimal('0')
-
-        return average_rate + self.additional_rate(start_date, end_date)
-
-    def base_rate_on(self, on):
-        """
-        base rate at time of date
-        param: on: date object - if no start or end then rate on specific date
-        return: Decimal object - rate on date
-        """
-        rate = self.rates.on(on=on)
-
-        if not rate:
-            return Decimal('0')
-
-        return rate.rate_on(on)
-
-    def rate_on(self, on):
-        """
-        rate at time of date
-        param: on: date object - if no start or end then rate on specific date
-        return: Decimal object - rate on date
-        """
-        base_rate = self.base_rate_on(on)
-
-        if not base_rate:
-            return Decimal('0')
-
-        return base_rate + self.additional_rate(on, on)
-
-
-class PersonCost(BaseCost):
-    person = models.ForeignKey('Person', related_name='costs')
-
-
-class RatesManager(models.Manager):
-    use_for_related_fields = True
-
-    def on(self, on):
-        return self.get_queryset()\
-            .filter(start_date__lte=on)\
-            .order_by('-start_date')\
-            .first()
-
-    def between(self, start_date, end_date):
-        rates = list(self.get_queryset().
-                     filter(start_date__lte=end_date,
-                            start_date__gt=start_date)
-                     .order_by('start_date'))
-        first = self.on(start_date)
-        if first:
-            rates.insert(0, first)
-        return rates
-
-
-class Rate(models.Model):
-    rate_type = models.PositiveSmallIntegerField(
-        choices=RATE_TYPES, default=RATE_TYPES.DAY)
-    rate = models.DecimalField(max_digits=10, decimal_places=2)
-    person = models.ForeignKey('Person', related_name='rates')
-    start_date = models.DateField()
-
-    objects = RatesManager()
-
-    def __str__(self):
-        return '"{}" @ "{} {}" from "{}"'.format(
-            self.person, self.rate,
-            RATE_TYPES.for_value(self.rate_type).display, self.start_date)
-
-    class Meta:
-        ordering = ('-start_date', '-id')
-        unique_together = ('start_date', 'person')
-
-    @property
-    def converter(self):
-        return RateConverter(
-            rate=self.rate,
-            rate_type=self.rate_type
-        )
-
-    def rate_between(self, start_date, end_date):
-        """
-        average day rate in range
-        param: start_date: date object - beginning of time period for average
-        param: end_date: date object - end of time period for average
-        return: Decimal object - average day rate
-        """
-        return self.converter.rate_between(start_date, end_date)
-
-    def rate_on(self, on=None):
-        """
-        rate at time of date
-        param: on: date object - if no start or end then rate on specific date
-        return: Decimal object - rate on date
-        """
-        return self.converter.rate_on(on)
-
-
-class Area(models.Model):
-    name = models.CharField(max_length=128)
-    float_id = models.CharField(max_length=128, unique=True)
-    visible = models.BooleanField(default=True)
-    manager = models.ForeignKey(
-        'Person', related_name='+', verbose_name='service manager', null=True)
-    raw_data = JSONField(null=True)
-
-    class Meta:
-        verbose_name = ugettext_lazy('service area')
-
-    def __str__(self):
-        return self.name
-
-    def profile(self, product_ids=None, start_date=None, end_date=None,
-                freq='MS'):
-        """
-        get the profile of a service area in a time window.
-        :param product_ids: a list of product_ids, if the value is not
-        specified, get all products.
-        :param start_date: start date of time window, a date object
-        :param end_date: end date of time window, a date object
-        :param freq: an optional parameter to slice the time window into
-        sub windows. value of freq should be an offset aliases supported by
-        pandas date_range, e.g. MS for month start.
-        :return: a dictionary representing the profile
-        """
-        product_ids_in_a_group = [
-            p.id
-            for group in ProductGroup.objects.all()
-            for p in group.products.all()
-        ]
-        products = self.products.visible().exclude(
-            id__in=product_ids_in_a_group)
-        product_groups = [group for group in ProductGroup.objects.all()
-                          if group.area and group.area.id == self.id]
-        if product_ids is not None:
-            products = products.filter(id__in=product_ids)
-        result = {
-            'id': self.id,
-            'name': self.name
-        }
-        result['products'] = {
-            'product:{}'.format(product.id): product.profile(
-                start_date, end_date, freq)
-            for product in products
-        }
-        result['products'].update({
-            'product-group:{}'.format(group.id): group.profile(
-                start_date, end_date, freq)
-            for group in product_groups
-        })
-        return result
-
-
-class ProductManager(models.Manager):
-    use_for_related_fields = True
-
-    def visible(self):
-        return self.get_queryset().filter(visible=True).filter(
-            models.Q(area=None) | models.Q(area__visible=True)
-        )
+from ..constants import RAG_TYPES, STATUS_TYPES, COST_TYPES
+from .cost import Cost, AditionalCostsMixin, Budget, Saving
+from .link import Link
 
 
 class BaseProduct(models.Model):
@@ -746,6 +358,15 @@ class BaseProduct(models.Model):
         abstract = True
 
 
+class ProductManager(models.Manager):
+    use_for_related_fields = True
+
+    def visible(self):
+        return self.get_queryset().filter(visible=True).filter(
+            models.Q(area=None) | models.Q(area__visible=True)
+        )
+
+
 class Product(BaseProduct, AditionalCostsMixin):
     hr_id = models.CharField(max_length=12, unique=True, null=True)
     float_id = models.CharField(max_length=128, unique=True)
@@ -1053,53 +674,6 @@ class Product(BaseProduct, AditionalCostsMixin):
         verbose_name = ugettext_lazy('product')
 
 
-class Cost(BaseCost):
-    product = models.ForeignKey('Product', related_name='costs')
-
-
-class Saving(BaseCost):
-    product = models.ForeignKey('Product', related_name='savings')
-
-
-class Budget(models.Model):
-    product = models.ForeignKey('Product', related_name='budgets')
-    start_date = models.DateField()
-    budget = models.DecimalField(
-        max_digits=16, decimal_places=2,
-        help_text=ugettext_lazy('Please enter the total budget'))
-    note = models.TextField(null=True, blank=True)
-
-
-class Status(models.Model):
-    start_date = models.DateField()
-    status = models.PositiveSmallIntegerField(
-        choices=STATUS_TYPES, default=STATUS_TYPES.OK)
-    reason = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return str(self.get_status_display())
-
-    def as_dict(self):
-        return {
-            'status': self.get_status_display(),
-            'reason': self.reason,
-            'start_date': self.start_date
-        }
-
-    class Meta:
-        abstract = True
-        verbose_name_plural = "statuses"
-        ordering = ('-start_date', '-id')
-
-
-class ProductStatus(Status):
-    product = models.ForeignKey('Product', related_name='statuses')
-
-
-class ProductGroupStatus(Status):
-    product_group = models.ForeignKey('ProductGroup', related_name='statuses')
-
-
 class ProductGroup(BaseProduct):
     products = models.ManyToManyField(
         Product,
@@ -1200,146 +774,31 @@ class ProductGroup(BaseProduct):
                    self.products.filter(visible=True))
 
 
-class TaskManager(models.Manager):
-    use_for_related_fields = True
-
-    def between(self, start_date, end_date):
-        """"
-        retrieve all tasks, which has any time spent in a time window defined
-        by the start date and end date. the following types are all included:
-        1. tasks starting in the time window
-        2. tasks ending in the time window
-        3. tasks running through the entire time window
-        :param start_date: a date object for the start of the time window
-        :param end_date: a date object for the end of the time window
-        """
-        return self.filter(
-            models.Q(start_date__gte=start_date, start_date__lte=end_date) |
-            models.Q(end_date__gte=start_date, end_date__lte=end_date) |
-            models.Q(start_date__lt=start_date, end_date__gt=end_date)
-        )
-
-
-class Task(models.Model):
-    name = models.CharField(max_length=128, null=True)
-    person = models.ForeignKey('Person', related_name='tasks')
-    product = models.ForeignKey('Product', related_name='tasks')
+class Status(models.Model):
     start_date = models.DateField()
-    end_date = models.DateField()
-    days = models.DecimalField(max_digits=10, decimal_places=5)
-    float_id = models.CharField(max_length=128, unique=True)
-    raw_data = JSONField(null=True)
-    objects = TaskManager()
+    status = models.PositiveSmallIntegerField(
+        choices=STATUS_TYPES, default=STATUS_TYPES.OK)
+    reason = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        if self.name:
-            return '{} - {} on {} from {} to {} for {:.2g} days'.format(
-                self.name, self.person, self.product,
-                self.start_date.strftime('%Y-%m-%d'),
-                self.end_date.strftime('%Y-%m-%d'),
-                self.days)
-        else:
-            return '{} on {} from {} to {} for {:.2g} days'.format(
-                self.person, self.product,
-                self.start_date.strftime('%Y-%m-%d'),
-                self.end_date.strftime('%Y-%m-%d'),
-                self.days)
-
-    @property
-    def workdays(self):
-        """
-        number of workdays for the task. it's the number for days
-        from start_date to end_date minus holidays.
-        """
-        return get_workdays(self.start_date, self.end_date)
-
-    def time_spent(self, start_date=None, end_date=None):
-        """
-        get the days spent on the task during a time window.
-        :param start_date: start date of the time window, a date object
-        :param end_date: end date of the time window, a date object
-        :return: number of days, a decimal
-        """
-        start_date = start_date or self.start_date
-        end_date = end_date or self.end_date
-
-        # sanitise the time window
-        if start_date >= self.end_date:
-            end_date = start_date
-        if end_date <= self.start_date:
-            start_date = end_date
-
-        # we shouldn't have these, but it can happen
-        # where some tasks spread over holidays only
-        if self.workdays == 0:
-            return Decimal('0')
-
-        timewindow = get_overlap(
-            (start_date, end_date), (self.start_date, self.end_date))
-
-        if not timewindow:
-            return Decimal('0')
-        if timewindow == (self.start_date, self.end_date):
-            return self.days
-
-        timewindow_workdays = get_workdays(*timewindow)
-
-        return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
-
-    def people_costs(self, start_date=None, end_date=None,
-                     additional_cost_name=None):
-        """
-        get the money spent on the task during a time window.
-        :param start_date: start date of the time window, a date object
-        :param end_date: end date of the time window, a date object
-        :param additional_cost_name: name of specific additional cost to total
-        :return: cost in pound, a decimal
-        """
-        start_date = start_date or self.start_date
-        end_date = end_date or self.end_date
-
-        timewindow = get_overlap(
-            (start_date, end_date), (self.start_date, self.end_date))
-
-        if not timewindow:
-            return Decimal('0')
-
-        if additional_cost_name:
-            rate = self.person.additional_rate(*timewindow,
-                                               name=additional_cost_name)
-        else:
-            rate = self.person.rate_between(*timewindow)
-        if not rate:
-            return Decimal('0')
-
-        return rate * self.get_days(*timewindow)
-
-    def get_days(self, *timewindow):
-        timewindow_workdays = get_workdays(*timewindow)
-        return Decimal(timewindow_workdays) / Decimal(self.workdays) * self.days
-
-
-class Link(models.Model):
-    product = models.ForeignKey('Product', related_name='links')
-    name = models.CharField(max_length=150, null=True, blank=True)
-    url = models.URLField()
-    note = models.TextField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['url']
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def type(self):
-        hostname = urlparse(self.url).hostname
-        return hostname.replace('.', '-')
+        return str(self.get_status_display())
 
     def as_dict(self):
         return {
-            'name': self.name,
-            'url': self.url,
-            'note': self.note,
-            'type': self.type,
+            'status': self.get_status_display(),
+            'reason': self.reason,
+            'start_date': self.start_date
         }
+
+    class Meta:
+        abstract = True
+        verbose_name_plural = "statuses"
+        ordering = ('-start_date', '-id')
+
+
+class ProductStatus(Status):
+    product = models.ForeignKey('Product', related_name='statuses')
+
+
+class ProductGroupStatus(Status):
+    product_group = models.ForeignKey('ProductGroup', related_name='statuses')
