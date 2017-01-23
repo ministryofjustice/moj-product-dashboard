@@ -2,14 +2,14 @@ from datetime import datetime, date
 import re
 
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, Http404, HttpResponse
+from django.http import Http404, HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
-from django.views.decorators.http import require_http_methods
-
 from openpyxl.styles import Style, Font
 from openpyxl.workbook import Workbook
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from dashboard.libs.date_tools import parse_date
 from .models import Product, Area, ProductGroup
@@ -35,16 +35,17 @@ def product_html(request, id):
     return render(request, 'common.html')
 
 
-def product_json(request):
+@api_view(['GET'])
+def product_json(request, id):
     """
-    send json for a product profile
+    detail view of a single product
     """
     request_data = request.GET
     try:
-        product = Product.objects.visible().get(id=request_data['id'])
+        product = Product.objects.visible().get(id=id)
     except (ValueError, Product.DoesNotExist):
-        error = 'cannot find product with id={}'.format(request_data['id'])
-        return JsonResponse({'error': error}, status=404)
+        error = 'cannot find product with id={}'.format(id)
+        return Response({'error': error}, status=404)
 
     start_date = request_data.get('startDate')
     if start_date:
@@ -58,7 +59,7 @@ def product_json(request):
         end_date=end_date,
         freq='MS')
     meta = _product_meta(request, product)
-    return JsonResponse({**profile, 'meta': meta})
+    return Response({**profile, 'meta': meta})
 
 
 def product_group_html(request, id):
@@ -72,23 +73,22 @@ def product_group_html(request, id):
     return render(request, 'common.html')
 
 
-def product_group_json(request):
+@api_view(['GET'])
+def product_group_json(request, id):
     """
-    send json for a product group profilet
+    detail view of a single product group
     """
     # TODO handle errors
-    request_data = request.GET
     try:
-        product_group = ProductGroup.objects.get(id=request_data['id'])
+        product_group = ProductGroup.objects.get(id=id)
     except (ValueError, ProductGroup.DoesNotExist):
-        error = 'cannot find product group with id={}'.format(
-            request_data['id'])
-        return JsonResponse({'error': error}, status=404)
+        error = 'cannot find product group with id={}'.format(id)
+        return Response({'error': error}, status=404)
 
     # get the profile of the product group for each month
     profile = product_group.profile(freq='MS')
     meta = _product_meta(request, product_group)
-    return JsonResponse({**profile, 'meta': meta})
+    return Response({**profile, 'meta': meta})
 
 
 def service_html(request, id):
@@ -102,33 +102,41 @@ def service_html(request, id):
     return render(request, 'common.html')
 
 
-def service_json(request):
-    request_data = request.GET
+@api_view(['GET'])
+def service_json(request, id):
+    """
+    detail view of a single service area
+    """
     try:
-        area = Area.objects.filter(visible=True).get(id=request_data['id'])
+        area = Area.objects.filter(visible=True).get(id=id)
     except (ValueError, Area.DoesNotExist):
-        error = 'cannot find service area with id={}'.format(
-            request_data['id'])
-        return JsonResponse({'error': error}, status=404)
+        error = 'cannot find service area with id={}'.format(id)
+        return Response({'error': error}, status=404)
     # get the profile of the service
-    return JsonResponse(area.profile())
+    return Response(area.profile())
 
 
 def portfolio_html(request):
     return render(request, 'common.html', {'body_classes': 'portfolio'})
 
 
-def portfolio_json(request):
-    result = {area.id: area.profile() for area
-              in Area.objects.filter(visible=True)}
-    return JsonResponse(result)
+@api_view(['GET'])
+def services_json(request):
+    """
+    list view of all service areas
+    """
+    result = [area.profile() for area in Area.objects.filter(visible=True)]
+    return Response(result)
 
 
 @login_required
-@require_http_methods(['POST'])
+@api_view(['POST'])
 def sync_from_float(request):
+    """
+    sync data from Float.com
+    """
     sync_float.delay()
-    return JsonResponse({
+    return Response({
         'status': 'STARTED'
     })
 

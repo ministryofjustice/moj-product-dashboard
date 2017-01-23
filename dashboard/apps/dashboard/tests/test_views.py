@@ -74,8 +74,7 @@ def test_product_html_with_non_existing_id():
 def test_product_json_with_valid_id():
     client = make_login_client()
     product = mommy.make(Product)
-    url = '{}?{}'.format(reverse(product_json),
-                         urllib.parse.urlencode({'id': product.id}))
+    url = reverse(product_json, kwargs={'id': product.id})
     rsp = client.get(url, content_type='application/json')
     assert rsp.status_code == 200
     assert rsp['Content-Type'] == 'application/json'
@@ -120,8 +119,7 @@ def test_service_html_with_non_existing_id():
 def test_service_json():
     client = make_login_client()
     area = mommy.make(Area)
-    url = '{}?{}'.format(reverse(service_json),
-                         urllib.parse.urlencode({'id': area.id}))
+    url = reverse(service_json, kwargs={'id': area.id})
     rsp = client.get(url, content_type='application/json')
     assert rsp.status_code == 200
 
@@ -165,18 +163,16 @@ def test_product_group_html_with_non_existing_id():
 def test_product_group_json_with_valid_id():
     client = make_login_client()
     group = mommy.make(ProductGroup)
-    url = '{}?{}'.format(reverse(product_group_json),
-                         urllib.parse.urlencode({'id': group.id}))
+    url = reverse(product_group_json, kwargs={'id': group.id})
     rsp = client.get(url, content_type='application/json')
     assert rsp.status_code == 200
     assert rsp['Content-Type'] == 'application/json'
 
 
 @pytest.mark.django_db
-def test_product_group_json_with_invalid_id():
+def test_product_group_json_with_non_existing_id():
     client = make_login_client()
-    url = '{}?{}'.format(reverse(product_group_json),
-                         urllib.parse.urlencode({'id': 'invalid_id'}))
+    url = reverse(product_group_json, kwargs={'id': 9999})
     rsp = client.get(url, content_type='application/json')
     assert rsp.status_code == 404
     assert rsp['Content-Type'] == 'application/json'

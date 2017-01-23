@@ -65,7 +65,7 @@ describe('getProductData', () => {
     expect(window.fetch.polyfill).toBe(true);
   });
 
-  it(`does a GET to the /product.json endpoint.
+  it(`does a GET to the /api/products/{id} endpoint.
       when succeeds, returns a Promise with the product data`, () => {
     const data = {product: 'some data'};
     window.fetch = jest.fn().mockReturnValueOnce(
@@ -75,7 +75,7 @@ describe('getProductData', () => {
         expect(window.fetch).toBeCalled();
         expect(productData).toEqual(data);
         const [url, init] = window.fetch.mock.calls[0];
-        expect(url).toEqual('/product.json?id=1');
+        expect(url).toEqual('/api/products/1');
         expect(init.method).toEqual('GET');
       });
   });
@@ -89,7 +89,7 @@ describe('getProductData', () => {
         expect(window.fetch).toBeCalled();
         expect(err).toEqual(error);
         const [url, init] = window.fetch.mock.calls[0];
-        expect(url).toEqual('/product.json?id=1');
+        expect(url).toEqual('/api/products/1');
         expect(init.method).toEqual('GET');
       });
   });
