@@ -19,8 +19,8 @@ export const statusMapping = {
  */
 export function getProductData(type, id) {
   const urls = {
-    'product': `/product.json?id=${id}`,
-    'product-group': `/product-group.json?id=${id}`
+    'product': `/api/products/${id}`,
+    'product-group': `/api/product-groups/${id}`
   };
   const init = {
     credentials: 'same-origin',
@@ -46,7 +46,7 @@ export function getServiceData(id) {
       'Content-Type': 'application/json'
     },
   };
-  return fetch(`/service.json?id=${id}`, init)
+  return fetch(`/api/services/${id}`, init)
     .then(response => response.json());
 }
 
@@ -59,7 +59,7 @@ export function getPortfolioData() {
     credentials: 'same-origin',
     method: 'GET',
   };
-  return fetch('/portfolio.json', init)
+  return fetch('/api/services', init)
     .then(response => response.json());
 }
 

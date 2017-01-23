@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import sys
 
+from django_gov.settings import *
+
 FINANCE_GROUP_NAME = 'Finance'
 
 # Build paths inside the product like this: os.path.join(BASE_DIR, ...)
@@ -57,9 +59,12 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 
     'djcelery',
-    'moj_template',
     'axes',
     'webpack_loader',
+
+    'moj_template',
+    'django_gov',
+    'rest_framework_swagger',
 
     'dashboard.apps.dashboard',
     'dashboard_auth',
