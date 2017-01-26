@@ -56,7 +56,7 @@ def print_person(person, padding=''):
         line = '{}, {} (civil servant)'.format(
             person.name, person.job_title,
             person.job_title)
-    logger.info('%s%s', padding, line)
+    logging.info('%s%s', padding, line)
 
 
 def print_task(task, start_date, end_date, padding='  '):
@@ -77,15 +77,15 @@ def print_task(task, start_date, end_date, padding='  '):
             time_spent, people_costs))
     for index, line in enumerate(lines):
         if index == 0:
-            logger.info('%s- %s', padding, line)
+            logging.info('%s- %s', padding, line)
         else:
-            logger.info('%s  %s', padding, line)
+            logging.info('%s  %s', padding, line)
     return time_spent, people_costs
 
 
 def get_persons(names, as_filter=True):
     if not names:
-        logger.info('people: all')
+        logging.info('people: all')
         if as_filter:
             return []
         else:
@@ -95,13 +95,13 @@ def get_persons(names, as_filter=True):
         raise NoMatchFound(
             'could not find any person with name(s) {}'.format(
                 ','.join(names)))
-    logger.info('people: {}'.format(', '.join([p.name for p in persons])))
+    logging.info('people: {}'.format(', '.join([p.name for p in persons])))
     return persons
 
 
 def get_areas(names, as_filter=True):
     if not names:
-        logger.info('areas: all')
+        logging.info('areas: all')
         if as_filter:
             return []
         else:
@@ -111,13 +111,13 @@ def get_areas(names, as_filter=True):
         raise NoMatchFound(
             'could not find any area with name(s) {}'.format(
                 ','.join(names)))
-    logger.info('areas: {}'.format(', '.join([p.name for p in areas])))
+    logging.info('areas: {}'.format(', '.join([p.name for p in areas])))
     return areas
 
 
 def get_products(names, areas, as_filter=True):
     if not names and not areas:
-        logger.info('products: all')
+        logging.info('products: all')
         if as_filter:
             return []
         else:
@@ -135,7 +135,7 @@ def get_products(names, areas, as_filter=True):
         raise NoMatchFound(
             ('could not find any product with name(s) {} and area(s) {}'
              ).format(','.join(names), area_names))
-    logger.info('products: {}'.format(', '.join([p.name for p in products])))
+    logging.info('products: {}'.format(', '.join([p.name for p in products])))
     return products
 
 

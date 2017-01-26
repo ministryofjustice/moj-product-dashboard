@@ -4,6 +4,7 @@
 calculate
 """
 from datetime import date, timedelta
+import logging
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -33,26 +34,25 @@ class Command(BaseCommand):
         total_time = 0
         total_money = 0
         for person in person_to_task:
-            logger.info('-' * 20)
+            logging.info('-' * 20)
             print_person(person)
-            for task in person_to_task[person]:
+            for task in sorted(person_to_task[person], key=lambda t: t.start_date):
                 try:
                     time_cost, money_cost = print_task(
                         task, start_date, end_date)
                 except ValueError:
-                    logger.warning('found data problem in task %s', task)
+                    logging.warning('found data problem in task %s', task)
                     continue
                 else:
                     total_time += time_cost
                     total_money += money_cost
-        logger.info('-' * 20)
-        logger.info('total spendings {:.5f} man days, £ {:.2f}'.format(
+        logging.info('total spendings {:.5f} man days, £ {:.2f}'.format(
             total_time, total_money))
 
     def handle(self, *args, **options):
         start_date = options['start_date']
         end_date = options['end_date']
-        logger.info('time frame start: {} end : {}'.format(
+        logging.info('time frame start: {} end : {}'.format(
             start_date, end_date))
         try:
             persons = get_persons(options['names'])
