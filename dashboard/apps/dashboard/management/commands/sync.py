@@ -49,13 +49,23 @@ def compare(existing_object, data, ignores=('raw_data',)):
     :returns: a dictionary showing the differences
     """
     result = {}
-    for key, value in data.items():
-        if key in ignores:
-            continue
+
+    def _update_key(key):
+        value = data[key]
         old_value = getattr(existing_object, key)
         if value != old_value:
             setattr(existing_object, key, value)
             result[key] = {'new': value, 'old': old_value}
+
+    not_ignored_keys = [k for k in data.keys() if k not in ignores]
+    for key in not_ignored_keys:
+        _update_key(key)
+
+    # if already different, just bring in the ignored
+    # items anyways
+    if result:
+        for key in ignores:
+            _update_key(key)
     return result
 
 
