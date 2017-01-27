@@ -14,7 +14,8 @@ from ..constants import COST_TYPES
 
 class Person(models.Model, AditionalCostsMixin):
     float_id = models.CharField(max_length=128, unique=True)
-    staff_number = models.PositiveIntegerField(null=True, blank=True, unique=True)
+    staff_number = models.PositiveIntegerField(
+        null=True, blank=True, unique=True)
     name = models.CharField(max_length=128)
     email = models.EmailField(null=True)
     avatar = models.URLField(null=True)
@@ -144,3 +145,28 @@ class Person(models.Model, AditionalCostsMixin):
             return Decimal('0')
 
         return base_rate + self.additional_rate(on, on)
+
+    @property
+    def products(self):
+        """
+        products person works on
+        """
+        return list({t.product for t in self.tasks.all()})
+
+    def time_on_product(self, product, start_date=None, end_date=None):
+        """
+        get the days spent by the person in a time window.
+        :param product: instance of product
+        :param start_date: start date of the time window, a date object
+        :param end_date: end date of the time window, a date object
+        :return: product to number of days, a dictionary
+        """
+        tasks = self.tasks.between(start_date, end_date).filter(
+            product=product)
+        if not tasks:
+            return Decimal('0')
+        time_spent = sum(
+            t.time_spent(start_date, end_date)
+            for t in tasks
+        )
+        return time_spent

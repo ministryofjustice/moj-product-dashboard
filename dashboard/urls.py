@@ -16,12 +16,14 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.conf import settings
 from django.contrib import admin
+from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
 from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.dashboard.views import (
     service_html, service_json, product_html, product_json, product_group_json,
     product_group_html, portfolio_html, services_json, sync_from_float,
+    PersonViewSet, PersonProductListView,
     PortfolioExportView)
 
 
@@ -48,7 +50,14 @@ urlpatterns = [
 
 ]
 
+router = routers.DefaultRouter(trailing_slash=False)
+router.register(r'persons', PersonViewSet)
+#  router.register(r'persons/(?P<person_id>[0-9]+)/products$', PersonProductListView, base_name='person_products')
+
 apis = [
+    url(r'^api/', include(router.urls)),
+    url(r'^api/persons/(?P<person_id>[0-9]+)/products$', PersonProductListView.as_view(), name='person_products'),
+
     url(r'^api/products/(?P<id>[0-9]+)?$', product_json, name='product_json'),
     url(r'^api/product-groups/(?P<id>[0-9]+)?$', product_group_json, name='product_group_json'),
     url(r'^api/services$', services_json, name='services_json'),
