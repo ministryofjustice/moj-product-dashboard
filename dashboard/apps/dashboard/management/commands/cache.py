@@ -3,11 +3,12 @@
 """
 command for generating and clearing cache
 """
+import logging
+
 from django.core.management.base import BaseCommand
 from django.core.cache import cache
 
-
-from ...tasks import cache_products
+from dashboard.apps.dashboard.models import Product
 
 
 class Command(BaseCommand):
@@ -23,7 +24,9 @@ class Command(BaseCommand):
         """
         generate cache
         """
-        cache_products.delay()
+        for product in Product.objects.visible():
+            logging.info('- generating caching for product "%s"', product)
+            product.profile(ignore_cache=True)
 
     def remove(self):
         """

@@ -73,11 +73,11 @@ def update(existing_object, difference):
     object_type = type(existing_object).__name__
     if difference:
         logging.info('existing %s "%s" has changes "%s", updating',
-                    object_type, existing_object, difference)
+                     object_type, existing_object, difference)
         existing_object.save()
     else:
         logging.debug('existing %s "%s" has no change, do nothing',
-                     object_type, existing_object)
+                      object_type, existing_object)
 
 
 @functools.lru_cache()
@@ -212,6 +212,8 @@ def sync_tasks(start_date, end_date, data_dir):
                 'product_id': product_id,
                 'start_date': task_start_date,
                 'end_date': task_end_date,
+                'repeat_state': task['repeat_state'],
+                'repeat_end': task['repeat_end'],
                 'days': workdays * Decimal(task['hours_pd']) / Decimal('8'),
                 'raw_data': task,
             }

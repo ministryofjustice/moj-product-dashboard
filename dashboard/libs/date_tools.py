@@ -6,6 +6,7 @@ tools for dealing with dates
 from datetime import date, datetime, timedelta
 from dateutil.rrule import rrule, MONTHLY
 from functools import lru_cache
+import calendar
 
 from numpy import busday_count
 from pandas import date_range
@@ -161,3 +162,28 @@ def dates_between(start_date, end_date, freq, bymonthday=None, bysetpos=None,
 
 def financial_year_tuple(year):
     return date(year, 4, 6), date(year + 1, 4, 5)
+
+
+def get_weekly_repeat_time_windows(start_date, end_date, repeat_end):
+    repeat_times = (repeat_end - start_date).days // 7 + 1
+    time_windows = [
+        (start_date + timedelta(7) * i, end_date + timedelta(7) * i)
+        for i in range(repeat_times)
+    ]
+    return time_windows
+
+
+def get_weekday(day):
+    """
+    get the weekday of a date, e.g. 04 May 2017 is the 1st Thursday of the
+    month, so get_weekday(date(2017, 5, 4)) == (3, 1)
+    :param day: a datetime.date object
+    :return: a tuple of the week day of the day and the position in the month
+    """
+    month_cal = calendar.monthcalendar(day.year, day.month)
+    if month_cal[0][0] != 0:
+        offset = day.day - month_cal[0][0]
+        return offset % 7, offset // 7 + 1
+    else:
+        offset = day.day - month_cal[1][0]
+        return offset % 7, offset // 7 + 1

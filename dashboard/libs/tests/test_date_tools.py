@@ -6,7 +6,8 @@ import pytest
 from dashboard.libs.date_tools import (
     get_workdays, get_workdays_list, get_bank_holidays, get_overlap,
     parse_date, to_datetime, slice_time_window, dates_between,
-    financial_year_tuple)
+    financial_year_tuple, get_weekly_repeat_time_windows,
+    get_weekday)
 
 
 @pytest.mark.parametrize("start_date, end_date, expected", [
@@ -157,3 +158,53 @@ def test_slice_on_date(start_date, end_date, freq, bymonthday, expected):
 ])
 def test_financial_year_tuple(year, expected):
     assert financial_year_tuple(year) == expected
+
+
+@pytest.mark.parametrize("start_date, end_date, repeat_end, expected", [
+   ('2017-04-24', '2017-04-24', '2017-04-24', [
+       ('2017-04-24', '2017-04-24')
+   ]),
+   ('2017-04-24', '2017-04-28', '2017-05-05', [
+       ('2017-04-24', '2017-04-28'),
+       ('2017-05-01', '2017-05-05'),
+   ]),
+   ('2017-04-24', '2017-04-28', '2017-05-01', [
+       ('2017-04-24', '2017-04-28'),
+       ('2017-05-01', '2017-05-05'),
+   ]),
+   ('2017-04-27', '2017-05-01', '2017-05-05', [
+       ('2017-04-27', '2017-05-01'),
+       ('2017-05-04', '2017-05-08'),
+   ]),
+])
+def test_get_weekly_repeat_time_windows(start_date, end_date, repeat_end, expected):
+    assert get_weekly_repeat_time_windows(
+        parse_date(start_date),
+        parse_date(end_date),
+        parse_date(repeat_end)
+    ) == [
+        (parse_date(sd), parse_date(ed))
+        for sd, ed in expected
+    ]
+
+
+@pytest.mark.parametrize("day, expected", [
+    ('2017-01-02', (0, 1)),
+    ('2017-01-09', (0, 2)),
+    ('2017-01-16', (0, 3)),
+    ('2017-01-23', (0, 4)),
+    ('2017-01-30', (0, 5)),
+
+    ('2017-05-01', (0, 1)),
+    ('2017-05-08', (0, 2)),
+    ('2017-05-15', (0, 3)),
+    ('2017-05-22', (0, 4)),
+    ('2017-05-29', (0, 5)),
+
+    ('2017-05-04', (3, 1)),
+    ('2017-05-11', (3, 2)),
+    ('2017-05-18', (3, 3)),
+    ('2017-05-25', (3, 4)),
+])
+def test_get_weekday(day, expected):
+    assert get_weekday(parse_date(day)) == expected
