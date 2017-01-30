@@ -6,7 +6,7 @@ api client for float
 import requests
 
 
-ROOT = 'https://api.floatschedule.com/api/v1'
+ROOT = 'https://api.float.com/api/v1'
 
 ENDPOINTS = ['projects', 'people', 'tasks', 'holidays',
              'milestones', 'clients', 'accounts']
