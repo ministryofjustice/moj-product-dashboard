@@ -174,6 +174,70 @@ def test_multiple_rates(sday, eday, expected):
     assert round(people_cost, 0) == expected
 
 
+@pytest.mark.parametrize("sday,eday,expected", [
+    (3, 3, rate1 * Decimal('0.5')),
+    (3, 4, rate1 * Decimal('0.5') * 2),
+    (3, 5, rate1 * Decimal('0.5') * 3),
+    (3, 6, rate1 * Decimal('0.5') * 4),
+    (3, 7, rate1 * Decimal('0.5') * 4),
+    (3, 8, rate1 * Decimal('0.5') * 4),
+    (3, 9, rate1 * Decimal('0.5') * 4),
+    (3, 10, rate1 * Decimal('0.5') * 5),
+    (3, 11, rate1 * Decimal('0.5') * 6),
+    (3, 12, rate1 * Decimal('0.5') * 7),
+    (3, 13, rate1 * Decimal('0.5') * 8),
+    (3, 14, rate1 * Decimal('0.5') * 8),
+    (3, 15, rate1 * Decimal('0.5') * 8),
+    (3, 16, rate1 * Decimal('0.5') * 8),
+    (3, 17, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5')),
+    (3, 18, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 2),
+    (3, 19, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 3),
+    (3, 20, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4),
+    (3, 21, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4),
+    (3, 22, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4),
+    (3, 23, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4),
+    (3, 24, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5')),
+    (3, 25, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 2),
+    (3, 26, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 3),
+    (3, 27, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 4),
+    (3, 28, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 4),
+    (3, 29, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 4),
+    (3, 30, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 4),
+    (3, 31, rate1 * Decimal('0.5') * 8 + rate2 * Decimal('0.5') * 4 + rate3 * Decimal('0.5') * 4),
+
+])
+@pytest.mark.django_db
+def test_weekly_repeat_task_multiple_rates(sday, eday, expected):
+    """
+                    May 2016
+               Su Mo Tu We Th Fr Sa
+    400/day     1  2  3  4  5  6  7
+    400/day     8  9 10 11 12 13 14
+    500/day    15 16 17 18 19 20 21
+    600/day    22 23 24 25 26 27 28
+    600/day    29 30 31
+
+    task starts from 3rd, 4 hours/day for 4 days and repeat 4 times
+    """
+    person = mommy.make(Person)
+    mommy.make(Rate, start_date=date(2016, 5, 1), rate=rate1, person=person)
+    mommy.make(Rate, start_date=date(2016, 5, 15), rate=rate2, person=person)
+    mommy.make(Rate, start_date=date(2016, 5, 22), rate=rate3, person=person)
+    task_0 = mommy.make(
+        Task, product=mommy.make(Product),
+        person=person,
+        start_date=date(2016, 5, 3),
+        end_date=date(2016, 5, 6),
+        repeat_state=1,
+        repeat_end=date(2016, 5, 24),
+        days=2)
+
+    people_cost = task_0.people_costs(
+        date(2016, 5, sday), date(2016, 5, eday)
+    )
+    assert round(people_cost, 0) == expected
+
+
 class TaskString(TestCase):
 
     def test_task_without_name(self):
@@ -270,3 +334,22 @@ class TestTaskManager(TestCase):
             first_half_year_tasks, self.first_half_year_tasks)
         self.assert_tasks_equals(
             second_half_year_tasks, self.second_half_year_tasks)
+
+
+@pytest.mark.parametrize("sday,eday,expected", [
+    ('2017-03-27', '2017-03-31', 5),
+    ('2017-03-27', '2017-04-07', 10),
+    ('2017-01-01', '2017-03-22', 0),
+    ('2019-05-01', '2019-05-22', 0),
+])
+@pytest.mark.django_db
+def test_repeat_tasks(sday, eday, expected):
+    task = mommy.make(
+        Task,
+        start_date=date(2017, 3, 27),
+        end_date=date(2017, 3, 31),
+        days=5,
+        repeat_state=1,
+        repeat_end=date(2018, 4, 30)
+    )
+    assert task.time_spent(parse_date(sday), parse_date(eday)) == expected

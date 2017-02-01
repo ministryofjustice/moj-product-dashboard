@@ -8,6 +8,7 @@ import json
 from datetime import datetime, date, timedelta
 import functools
 from decimal import Decimal
+import logging
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -18,7 +19,6 @@ import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.dashboard.models import Area, Person, Product, Task
 from dashboard.libs.date_tools import get_workdays, parse_date
-from .helpers import logger
 
 FLOAT_DATA_DIR = settings.location('../var/float')
 
@@ -49,25 +49,35 @@ def compare(existing_object, data, ignores=('raw_data',)):
     :returns: a dictionary showing the differences
     """
     result = {}
-    for key, value in data.items():
-        if key in ignores:
-            continue
+
+    def _update_key(key):
+        value = data[key]
         old_value = getattr(existing_object, key)
         if value != old_value:
             setattr(existing_object, key, value)
             result[key] = {'new': value, 'old': old_value}
+
+    not_ignored_keys = [k for k in data.keys() if k not in ignores]
+    for key in not_ignored_keys:
+        _update_key(key)
+
+    # if already different, just bring in the ignored
+    # items anyways
+    if result:
+        for key in ignores:
+            _update_key(key)
     return result
 
 
 def update(existing_object, difference):
     object_type = type(existing_object).__name__
     if difference:
-        logger.info('existing %s "%s" has changes "%s", updating',
-                    object_type, existing_object, difference)
+        logging.info('existing %s "%s" has changes "%s", updating',
+                     object_type, existing_object, difference)
         existing_object.save()
     else:
-        logger.debug('existing %s "%s" has no change, do nothing',
-                     object_type, existing_object)
+        logging.debug('existing %s "%s" has no change, do nothing',
+                      object_type, existing_object)
 
 
 @functools.lru_cache()
@@ -81,7 +91,7 @@ def get_account_to_people_mapping(data_dir):
 
 
 def sync_clients(data_dir):
-    logger.info('sync clients')
+    logging.info('sync clients')
     source = os.path.join(data_dir, 'clients.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -97,12 +107,12 @@ def sync_clients(data_dir):
             update(client, diff)
         except Area.DoesNotExist:
             client = Area.objects.create(**useful_data)
-            logger.info('new client found "%s"', client)
+            logging.info('new client found "%s"', client)
             client.save()
 
 
 def sync_people(data_dir):
-    logger.info('sync people')
+    logging.info('sync people')
     source1 = os.path.join(data_dir, 'people.json')
     source2 = os.path.join(data_dir, 'people-active.json')
     with open(source1, 'r') as sf:
@@ -128,12 +138,12 @@ def sync_people(data_dir):
             update(person, diff)
         except Person.DoesNotExist:
             person = Person.objects.create(**useful_data)
-            logger.info('new person found "%s"', person)
+            logging.info('new person found "%s"', person)
             person.save()
 
 
 def sync_projects(data_dir):
-    logger.info('sync projects')
+    logging.info('sync projects')
     source = os.path.join(data_dir, 'projects.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -160,19 +170,19 @@ def sync_projects(data_dir):
             update(product, diff)
         except Product.DoesNotExist:
             product = Product.objects.create(**useful_data)
-            logger.info('new product found "%s"', product)
+            logging.info('new product found "%s"', product)
             product.save()
     deleted_projects = Product.objects.exclude(float_id__in=float_ids)
     for deleted in deleted_projects:
         if not deleted.tasks.all():
-            logger.info(
+            logging.info(
                 'found deleted product float_id=%s "%s"',
                 deleted.float_id, deleted)
             deleted.delete()
 
 
 def sync_tasks(start_date, end_date, data_dir):
-    logger.info('sync tasks')
+    logging.info('sync tasks')
     source = os.path.join(data_dir, 'tasks.json')
     with open(source, 'r') as sf:
         data = json.loads(sf.read())
@@ -188,7 +198,7 @@ def sync_tasks(start_date, end_date, data_dir):
             task_end_date = datetime.strptime(
                 task['end_date'], '%Y-%m-%d').date()
             if task_start_date > task_end_date:
-                logger.warning(
+                logging.warning(
                     'found task with start date greater than end date. skip!'
                     ' task data %s', task)
                 continue
@@ -202,6 +212,8 @@ def sync_tasks(start_date, end_date, data_dir):
                 'product_id': product_id,
                 'start_date': task_start_date,
                 'end_date': task_end_date,
+                'repeat_state': task['repeat_state'],
+                'repeat_end': task['repeat_end'],
                 'days': workdays * Decimal(task['hours_pd']) / Decimal('8'),
                 'raw_data': task,
             }
@@ -211,13 +223,13 @@ def sync_tasks(start_date, end_date, data_dir):
                 update(task, diff)
             except Task.DoesNotExist:
                 task = Task.objects.create(**useful_data)
-                logger.info('new Task found "%s"', task)
+                logging.info('new Task found "%s"', task)
                 task.save()
     deleted_tasks = Task.objects.filter(
         Q(start_date__gte=start_date, start_date__lt=end_date)
     ).exclude(float_id__in=float_ids)
     for deleted in deleted_tasks:
-        logger.info(
+        logging.info(
             'found deleted task float_id=%s "%s"', deleted.float_id, deleted)
         deleted.delete()
 
@@ -287,11 +299,11 @@ class Command(BaseCommand):
 
         output_dir = options['output_dir']
         if self._has_all_files(output_dir):
-            logger.info(
+            logging.info(
                 ('- found already exported Float data in direcotry %s.'
                  ' skip downloading.'), output_dir)
         else:
-            logger.info(
+            logging.info(
                 ('- export data from Float from %s for %s weeks to %s.'
                  ' dump the data to directoy %s'),
                 start_date, weeks, end_date, output_dir)
@@ -300,7 +312,7 @@ class Command(BaseCommand):
                 export(token, start_date, weeks, output_dir)
             except HTTPError as exc:
                 raise CommandError(exc.args)
-        logger.info('- sync database with exported Float data.')
+        logging.info('- sync database with exported Float data.')
         sync(start_date, end_date, data_dir=output_dir)
         shutil.rmtree(output_dir, ignore_errors=True)
-        logger.info('- job complete.')
+        logging.info('- job complete.')
