@@ -8,8 +8,10 @@ import requests
 
 ROOT = 'https://api.float.com/api/v1'
 
-ENDPOINTS = ['projects', 'people', 'tasks', 'holidays',
-             'milestones', 'clients', 'accounts']
+ENDPOINTS = [
+    'projects', 'people', 'tasks', 'holidays', 'milestones', 'clients',
+    'accounts', 'departments'
+]
 
 
 def get_headers(token):

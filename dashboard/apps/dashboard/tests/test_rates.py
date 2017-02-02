@@ -36,12 +36,21 @@ class RateTestCase(TestCase):
         self._add_rate(RATE_TYPES.MONTH, 4800, date(2016, 5, 27))
         self._add_rate(RATE_TYPES.MONTH, 5000, date(2016, 5, 30))
 
-        self.assertEqual(self.person.rate_between(date(2016, 5, 24), date(2016, 5, 25)), Decimal('0'))
-        self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2016, 5, 26)), '230')
-        self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2016, 5, 27)), '235')
-        self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2016, 5, 31)), '240')
+        self.assertEqual(
+            self.person.rate_between(date(2016, 5, 24), date(2016, 5, 25)),
+            Decimal('0'))
+        self.assertDecimalEqual(
+            self.person.rate_between(date(2016, 5, 24), date(2016, 5, 26)),
+            '230')
+        self.assertDecimalEqual(
+            self.person.rate_between(date(2016, 5, 24), date(2016, 5, 27)),
+            '235')
+        self.assertDecimalEqual(
+            self.person.rate_between(date(2016, 5, 24), date(2016, 5, 31)),
+            '240')
 
-        self.assertDecimalEqual(self.person.rate_between(date(2016, 5, 24), date(2020, 5, 30)), '231.26')
+        self.assertDecimalEqual(self.person.rate_between(
+            date(2016, 5, 24), date(2020, 5, 30)), '231.26')
 
     def test_rate_string(self):
         rate = self._add_rate(RATE_TYPES.MONTH, 4600, date(2016, 5, 26))

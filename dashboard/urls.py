@@ -33,7 +33,8 @@ schema_view = get_swagger_view(title='Product Dashboard')
 urlpatterns = [
     url(r'^$', portfolio_html, name='portfolio_html'),
     url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
-    url(r'^products/export/(?P<show>[all|visible|0-9]+)?/$', PortfolioExportView.as_view(), name='product_export'),
+    url(r'^products/export/(?P<show>[all|visible|0-9]+)?/$',
+        PortfolioExportView.as_view(), name='product_export'),
     url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product_html'),
     url(r'^product-groups/(?P<id>[0-9]+)?$', product_group_html,
         name='product_group'),
@@ -46,20 +47,24 @@ urlpatterns = [
     url(r'^login/$', 'django.contrib.auth.views.login', {'template': 'login.html'}),
     url(r'^logout/$', 'django.contrib.auth.views.logout',
         {'next_page': '/'}),
-    url(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
+    url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+        {'document_root': settings.STATIC_ROOT}),
 
 ]
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'persons', PersonViewSet)
-#  router.register(r'persons/(?P<person_id>[0-9]+)/products$', PersonProductListView, base_name='person_products')
+#  router.register(r'persons/(?P<person_id>[0-9]+)/products$',
+#                  PersonProductListView, base_name='person_products')
 
 apis = [
     url(r'^api/', include(router.urls)),
-    url(r'^api/persons/(?P<person_id>[0-9]+)/products$', PersonProductListView.as_view(), name='person_products'),
+    url(r'^api/persons/(?P<person_id>[0-9]+)/products$',
+        PersonProductListView.as_view(), name='person_products'),
 
     url(r'^api/products/(?P<id>[0-9]+)?$', product_json, name='product_json'),
-    url(r'^api/product-groups/(?P<id>[0-9]+)?$', product_group_json, name='product_group_json'),
+    url(r'^api/product-groups/(?P<id>[0-9]+)?$', product_group_json,
+        name='product_group_json'),
     url(r'^api/services$', services_json, name='services_json'),
     url(r'^api/services/(?P<id>[0-9]+)?$', service_json, name='service_json'),
 
