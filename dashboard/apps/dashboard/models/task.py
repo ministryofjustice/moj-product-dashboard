@@ -11,7 +11,7 @@ from dashboard.libs.date_tools import (
 class TaskManager(models.Manager):
     use_for_related_fields = True
 
-    def between(self, start_date, end_date):
+    def between(self, start_date=None, end_date=None):
         """"
         retrieve all tasks, which has any time spent in a time window defined
         by the start date and end date. the following types are all included:
@@ -21,19 +21,34 @@ class TaskManager(models.Manager):
         :param start_date: a date object for the start of the time window
         :param end_date: a date object for the end of the time window
         """
-        query = (
-            # non repeating tasks
-            models.Q(repeat_state=0) &
-            models.Q(start_date__lte=end_date) &
-            models.Q(end_date__gte=start_date)
-        ) | (
-            # repeating tasks
-            models.Q(repeat_state__gt=0) &
-            models.Q(start_date__lte=end_date) &
-            models.Q(repeat_end__gte=(
-                start_date - (models.F('end_date') - models.F('start_date'))
-            ))
-        )
+        latest_repeating_task_start_date = (
+            start_date - (models.F('end_date') - models.F('start_date')))
+        if start_date and end_date:
+            query = (
+                # non repeating tasks
+                models.Q(repeat_state=0) &
+                models.Q(start_date__lte=end_date) &
+                models.Q(end_date__gte=start_date)
+            ) | (
+                # repeating tasks
+                models.Q(repeat_state__gt=0) &
+                models.Q(start_date__lte=end_date) &
+                models.Q(repeat_end__gte=latest_repeating_task_start_date)
+            )
+        elif start_date:
+            query = (
+                # non repeating tasks
+                models.Q(repeat_state=0) &
+                models.Q(end_date__gte=start_date)
+            ) | (
+                # repeating tasks
+                models.Q(repeat_state__gt=0) &
+                models.Q(repeat_end__gte=latest_repeating_task_start_date)
+            )
+        elif end_date:
+            query = models.Q(start_date__lte=end_date)
+        else:
+            query = models.Q()
         return self.filter(query)
 
 

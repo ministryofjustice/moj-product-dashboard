@@ -264,6 +264,23 @@ class TaskString(TestCase):
             ' from 2016-06-01 to 2016-06-10 for 8 days')
         assert str(task_with_name) == expected
 
+    def test_weekly_repeat_task(self):
+        task_with_name = mommy.make(
+            Task,
+            name='task 0',
+            product=mommy.make(Product, name='product 0'),
+            person=mommy.make(Person, name='John'),
+            start_date=date(2016, 6, 1),
+            end_date=date(2016, 6, 10),
+            repeat_state=1,
+            repeat_end=date(2016, 7, 1),
+            days=8)
+        expected = (
+            'task 0 - John on product 0'
+            ' from 2016-06-01 to 2016-06-10 for 8 days'
+            ' and repeat weekly until 2016-07-01')
+        assert str(task_with_name) == expected
+
 
 year_start = parse_date('2016-01-01')
 first_half_end = parse_date('2016-06-30')
@@ -279,7 +296,9 @@ class TestTaskManager(TestCase):
 
         fake = Faker()
 
-        # create 10 tasks for the 1st half year
+        # create 20 tasks for the 1st half year
+        # 10 repeating (if the start date and end date
+        # allow for repetition) and 10 not repeating
         for _ in range(10):
             rand_sd = fake.date_time_between(
                 to_datetime(year_start),
@@ -289,14 +308,32 @@ class TestTaskManager(TestCase):
                 rand_sd,
                 to_datetime(first_half_end)
             )
-            task = mommy.make(
+            try:
+                rand_repeat_end = fake.date_time_between(
+                    rand_ed,
+                    to_datetime(first_half_end) - (rand_ed - rand_sd),
+                )
+            except ValueError:
+                rand_repeat_end = None
+            non_repeating_task = mommy.make(
                 Task,
                 start_date=rand_sd.date(),
                 end_date=rand_ed.date()
             )
-            self.first_half_year_tasks.append(task)
+            self.first_half_year_tasks.append(non_repeating_task)
+            if rand_repeat_end:
+                repeating_task = mommy.make(
+                    Task,
+                    start_date=rand_sd.date(),
+                    end_date=rand_ed.date(),
+                    repeat_end=rand_repeat_end.date(),
+                    repeat_state=1
+                )
+                self.first_half_year_tasks.append(repeating_task)
 
-        # create another 10 tasks for the 2st half year
+        # create 20 tasks for the 2nd half year
+        # 10 repeating (if the start date and end date
+        # allow for repetition) and 10 not repeating
         for _ in range(10):
             rand_sd = fake.date_time_between(
                 to_datetime(second_half_start),
@@ -304,15 +341,31 @@ class TestTaskManager(TestCase):
             )
             rand_ed = fake.date_time_between(
                 rand_sd,
-                to_datetime(year_end)
-            )
+                to_datetime(year_end))
+            try:
+                rand_repeat_end = fake.date_time_between(
+                    rand_ed,
+                    to_datetime(year_end) - (rand_ed - rand_sd),
+                )
+            except ValueError:
+                rand_repeat_end = None
 
-            task = mommy.make(
+            non_repeating_task = mommy.make(
                 Task,
                 start_date=rand_sd.date(),
                 end_date=rand_ed.date()
             )
-            self.second_half_year_tasks.append(task)
+            self.second_half_year_tasks.append(non_repeating_task)
+            if rand_repeat_end:
+                repeating_task = mommy.make(
+                    Task,
+                    start_date=rand_sd.date(),
+                    end_date=rand_ed.date(),
+                    repeat_end=rand_repeat_end.date(),
+                    repeat_state=1
+                )
+
+                self.second_half_year_tasks.append(repeating_task)
 
     @staticmethod
     def assert_tasks_equals(tasks1, tasks2):
@@ -325,6 +378,7 @@ class TestTaskManager(TestCase):
         self.assert_tasks_equals(Task.objects.all(), all_tasks)
 
     def test_between(self):
+        # with both start_date and end_date
         first_half_year_tasks = Task.objects.between(
             year_start, first_half_end)
         second_half_year_tasks = Task.objects.between(
@@ -332,6 +386,33 @@ class TestTaskManager(TestCase):
 
         self.assert_tasks_equals(
             first_half_year_tasks, self.first_half_year_tasks)
+        self.assert_tasks_equals(
+            second_half_year_tasks, self.second_half_year_tasks)
+
+        # without start_date and end_date means no filtering
+        all_tasks = Task.objects.between()
+        print(len(all_tasks))
+        self.assert_tasks_equals(
+            all_tasks,
+            self.first_half_year_tasks + self.second_half_year_tasks)
+
+        # without start_date
+        all_tasks = Task.objects.between(end_date=year_end)
+        self.assert_tasks_equals(
+            all_tasks,
+            self.first_half_year_tasks + self.second_half_year_tasks)
+        first_half_year_tasks = Task.objects.between(
+            end_date=first_half_end)
+        self.assert_tasks_equals(
+            first_half_year_tasks, self.first_half_year_tasks)
+        # without end_date
+        all_tasks = Task.objects.between(start_date=year_start)
+        self.assert_tasks_equals(
+            all_tasks,
+            self.first_half_year_tasks + self.second_half_year_tasks)
+        second_half_year_tasks = Task.objects.between(
+            start_date=second_half_start)
+
         self.assert_tasks_equals(
             second_half_year_tasks, self.second_half_year_tasks)
 

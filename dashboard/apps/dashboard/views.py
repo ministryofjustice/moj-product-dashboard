@@ -1,5 +1,6 @@
 from datetime import datetime, date
 import re
+from collections import OrderedDict
 
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
@@ -10,10 +11,13 @@ from openpyxl.styles import Style, Font
 from openpyxl.workbook import Workbook
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import viewsets, generics
 
 from dashboard.libs.date_tools import parse_date
-from .models import Product, Area, ProductGroup
+from dashboard.libs import swagger_tools
+from .models import Product, Area, ProductGroup, Person
 from .tasks import sync_float
+from .serializers import PersonSerializer, PersonProductSerializer
 
 
 def _product_meta(request, product):
@@ -89,6 +93,62 @@ def product_group_json(request, id):
     profile = product_group.profile(freq='MS')
     meta = _product_meta(request, product_group)
     return Response({**profile, 'meta': meta})
+
+
+class PersonViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    List view of persons
+    """
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
+
+
+@swagger_tools.additional_schema
+class PersonProductListView(generics.ListAPIView):
+    """
+    List view of products the person(id={person_id}) spends time on
+    in the time window defined by start date and end date.
+    """
+
+    schema = OrderedDict([
+        ('start_date', {
+            'name': 'start_date',
+            'required': False,
+            'location': 'query',
+            'type': 'string',
+            'description': 'start date',
+         }),
+        ('end_date', {
+            'name': 'end_date',
+            'required': False,
+            'location': 'query',
+            'type': 'string',
+            'description': 'end date',
+         }),
+    ])
+    serializer_class = PersonProductSerializer
+
+    def get_serializer_class(self):
+        return PersonProductSerializer
+
+    def get_queryset(self):
+        person = Person.objects.get(id=self.kwargs.get('person_id'))
+        return person.products
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        start_date = self.request.query_params.get('start_date')
+        if start_date:
+            start_date = parse_date(start_date)
+        end_date = self.request.query_params.get('end_date')
+        if end_date:
+            end_date = parse_date(end_date)
+        return {
+            'start_date': start_date,
+            'end_date': end_date,
+            'person': Person.objects.get(id=self.kwargs.get('person_id')),
+            **context
+        }
 
 
 def service_html(request, id):

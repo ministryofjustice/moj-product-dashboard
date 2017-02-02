@@ -1,0 +1,33 @@
+# -*- coding: utf-8 -*-
+from rest_framework.compat import coreapi
+
+
+def additional_schema(cls):
+    """
+    rest framework does not provide a way to override the schema on
+    a per endpoint basis.  this is a cheap way to get the fields to
+    appear on the swagger web interface through the filter_backends
+    """
+    try:
+        schema = cls.schema
+    except AttributeError:
+        raise Exception(
+            'addtional_schema decorator expect a class property'
+            ' {}.schema'.format(cls.__name__))
+
+    class SwaggerFilterBackend(object):
+
+        def get_schema_fields(self, view):
+            keys = ('name', 'required', 'location', 'type', 'description')
+            return [
+                coreapi.Field(**{
+                    key: val for key, val in field.items() if key in keys})
+                for field in schema.values()
+            ]
+
+        def filter_queryset(self, request, queryset, view):
+            # do nothing
+            return queryset
+
+    cls.filter_backends = list(cls.filter_backends) + [SwaggerFilterBackend]
+    return cls
