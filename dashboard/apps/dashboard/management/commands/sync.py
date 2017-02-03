@@ -17,14 +17,15 @@ import shutil
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
-from dashboard.apps.dashboard.models import Area, Person, Product, Task
+from dashboard.apps.dashboard.models import (
+    Area, Person, Product, Task, Department)
 from dashboard.libs.date_tools import get_workdays, parse_date
 
 FLOAT_DATA_DIR = settings.location('../var/float')
 
 
 def export(token, start_date, weeks, output_dir):
-    for endpoint in ['clients', 'people', 'projects', 'accounts']:
+    for endpoint in ['clients', 'people', 'projects', 'accounts', 'departments']:
         data = many(endpoint, token)
         filename = os.path.join(output_dir, '{}.json'.format(endpoint))
         with open(filename, 'w') as fw:
@@ -111,6 +112,28 @@ def sync_clients(data_dir):
             client.save()
 
 
+def sync_departments(data_dir):
+    logging.info('sync departments')
+    source = os.path.join(data_dir, 'departments.json')
+    with open(source, 'r') as sf:
+        data = json.loads(sf.read())
+    for item in data:
+        useful_data = {
+            'float_id': item['department_id'],
+            'name': item['department_name'],
+            'raw_data': item,
+        }
+        try:
+            department = Department.objects.get(
+                float_id=useful_data['float_id'])
+            diff = compare(department, useful_data)
+            update(department, diff)
+        except Department.DoesNotExist:
+            department = Department.objects.create(**useful_data)
+            logging.info('new department found "%s"', department)
+            department.save()
+
+
 def sync_people(data_dir):
     logging.info('sync people')
     source1 = os.path.join(data_dir, 'people.json')
@@ -122,6 +145,11 @@ def sync_people(data_dir):
             p['people_id']: p for p in json.loads(sf.read())['people']}
 
     for item in data['people']:
+        try:
+            float_department_id = item['department']['id']
+            department_id = Department.objects.get(float_id=float_department_id).id
+        except KeyError:
+            department_id = None
         useful_data = {
             'float_id': item['people_id'],
             'name': item['name'],
@@ -130,7 +158,8 @@ def sync_people(data_dir):
             'is_contractor': item['contractor'],
             'avatar': item['avatar_file'],
             'raw_data': item,
-            'is_current': item['people_id'] in active_people
+            'is_current': item['people_id'] in active_people,
+            'department_id': department_id
         }
         try:
             person = Person.objects.get(float_id=useful_data['float_id'])
@@ -197,6 +226,11 @@ def sync_tasks(start_date, end_date, data_dir):
                 task['start_date'], '%Y-%m-%d').date()
             task_end_date = datetime.strptime(
                 task['end_date'], '%Y-%m-%d').date()
+            try:
+                task_repeat_end = datetime.strptime(
+                    task['repeat_end'], '%Y-%m-%d').date()
+            except TypeError:
+                task_repeat_end = None
             if task_start_date > task_end_date:
                 logging.warning(
                     'found task with start date greater than end date. skip!'
@@ -213,7 +247,7 @@ def sync_tasks(start_date, end_date, data_dir):
                 'start_date': task_start_date,
                 'end_date': task_end_date,
                 'repeat_state': task['repeat_state'],
-                'repeat_end': task['repeat_end'],
+                'repeat_end': task_repeat_end,
                 'days': workdays * Decimal(task['hours_pd']) / Decimal('8'),
                 'raw_data': task,
             }
@@ -236,6 +270,7 @@ def sync_tasks(start_date, end_date, data_dir):
 
 def sync(start_date, end_date, data_dir):
     sync_clients(data_dir)
+    sync_departments(data_dir)
     sync_people(data_dir)
     sync_projects(data_dir)
     sync_tasks(start_date, end_date, data_dir)

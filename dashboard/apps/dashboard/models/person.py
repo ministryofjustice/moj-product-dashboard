@@ -28,6 +28,8 @@ class Person(models.Model, AditionalCostsMixin):
         default=True,
         verbose_name='is current staff?'
     )
+    department = models.ForeignKey(
+        'Department', related_name='persons', null=True)
     raw_data = JSONField(null=True)
 
     @property

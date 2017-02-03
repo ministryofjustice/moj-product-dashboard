@@ -21,7 +21,7 @@ from dateutil.relativedelta import relativedelta
 
 from .models import (Person, Rate, Area, Product, Cost, Budget,
                      ProductStatus, ProductGroupStatus, Saving, Link,
-                     PersonCost)
+                     PersonCost, Department)
 from .forms import (PayrollUploadForm, ExportForm, Export)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 from .filters import (IsVisibleFilter, IsCivilServantFilter,
@@ -45,9 +45,9 @@ class PersonCostInline(FinancePermissions, admin.TabularInline):
 class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     inlines = [RateInline, PersonCostInline]
     ordering = ('name',)
-    list_display = ('name', 'job_title',
+    list_display = ('name', 'department', 'job_title',
                     'contractor_civil_servant', 'is_current')
-    search_fields = ('name', 'job_title')
+    search_fields = ('name', 'job_title', 'department__name')
     list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     fields = ['name', 'staff_number', 'job_title', 'email',
               'is_contractor', 'is_current', 'float_link']
@@ -66,10 +66,10 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
 
     def float_link(self, obj):
         return format_html('<a href="{base}/people?active=1&people={name}"'
-                           ' target="_blank" rel="external">{pk}</a>',
+                           ' target="_blank" rel="external">{float_id}</a>',
                            base=settings.FLOAT_URL,
                            name=obj.name,
-                           pk=obj.pk)
+                           float_id=obj.float_id)
     float_link.short_description = 'Float Id'
     float_link.allow_tags = True
 
@@ -300,8 +300,14 @@ class ProductGroupAdmin(admin.ModelAdmin):
     actions = None
 
 
-admin.site.register(Person, PersonAdmin)
-admin.site.register(Area, AreaAdmin)
+class DepartmentAdmin(ReadOnlyAdmin):
+    search_fields = ('name', 'float_id')
+    actions = None
+    exclude = ['raw_data']
 
-admin.site.register(Product, ProductAdmin)
+
+admin.site.register(Area, AreaAdmin)
+admin.site.register(Department, DepartmentAdmin)
 admin.site.register(LogEntry, ReadOnlyAdmin)
+admin.site.register(Person, PersonAdmin)
+admin.site.register(Product, ProductAdmin)

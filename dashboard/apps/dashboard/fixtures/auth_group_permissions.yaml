@@ -21,6 +21,7 @@
       - ['change_rate', 'dashboard', 'rate']
       - ['add_rate', 'dashboard', 'rate']
       - ['change_area', 'dashboard', 'area']
+      - ['change_department', 'dashboard', 'department']
       - ['change_person', 'dashboard', 'person']
       - ['upload_person', 'dashboard', 'person']
       - ['export_person_rates', 'dashboard', 'person']
@@ -56,6 +57,7 @@
     name: Delivery
     permissions:
       - ['change_area', 'dashboard', 'area']
+      - ['change_department', 'dashboard', 'department']
       - ['change_person', 'dashboard', 'person']
       - ['change_product', 'dashboard', 'product']
       - ['change_task', 'dashboard', 'task']

@@ -21,10 +21,10 @@ from rest_framework_swagger.views import get_swagger_view
 from moj_irat.views import PingJsonView, HealthcheckView
 
 from dashboard.apps.dashboard.views import (
-    service_html, service_json, product_html, product_json, product_group_json,
-    product_group_html, portfolio_html, services_json, sync_from_float,
-    PersonViewSet, PersonProductListView,
-    PortfolioExportView)
+    service_html, service_json, product_html, product_json,
+    product_group_json, product_group_html, portfolio_html, services_json,
+    sync_from_float, PersonViewSet, PersonProductListView,
+    DepartmentViewSet, PortfolioExportView)
 
 
 schema_view = get_swagger_view(title='Product Dashboard')
@@ -54,8 +54,7 @@ urlpatterns = [
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'persons', PersonViewSet)
-#  router.register(r'persons/(?P<person_id>[0-9]+)/products$',
-#                  PersonProductListView, base_name='person_products')
+router.register(r'departments', DepartmentViewSet)
 
 apis = [
     url(r'^api/', include(router.urls)),

@@ -15,9 +15,11 @@ from rest_framework import viewsets, generics
 
 from dashboard.libs.date_tools import parse_date
 from dashboard.libs import swagger_tools
-from .models import Product, Area, ProductGroup, Person
+from .models import Product, Area, ProductGroup, Person, Department
 from .tasks import sync_float
-from .serializers import PersonSerializer, PersonProductSerializer
+from .serializers import (
+    PersonSerializer, PersonProductSerializer, DepartmentSerializer,
+    DepartmentWithPersonsSerializer)
 
 
 def _product_meta(request, product):
@@ -97,6 +99,12 @@ def product_group_json(request, id):
 
 class PersonViewSet(viewsets.ReadOnlyModelViewSet):
     """
+    View set for person
+
+    retrieve:
+    Detail view of a single person
+
+    list:
     List view of persons
     """
     queryset = Person.objects.all()
@@ -127,9 +135,6 @@ class PersonProductListView(generics.ListAPIView):
          }),
     ])
     serializer_class = PersonProductSerializer
-
-    def get_serializer_class(self):
-        return PersonProductSerializer
 
     def get_queryset(self):
         person = Person.objects.get(id=self.kwargs.get('person_id'))
@@ -294,3 +299,21 @@ class PortfolioExportView(View):
                                           % fname
         workbook.save(response)
         return response
+
+
+class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    View set for department
+
+    retrieve:
+    Detail view of a single department
+
+    list:
+    List view of departments
+    """
+    queryset = Department.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return DepartmentWithPersonsSerializer
+        return DepartmentSerializer
