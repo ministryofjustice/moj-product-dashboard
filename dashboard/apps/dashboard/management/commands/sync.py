@@ -55,7 +55,6 @@ def compare(existing_object, data, ignores=('raw_data',)):
         value = data[key]
         old_value = getattr(existing_object, key)
         if value != old_value:
-            setattr(existing_object, key, value)
             result[key] = {'new': value, 'old': old_value}
 
     not_ignored_keys = [k for k in data.keys() if k not in ignores]
@@ -73,6 +72,8 @@ def compare(existing_object, data, ignores=('raw_data',)):
 def update(existing_object, difference):
     object_type = type(existing_object).__name__
     if difference:
+        for key, value in difference.items():
+            setattr(existing_object, key, value['new'])
         logging.info('existing %s "%s" has changes "%s", updating',
                      object_type, existing_object, difference)
         existing_object.save()
