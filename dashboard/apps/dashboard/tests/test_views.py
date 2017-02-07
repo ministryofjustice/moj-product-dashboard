@@ -13,12 +13,14 @@ from django.contrib.auth.models import User
 import pytest
 from faker import Faker
 from model_mommy import mommy
+from rest_framework.test import APIRequestFactory
 
 from dashboard.apps.dashboard.views import (
     product_html, product_json, service_html, service_json,
-    product_group_html, product_group_json, sync_from_float)
+    product_group_html, product_group_json, DepartmentViewSet,
+    sync_from_float)
 from dashboard.apps.dashboard.models import (
-    Area, Product, ProductGroup)
+    Area, Product, ProductGroup, Department, Person)
 
 
 def make_login_client():
@@ -194,3 +196,27 @@ def test_sync_float(mock_sync_float):
     assert rsp.status_code == 200
     assert rsp['Content-Type'] == 'application/json'
     assert rsp.json() == {'status': 'STARTED'}
+
+
+@pytest.mark.django_db
+def test_department_list_view():
+    departments = [mommy.make(Department) for _ in range(5)]
+
+    view = DepartmentViewSet.as_view(actions={'get': 'list'})
+    rsp = view(APIRequestFactory().get(''))
+    assert rsp.status_code == 200
+    results = rsp.data['results']
+    assert {d['id'] for d in results} == {d.id for d in departments}
+    assert 'persons' not in results[0]
+
+
+@pytest.mark.django_db
+def test_department_detail_view():
+    departments = [mommy.make(Department) for _ in range(5)]
+    persons = [mommy.make(Person, department=departments[0])
+               for _ in range(2)]
+
+    view = DepartmentViewSet.as_view(actions={'get': 'retrieve'})
+    rsp = view(APIRequestFactory().get(''), pk=departments[0].pk)
+    assert rsp.status_code == 200
+    assert {p['id'] for p in rsp.data['persons']} == {p.id for p in persons}

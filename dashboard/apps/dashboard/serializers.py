@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 
-from .models import Person, Product
-
-
-class PersonSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Person
-        exclude = ['raw_data']
+from .models import Person, Product, Department
 
 
 class PersonProductSerializer(serializers.ModelSerializer):
@@ -29,3 +22,31 @@ class PersonProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'time_spent']
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Department
+        exclude = ['raw_data']
+
+
+class _PersonSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Person
+        exclude = ['raw_data']
+
+
+class PersonSerializer(_PersonSerializer):
+
+    department = DepartmentSerializer(read_only=True)
+
+
+class DepartmentWithPersonsSerializer(serializers.ModelSerializer):
+
+    persons = _PersonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'float_id', 'persons']
