@@ -24,7 +24,7 @@ from dashboard.apps.dashboard.views import (
     service_html, service_json, product_html, product_json,
     product_group_json, product_group_html, portfolio_html, services_json,
     sync_from_float, PersonViewSet, PersonProductListView,
-    DepartmentViewSet, PortfolioExportView)
+    DepartmentViewSet, products_spreadsheet)
 
 
 schema_view = get_swagger_view(title='Product Dashboard')
@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^$', portfolio_html, name='portfolio_html'),
     url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
     url(r'^products/export/(?P<show>[all|visible|0-9]+)?/$',
-        PortfolioExportView.as_view(), name='product_export'),
+        products_spreadsheet, name='products_spreadsheet'),
     url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product_html'),
     url(r'^product-groups/(?P<id>[0-9]+)?$', product_group_html,
         name='product_group'),

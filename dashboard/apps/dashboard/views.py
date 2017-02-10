@@ -1,14 +1,11 @@
-from datetime import datetime, date
-import re
+# -*- coding: utf-8 -*-
+from datetime import datetime
 from collections import OrderedDict
 
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from django.views.generic import View
-from openpyxl.styles import Style, Font
-from openpyxl.workbook import Workbook
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets, generics
@@ -20,6 +17,7 @@ from .tasks import sync_float
 from .serializers import (
     PersonSerializer, PersonProductSerializer, DepartmentSerializer,
     DepartmentWithPersonsSerializer)
+from . import spreadsheets
 
 
 def _product_meta(request, product):
@@ -206,99 +204,21 @@ def sync_from_float(request):
     })
 
 
-def kwarg_vals(kwargs):
-    vals = []
-    for k, v in kwargs.items():
-        if k == 'year':
-            v = '%s-%s' % (str(v)[2:], str(v + 1)[2:])
-        vals.append(v)
-    return vals
-
-
-class PortfolioExportView(View):
-    http_method_names = ['get']
-
-    def format(self, value):
-        if isinstance(value, date):
-            return value.strftime('%d/%m/%Y')
-        return value
-
-    def get(self, request, *args, **kwargs):
-        show = kwargs.get('show', 'visible')
-        now = datetime.now()
-        fname = '%s_%s_%s.xlsx' % (
-            'ProductData',
-            show,
-            now.strftime('%Y-%m-%d_%H:%M:%S'))
-
-        date_style = Style(number_format='DD/MM/YYYY')
-        bold_font = Font(bold=True)
-        bold_style = Style(font=bold_font)
-        currency_style = Style(number_format='£#,##0.00')
-        year = date.today().year
-
-        fields = (
-            # (header, style, method kwargs)
-            ('Id', None, {}),
-            ('Name', None, {}),
-            ('Description', None, {}),
-            ('Area name', None, {}),
-            ('Discovery date', date_style, {}),
-            ('Alpha_date', date_style, {}),
-            ('Beta date', date_style, {}),
-            ('Live date', date_style, {}),
-            ('End date', date_style, {}),
-            ('Discovery fte', None, {}),
-            ('Alpha fte', None, {}),
-            ('Beta fte', None, {}),
-            ('Live fte', None, {}),
-            ('Final budget', currency_style, {}),
-            ('Cost of discovery', currency_style, {}),
-            ('Cost of alpha', currency_style, {}),
-            ('Cost of beta', currency_style, {}),
-            ('Cost in FY', currency_style, {'year': year - 2}),
-            ('Cost in FY', currency_style, {'year': year - 1}),
-            ('Cost in FY', currency_style, {'year': year}),
-            ('Cost in FY', currency_style, {'year': year + 1}),
-            ('Cost of sustaining', currency_style, {}),
-            ('Total recurring costs', currency_style, {}),
-            ('Savings enabled', currency_style, {}),
-            ('Visible', None, {}),
-        )
-
-        workbook = Workbook()
-        sheet = workbook.active
-        sheet.title = 'Products info'
-        for col, (f, style, kwargs) in enumerate(fields):
-            cell = sheet.cell(row=1, column=col + 1)
-            cell.style = bold_style
-            cell.value = '%s %s' % (f, ' '.join(str(k) for k in kwarg_vals(kwargs)))
-        sheet.freeze_panes = sheet['A2']
-
-        if show == 'visible':
-            products = Product.objects.visible()
-        elif show == 'all':
-            products = Product.objects.all()
-        else:
-            products = Product.objects.filter(pk=show)
-
-        for row, product in enumerate(products):
-            for col, (f, style, kwargs) in enumerate(fields):
-                val = getattr(product, re.sub('[^0-9a-zA-Z]+', '_', f).lower())
-                if callable(val):
-                    val = val(**kwargs)
-                val = self.format(val)
-                cell = sheet.cell(row=row + 2, column=col + 1)
-                if style:
-                    cell.style = style
-                cell.value = val
-
-        response = HttpResponse(
-            content_type="application/vnd.ms-excel")
-        response['Content-Disposition'] = 'attachment; filename=%s' \
-                                          % fname
-        workbook.save(response)
-        return response
+@api_view(['GET'])
+def products_spreadsheet(request, **kwargs):
+    show = kwargs.get('show', 'visible')
+    if show == 'visible':
+        products = Product.objects.visible()
+    elif show == 'all':
+        products = Product.objects.all()
+    else:
+        products = Product.objects.filter(pk=show)
+    spreadsheet = spreadsheets.Products(products)
+    response = HttpResponse(content_type="application/vnd.ms-excel")
+    response['Content-Disposition'] = 'attachment; filename={}_{}_{}.xlsx'.format(
+        'ProductData', show, datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+    spreadsheet.workbook.save(response)
+    return response
 
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
