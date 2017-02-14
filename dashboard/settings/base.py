@@ -16,6 +16,13 @@ from django_gov.settings import *
 
 FINANCE_GROUP_NAME = 'Finance'
 
+APPLICATION_CONTEXT = {
+    'proposition_title': 'MoJ Product Tracker',
+    'phase': 'alpha',
+    'product_type': 'service',
+    'feedback_url': '',
+}
+
 # Build paths inside the product like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 location = lambda x: os.path.abspath(os.path.join(
@@ -96,7 +103,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'dashboard.apps.dashboard.context_processors.moj',
+                'dashboard.apps.dashboard.context_processors.application',
             ],
         },
     },
