@@ -4,6 +4,7 @@ import functools
 
 from django.core.cache import cache
 from django.core.management import call_command
+from django.conf import settings
 
 from celery import shared_task, group
 from celery.task import periodic_task
@@ -37,9 +38,12 @@ def single_instance_task(timeout):
 @periodic_task(run_every=timedelta(minutes=10))
 @single_instance_task(60*10)
 def sync_float():
-    ninety_days_ago = date.today() - timedelta(days=90)
-    min_start_date = date(2016, 10, 3)
-    start_date = max([ninety_days_ago, min_start_date])
+    timewindow_start_date = date.today() - timedelta(
+        days=settings.FLOAT_TASK_SYNC_START_FROM_DAYS_PRIOR_TO_TODAY
+    )
+    start_date = max(
+        [timewindow_start_date, settings.FLOAT_TASK_SYNC_STARTING_POINT]
+    )
     call_command('sync', start_date=start_date)
     cache_products.delay()
 

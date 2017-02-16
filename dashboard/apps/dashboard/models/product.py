@@ -63,17 +63,19 @@ class BaseProduct(models.Model):
         else:
             return 'Not Defined'
 
-    @property
-    def financial_rag(self):
+    def financial_rag(self, calculation_start_date=None):
         """
         financial rag is one of 'RED', 'AMBER' and 'GREEN'.
         A measure of how well the product is keeping to budget.
         RED: total_cost >= 110% * budget
         AMBER: budget < total_cost < 110% * budget
         GREEN: total_cost <= budget
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         """
         budget = self.final_budget
-        total_cost = self.total_cost
+        total_cost = self.total_cost(
+            calculation_start_date=calculation_start_date)
         if budget >= total_cost:
             return RAG_TYPES.GREEN.constant
         if budget * Decimal('1.1') >= total_cost:
@@ -92,14 +94,17 @@ class BaseProduct(models.Model):
             start_date__lte=on).order_by('-start_date', '-id').first()
         return status
 
-    def stats_on(self, on):
+    def stats_on(self, on, calculation_start_date=None):
         """
         key statistics snapshot on a given date
         :param on: date when the snapsot is taken
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         """
         try:
             return self.stats_between(
-                self.first_date, on - timedelta(days=1))
+                self.first_date, on - timedelta(days=1),
+                calculation_start_date=calculation_start_date)
         except ValueError:  # when no first_date
             return {
                 'contractor': Decimal('0'),
@@ -111,17 +116,21 @@ class BaseProduct(models.Model):
                 'remaining': Decimal('0')
             }
 
-    def stats_between(self, start_date, end_date):
+    def stats_between(self, start_date, end_date, calculation_start_date=None):
         """
         key statistics in a time window
         :param start_date: start date of time window, a date object
         :param end_date: start date of time window, a date object
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         :return a dictionary
         """
         contractor_cost = self.people_costs(
-            start_date, end_date, contractor_only=True)
+            start_date, end_date, contractor_only=True,
+            calculation_start_date=calculation_start_date)
         non_contractor_cost = self.people_costs(
-            start_date, end_date, non_contractor_only=True)
+            start_date, end_date, non_contractor_only=True,
+            calculation_start_date=calculation_start_date)
         additional_costs = self.additional_costs(start_date, end_date)
         total = contractor_cost + non_contractor_cost + additional_costs
         # technically the budget is for 23:59:59 of end_date,
@@ -220,17 +229,25 @@ class BaseProduct(models.Model):
             **day_after_time_windows
         }
 
-    def stats_on_key_dates(self, freq=None):
+    def stats_on_key_dates(self, freq=None, calculation_start_date=None):
         """
         statistics on key dates
+        :param freq: an optional parameter to slice the time window into
+        sub windows. value of freq should be an offset aliases supported by
+        pandas date_range, e.g. MS for month start.
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         return: a dictionary
         """
         return {
-            k: {**{'stats': self.stats_on(v['date'])}, **v}
+            k: {**{'stats': self.stats_on(
+                v['date'],
+                calculation_start_date=calculation_start_date)}, **v}
             for k, v in self.key_dates(freq).items()
         }
 
-    def stats_in_time_frames(self, start_date, end_date, freq):
+    def stats_in_time_frames(self, start_date, end_date, freq,
+                             calculation_start_date=None):
         """
         cumulative stats of time frames sliced by freq
         :param start_date: start date of time window, a date object
@@ -238,6 +255,8 @@ class BaseProduct(models.Model):
         :param freq: an optional parameter to slice the time window into
         sub windows. value of freq should be an offset aliases supported by
         pandas date_range, e.g. MS for month start.
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         :return: a dictionary
         """
         if not start_date:
@@ -262,7 +281,8 @@ class BaseProduct(models.Model):
             # leave it open to change when a better way emerges.
             key = '{}~{}'.format(sdate.strftime('%Y-%m-%d'),
                                  edate.strftime('%Y-%m-%d'))
-            result[key] = self.stats_between(sdate, edate)
+            result[key] = self.stats_between(
+                sdate, edate, calculation_start_date=calculation_start_date)
         return result
 
     @property
@@ -282,6 +302,7 @@ class BaseProduct(models.Model):
         return result
 
     def profile(self, start_date=None, end_date=None, freq='MS',
+                calculation_start_date=None,
                 ignore_cache=False):
         """
         get the profile of a product group in a time window.
@@ -290,13 +311,17 @@ class BaseProduct(models.Model):
         :param freq: an optional parameter to slice the time window into
         sub windows. value of freq should be an offset aliases supported by
         pandas date_range, e.g. MS for month start.
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         :return: a dictionary representing the profile
         """
         return self._profile(
-            start_date, end_date, freq, ignore_cache=ignore_cache)
+            start_date, end_date, freq,
+            calculation_start_date=calculation_start_date,
+            ignore_cache=ignore_cache)
 
     @method_cache(timeout=24 * 60 * 60)
-    def _profile(self, start_date, end_date, freq):
+    def _profile(self, start_date, end_date, freq, calculation_start_date):
         """
         this method does not have default value for params
         hence more suitable for caching.
@@ -335,13 +360,15 @@ class BaseProduct(models.Model):
             'last_date': last_date,
             'financial': {
                 'time_frames': self.stats_in_time_frames(
-                    start_date, end_date, freq),
-                'key_dates': self.stats_on_key_dates(freq)
+                    start_date, end_date, freq,
+                    calculation_start_date=calculation_start_date),
+                'key_dates': self.stats_on_key_dates(
+                    freq, calculation_start_date)
             },
-            'financial_rag': self.financial_rag,
+            'financial_rag': self.financial_rag(calculation_start_date),
             'budget': self.budget(),
             'current_fte': self.current_fte(start_date, end_date),
-            'cost_to_date': self.cost_to_date,
+            'cost_to_date': self.cost_to_date(calculation_start_date=calculation_start_date),
             'phase': self.phase,
             'costs': {c.id: c.as_dict() for c in self.costs.all()},
             'savings': {s.id: s.as_dict() for s in self.savings.all()},
@@ -458,7 +485,7 @@ class Product(BaseProduct, AditionalCostsMixin):
         return self.name
 
     def people_costs(self, start_date, end_date, contractor_only=False,
-                     non_contractor_only=False):
+                     non_contractor_only=False, calculation_start_date=None):
         """
         get money spent in a time window
         :param start_date: start date of time window, a date object
@@ -466,6 +493,8 @@ class Product(BaseProduct, AditionalCostsMixin):
         :param contractor_only: True to return only money spent on contractors
         :param non_contractor_only: True to return only money spent on
         non-contractors
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         :return: a decimal for total spending
         """
         if contractor_only and non_contractor_only:
@@ -478,51 +507,73 @@ class Product(BaseProduct, AditionalCostsMixin):
         elif non_contractor_only:
             tasks = tasks.filter(person__is_contractor=False)
 
-        spending_per_task = [task.people_costs(start_date, end_date)
-                             for task in tasks]
+        spending_per_task = [
+            task.people_costs(
+                start_date,
+                end_date,
+                calculation_start_date=calculation_start_date
+            )
+            for task in tasks]
         return sum(spending_per_task)
 
-    def people_additional_costs(self, start_date, end_date, name=True):
+    def people_additional_costs(self, start_date, end_date, name=True,
+                                calculation_start_date=None):
         """
         get the additional non salary people costs for a product
         :param start_date: start date of time window, a date object
         :param end_date: end date of time window, a date object
         :param name: only get the additional people costs of this name
+        :param calculation_start_date: date when calculation for people costs
         :return: a decimal for total spending
         """
         tasks = self.tasks.between(start_date, end_date)
-        additinal_task_costs = [task.people_costs(start_date, end_date, name)
-                                for task in tasks]
+        additinal_task_costs = [
+            task.people_costs(
+                start_date,
+                end_date,
+                name,
+                calculation_start_date=calculation_start_date
+            )
+            for task in tasks]
         return sum(additinal_task_costs)
 
-    def non_contractor_salary_costs(self, start_date, end_date):
+    def non_contractor_salary_costs(self, start_date, end_date,
+                                    calculation_start_date=None):
         aditional_costs = self.people_additional_costs(
-            start_date, end_date)
+            start_date, end_date,
+            calculation_start_date=calculation_start_date)
         return self.people_costs(
-            start_date, end_date, non_contractor_only=True) - aditional_costs
+            start_date, end_date, non_contractor_only=True,
+            calculation_start_date=calculation_start_date) - aditional_costs
 
-    def cost_to(self, d):
+    def cost_to(self, d, calculation_start_date=None):
         """
         cost of the product from the start to date d
         """
-        stats = self.stats_on(d)
+        stats = self.stats_on(d, calculation_start_date=calculation_start_date)
         return sum(stats[item] for item in
                    ['contractor', 'non-contractor', 'additional'])
 
-    @property
-    def cost_to_date(self):
+    def cost_to_date(self, calculation_start_date=None):
         """
         cost of the product from the start to today
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
+        :return: a decimal
         """
-        return self.cost_to(date.today())
+        return self.cost_to(
+            date.today(), calculation_start_date=calculation_start_date)
 
-    @property
-    def total_cost(self):
+    def total_cost(self, calculation_start_date=None):
         """
         cost of the product from the beginning to the end of the end date
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         """
         try:
-            return self.cost_to(self.last_date + timedelta(days=1))
+            return self.cost_to(
+                self.last_date + timedelta(days=1),
+                calculation_start_date=calculation_start_date)
         except ValueError:  # when no last_date
             return Decimal('0')
 
@@ -621,30 +672,36 @@ class Product(BaseProduct, AditionalCostsMixin):
     def area_name(self):
         return self.area.name if self.area else ''
 
-    def cost_of_stage(self, start, end):
+    def cost_of_stage(self, start, end, calculation_start_date=None):
         if start and end:
-            return self.stats_between(start, end - timedelta(days=1))['total']
+            return self.stats_between(
+                start, end - timedelta(days=1), calculation_start_date)['total']
 
-    @property
-    def cost_of_discovery(self):
-        return self.cost_of_stage(self.discovery_date, self.alpha_date)
+    def cost_of_discovery(self, calculation_start_date=None):
+        return self.cost_of_stage(
+            self.discovery_date, self.alpha_date,
+            calculation_start_date=calculation_start_date)
 
-    @property
-    def cost_of_alpha(self):
-        return self.cost_of_stage(self.alpha_date, self.beta_date)
+    def cost_of_alpha(self, calculation_start_date=None):
+        return self.cost_of_stage(
+            self.alpha_date, self.beta_date,
+            calculation_start_date=calculation_start_date)
 
-    @property
-    def cost_of_beta(self):
-        return self.cost_of_stage(self.beta_date, self.live_date)
+    def cost_of_beta(self, calculation_start_date=None):
+        return self.cost_of_stage(
+            self.beta_date, self.live_date,
+            calculation_start_date=calculation_start_date)
 
-    def cost_in_fy(self, year):
-        return self.stats_between(*financial_year_tuple(year))['total']
+    def cost_in_fy(self, year, calculation_start_date=None):
+        return self.stats_between(
+            *financial_year_tuple(year),
+            calculation_start_date=calculation_start_date)['total']
 
-    @property
-    def cost_of_sustaining(self):
+    def cost_of_sustaining(self, calculation_start_date=None):
         try:
             start, end = self.live_date, date.today()
-            return self.people_costs(start, end) + \
+            return self.people_costs(
+                start, end, calculation_start_date=calculation_start_date) + \
                 self.additional_costs(start, end, types=[COST_TYPES.ONE_OFF])
         except ValueError:
             pass
@@ -706,13 +763,11 @@ class ProductGroup(BaseProduct):
         return Cost.objects.filter(
             product_id__in=[p.id for p in self.products.all()])
 
-    @property
-    def cost_to_date(self):
-        return sum([p.cost_to_date for p in self.products.all()])
+    def cost_to_date(self, calculation_start_date=None):
+        return sum([p.cost_to_date(calculation_start_date) for p in self.products.all()])
 
-    @property
-    def total_cost(self):
-        return sum([p.total_cost for p in self.products.all()])
+    def total_cost(self, calculation_start_date):
+        return sum([p.total_cost(calculation_start_date) for p in self.products.all()])
 
     @property
     def area(self):
@@ -743,7 +798,7 @@ class ProductGroup(BaseProduct):
                    for p in self.products.all())
 
     def people_costs(self, start_date, end_date, contractor_only=False,
-                     non_contractor_only=False):
+                     non_contractor_only=False, calculation_start_date=None):
         """
         get money spent in a time window
         :param start_date: start date of time window, a date object
@@ -751,10 +806,12 @@ class ProductGroup(BaseProduct):
         :param contractor_only: True to return only money spent on contractors
         :param non_contractor_only: True to return only money spent on
         non-contractors
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         :return: a decimal for total spending
         """
         return sum(p.people_costs(start_date, end_date, contractor_only,
-                                  non_contractor_only)
+                                  non_contractor_only, calculation_start_date)
                    for p in self.products.filter(visible=True))
 
     def additional_costs(self, start_date, end_date):

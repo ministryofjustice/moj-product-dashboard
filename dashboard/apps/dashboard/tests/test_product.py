@@ -97,9 +97,9 @@ def test_product_without_tasks():
     }
     assert product.time_spent() == 0
     assert product.current_fte() == 0
-    assert product.cost_to_date == 0
-    assert product.total_cost == 0
-    assert product.financial_rag == 'GREEN'
+    assert product.cost_to_date() == 0
+    assert product.total_cost() == 0
+    assert product.financial_rag() == 'GREEN'
 
 
 @pytest.mark.django_db
@@ -326,8 +326,8 @@ def test_product_cost():
     )
     expected = (
         contractor_rate * man_days + non_contractor_rate * man_days + cost)
-    assert product.cost_to_date == expected
-    assert product.total_cost == expected
+    assert product.cost_to_date() == expected
+    assert product.total_cost() == expected
 
     # add a future task and cost. it shoudn't change
     # cost_to_date but total_cost
@@ -353,8 +353,8 @@ def test_product_cost():
         type=COST_TYPES.ONE_OFF,
         cost=cost
     )
-    assert product.cost_to_date == expected
-    assert product.total_cost == expected + contractor_rate * 2 + cost
+    assert product.cost_to_date() == expected
+    assert product.total_cost() == expected + contractor_rate * 2 + cost
 
 
 @pytest.mark.django_db
@@ -574,7 +574,7 @@ def test_last_date_no_dates():
 @pytest.mark.django_db
 def test_product_financial_rag():
     product = mommy.make(Product)
-    assert product.financial_rag == 'GREEN'
+    assert product.financial_rag() == 'GREEN'
 
     mommy.make(
         Budget,
@@ -582,7 +582,7 @@ def test_product_financial_rag():
         budget=1000,
         start_date=date.today()
     )
-    assert product.financial_rag == 'GREEN'
+    assert product.financial_rag() == 'GREEN'
 
     mommy.make(
         Cost,
@@ -591,7 +591,7 @@ def test_product_financial_rag():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('500')
     )
-    assert product.financial_rag == 'GREEN'
+    assert product.financial_rag() == 'GREEN'
 
     mommy.make(
         Cost,
@@ -600,7 +600,7 @@ def test_product_financial_rag():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('500')
     )
-    assert product.financial_rag == 'GREEN'
+    assert product.financial_rag() == 'GREEN'
 
     mommy.make(
         Cost,
@@ -609,7 +609,7 @@ def test_product_financial_rag():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('100')
     )
-    assert product.financial_rag == 'AMBER'
+    assert product.financial_rag() == 'AMBER'
 
     mommy.make(
         Cost,
@@ -618,7 +618,7 @@ def test_product_financial_rag():
         type=COST_TYPES.ONE_OFF,
         cost=Decimal('1')
     )
-    assert product.financial_rag == 'RED'
+    assert product.financial_rag() == 'RED'
 
 
 @pytest.mark.django_db

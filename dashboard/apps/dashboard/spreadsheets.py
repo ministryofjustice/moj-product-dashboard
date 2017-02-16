@@ -13,17 +13,18 @@ class Products:
     header_style = Style(font=Font(bold=True))
     currency_style = Style(number_format='£#,##0.00')
 
-    def __init__(self, products):
+    def __init__(self, products, calculation_start_date):
         self.workbook = Workbook()
-        self.fill_main_sheet(self.workbook.active, products)
+        self.fill_main_sheet(self.workbook.active, products, calculation_start_date)
         # create the monthly spend sheet when there is one product.
         # there is no use case for monthly spend sheet for multiple
         # products. if it's needed, column alignment needs to be
         # implemented.
         if len(products) == 1:
-            self.fill_monthly_spend_sheet(self.workbook.create_sheet(), products[0])
+            self.fill_monthly_spend_sheet(
+                self.workbook.create_sheet(), products[0], calculation_start_date)
 
-    def fill_product_info(self, product, sheet, row, include_header=False):
+    def fill_product_info(self, product, sheet, row, calculation_start_date, include_header=False):
 
         fields = [
             # (header, style, value)
@@ -41,14 +42,18 @@ class Products:
             ('Beta fte', None, product.beta_fte),
             ('Live fte', None, product.live_fte),
             ('Final budget', self.currency_style, product.final_budget),
-            ('Cost of discovery', self.currency_style, product.cost_of_alpha),
-            ('Cost of alpha', self.currency_style, product.cost_of_alpha),
-            ('Cost of beta', self.currency_style, product.cost_of_beta)
+            ('Cost of discovery', self.currency_style,
+             product.cost_of_discovery(calculation_start_date=calculation_start_date)),
+            ('Cost of alpha', self.currency_style,
+             product.cost_of_alpha(calculation_start_date=calculation_start_date)),
+            ('Cost of beta', self.currency_style,
+             product.cost_of_beta(calculation_start_date=calculation_start_date))
         ]
 
         def _financial_year_col(year):
             header = 'Cost in FY {}-{}'.format(str(year)[2:], str(year + 1)[2:])
-            return header, self.currency_style, product.cost_in_fy(year)
+            return header, self.currency_style, product.cost_in_fy(
+                year, calculation_start_date=calculation_start_date)
 
         fields += [
             _financial_year_col(date.today().year + offset)
@@ -56,7 +61,8 @@ class Products:
         ]
 
         fields += [
-            ('Cost of sustaining', self.currency_style, product.cost_of_sustaining),
+            ('Cost of sustaining', self.currency_style,
+             product.cost_of_sustaining(calculation_start_date=calculation_start_date)),
             ('Total recurring costs', self.currency_style, product.total_recurring_costs),
             ('Savings enabled', self.currency_style, product.savings_enabled),
             ('Visible', None, product.visible),
@@ -75,7 +81,7 @@ class Products:
             if style:
                 body_cell.style = style
 
-    def fill_main_sheet(self, sheet, products):
+    def fill_main_sheet(self, sheet, products, calculation_start_date):
         sheet.title = 'Products info'
         # set the freeze_panes attribute to 'A2',
         # row 1 i.e. header, will always be viewable,
@@ -83,15 +89,18 @@ class Products:
         sheet.freeze_panes = 'A2'
 
         # fill first product together with headers
-        self.fill_product_info(products[0], sheet, 1, include_header=True)
+        self.fill_product_info(
+            products[0], sheet, 1, calculation_start_date, include_header=True)
         row = 3
         for product in products[1:]:
-            self.fill_product_info(product, sheet, row)
+            self.fill_product_info(product, sheet, row, calculation_start_date)
             row += 1
 
-    def fill_monthly_spend_sheet(self, sheet, product):
+    def fill_monthly_spend_sheet(self, sheet, product, calculation_start_date):
         sheet.title = 'Monthly spend'
-        time_frames = product.profile(freq='MS')['financial']['time_frames']
+        time_frames = product.profile(
+            freq='MS', calculation_start_date=calculation_start_date
+        )['financial']['time_frames']
         row_names = ['budget', 'savings', 'total', 'remaining']
         for idx, name in enumerate(row_names):
             row_header = sheet.cell(row=idx + 2, column=1)

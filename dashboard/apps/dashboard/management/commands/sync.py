@@ -230,7 +230,7 @@ def sync_tasks(start_date, end_date, data_dir):
             try:
                 task_repeat_end = datetime.strptime(
                     task['repeat_end'], '%Y-%m-%d').date()
-            except TypeError:
+            except (TypeError, ValueError):
                 task_repeat_end = None
             if task_start_date > task_end_date:
                 logging.warning(

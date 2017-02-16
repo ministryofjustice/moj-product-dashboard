@@ -205,7 +205,7 @@ class Task(models.Model):
         return self.non_repeat_task_time_spent(start_date, end_date)
 
     def people_costs(self, start_date=None, end_date=None,
-                     additional_cost_name=None):
+                     additional_cost_name=None, calculation_start_date=None):
         """
         get the money spent on the task during a time window.
         :param start_date: start date of the time window, a date object
@@ -225,6 +225,12 @@ class Task(models.Model):
         if start_date > end_date or end_date < self.start_date or self.workdays == 0:
             return Decimal('0')
 
+        # task before calculation_start_date
+        if calculation_start_date:
+            if calculation_start_date > end_date:
+                return Decimal('0')
+            elif calculation_start_date > start_date:
+                start_date = calculation_start_date
         if self.repeat_state == 0:
             return self.non_repeat_task_people_costs(
                 start_date, end_date, additional_cost_name)
