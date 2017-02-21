@@ -163,7 +163,7 @@ class ProductCostTestCase(TestCase):
             Decimal('331.25'))
 
         self.assertEqual(
-            self.product1.total_cost,
+            self.product1.total_cost(),
             Decimal('331.25'))
 
         # 0.5 x (110 + 21/21 + 42/21) = 56.5
@@ -191,7 +191,7 @@ class ProductCostTestCase(TestCase):
             Decimal('387.75'))
 
         self.assertEqual(
-            self.product1.total_cost,
+            self.product1.total_cost(),
             Decimal('387.75'))
 
     def test_product_costs_from_fixture(self):
@@ -259,4 +259,4 @@ class ProductCostTestCase(TestCase):
             )['total'],
             Decimal('3040.00'))
 
-        self.assertDecimalEqual(product.total_cost, Decimal('10055.90'))
+        self.assertDecimalEqual(product.total_cost(), Decimal('10055.90'))

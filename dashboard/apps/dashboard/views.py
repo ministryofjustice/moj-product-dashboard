@@ -5,6 +5,7 @@ from collections import OrderedDict
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -61,7 +62,9 @@ def product_json(request, id):
     profile = product.profile(
         start_date=start_date,
         end_date=end_date,
-        freq='MS')
+        freq='MS',
+        calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT
+    )
     meta = _product_meta(request, product)
     return Response({**profile, 'meta': meta})
 
@@ -90,7 +93,9 @@ def product_group_json(request, id):
         return Response({'error': error}, status=404)
 
     # get the profile of the product group for each month
-    profile = product_group.profile(freq='MS')
+    profile = product_group.profile(
+        freq='MS',
+        calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT)
     meta = _product_meta(request, product_group)
     return Response({**profile, 'meta': meta})
 
@@ -176,7 +181,9 @@ def service_json(request, id):
         error = 'cannot find service area with id={}'.format(id)
         return Response({'error': error}, status=404)
     # get the profile of the service
-    return Response(area.profile())
+    profile = area.profile(
+        calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT)
+    return Response(profile)
 
 
 def portfolio_html(request):
@@ -188,7 +195,12 @@ def services_json(request):
     """
     list view of all service areas
     """
-    result = [area.profile() for area in Area.objects.filter(visible=True)]
+    result = [
+        area.profile(
+            calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT
+        )
+        for area in Area.objects.filter(visible=True)
+    ]
     return Response(result)
 
 
@@ -213,7 +225,9 @@ def products_spreadsheet(request, **kwargs):
         products = Product.objects.all()
     else:
         products = Product.objects.filter(pk=show)
-    spreadsheet = spreadsheets.Products(products)
+    spreadsheet = spreadsheets.Products(
+        products, settings.PEOPLE_COST_CALCATION_STARTING_POINT
+    )
     response = HttpResponse(content_type="application/vnd.ms-excel")
     response['Content-Disposition'] = 'attachment; filename={}_{}_{}.xlsx'.format(
         'ProductData', show, datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))

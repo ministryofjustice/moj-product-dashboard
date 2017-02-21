@@ -21,7 +21,7 @@ class Area(models.Model):
         return self.name
 
     def profile(self, product_ids=None, start_date=None, end_date=None,
-                freq='MS'):
+                freq='MS', calculation_start_date=None):
         """
         get the profile of a service area in a time window.
         :param product_ids: a list of product_ids, if the value is not
@@ -31,6 +31,8 @@ class Area(models.Model):
         :param freq: an optional parameter to slice the time window into
         sub windows. value of freq should be an offset aliases supported by
         pandas date_range, e.g. MS for month start.
+        :param calculation_start_date: date when calculation for people costs
+        using tasks and rates start
         :return: a dictionary representing the profile
         """
         product_ids_in_a_group = [
@@ -50,7 +52,8 @@ class Area(models.Model):
         }
         result['products'] = {
             'product:{}'.format(product.id): product.profile(
-                start_date, end_date, freq)
+                start_date, end_date, freq,
+                calculation_start_date=calculation_start_date)
             for product in products
         }
         result['products'].update({

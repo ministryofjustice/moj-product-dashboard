@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 import os
 import sys
+from datetime import date
 
 from django_gov.settings import *
 
@@ -22,6 +23,27 @@ APPLICATION_CONTEXT = {
     'product_type': 'service',
     'feedback_url': '',
 }
+
+# earliest start date to sync tasks from float.com
+FLOAT_TASK_SYNC_STARTING_POINT = date(2015, 1, 1)
+
+# starting point to calculate people cost based on
+# tasks from float.com and rates in the dashboard.
+# this is useful where we do not want to deal with
+# recalculation of historical costs before the dashbaord
+# is in use, which involves entering a lot of historical
+# data such as old rates, old additional costs, and probable
+# reconcilation with already published official figures.
+PEOPLE_COST_CALCATION_STARTING_POINT = date(2016, 10, 1)
+
+# used to work out the start date of a sync job from float.com.
+# when syncing tasks, we have a start date in the past rather
+# than today. this will make sure changes on historical tasks# get updated.
+FLOAT_TASK_SYNC_START_FROM_DAYS_PRIOR_TO_TODAY = 90
+
+# default number of weeks
+DEFAULT_TASK_SYNC_WEEKS = 104
+
 
 # Build paths inside the product like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
