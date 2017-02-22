@@ -411,7 +411,16 @@ class Product(BaseProduct, AditionalCostsMixin):
 
     @property
     def last_task(self):
-        return self.tasks.order_by('-end_date').first()
+        last_non_repeating_task = self.tasks.filter(repeat_state=0).order_by(
+            '-end_date').first()
+        last_repeating_task = self.tasks.filter(repeat_state__gt=0).order_by(
+            models.F('end_date') - models.F('start_date') + models.F('repeat_end')
+        ).reverse().first()
+        if (last_repeating_task and
+                last_repeating_task.effective_end_date > last_non_repeating_task.end_date):
+            return last_repeating_task
+        else:
+            return last_non_repeating_task
 
     @property
     def first_budget(self):
@@ -469,7 +478,7 @@ class Product(BaseProduct, AditionalCostsMixin):
         """
         candidates = []
         if self.last_task:
-            candidates.append(self.last_task.end_date)
+            candidates.append(self.last_task.effective_end_date)
         if self.last_budget:
             candidates.append(self.last_budget.start_date)
         if self.last_cost:

@@ -445,12 +445,16 @@ class TestTaskManager(TestCase):
 ])
 @pytest.mark.django_db
 def test_repeat_tasks(sday, eday, expected):
+    start_date = date(2017, 3, 27)
+    end_date = date(2017, 3, 31)
+    repeat_end = date(2018, 4, 30)
     task = mommy.make(
         Task,
-        start_date=date(2017, 3, 27),
-        end_date=date(2017, 3, 31),
+        start_date=start_date,
+        end_date=end_date,
         days=5,
         repeat_state=1,
-        repeat_end=date(2018, 4, 30)
+        repeat_end=repeat_end
     )
     assert task.time_spent(parse_date(sday), parse_date(eday)) == expected
+    assert task.effective_end_date == repeat_end + (end_date - start_date)

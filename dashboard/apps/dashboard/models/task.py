@@ -97,6 +97,19 @@ class Task(models.Model):
         return result
 
     @property
+    def effective_end_date(self):
+        """
+        the effective end date of the task. for a non repeating task, this is
+        the end date of the task. for a repeating task, this is calculated as
+        t.end_date - t.start_date + t.repeat_end
+        :return: a date object
+        """
+        if self.repeat_state > 0:
+            return self.end_date - self.start_date + self.repeat_end
+        else:
+            return self.end_date
+
+    @property
     def workdays(self):
         """
         number of workdays for the task. it's the number for days

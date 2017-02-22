@@ -386,7 +386,7 @@ def test_product_first_date():
 
 
 @pytest.mark.django_db
-def test_product_last_date():
+def test_product_last_date_without_repeating_tasks():
     product = make_product()
     last_task_end_date = parse_date(task_time_ranges[-1][-1])
 
@@ -395,22 +395,56 @@ def test_product_last_date():
     assert product.last_date == last_task_end_date
 
     # with product end date after end date of last task,
-    # first date is the discovery date
+    # last date is the product last date
     end_date = last_task_end_date + timedelta(days=1)
     product.end_date = end_date
     assert product.last_date == end_date
 
     # with product end date before end date of last task,
-    # first date is the discovery date
+    # last date is the last product end date
     end_date = last_task_end_date - timedelta(days=1)
     product.end_date = end_date
     assert product.last_date == last_task_end_date
 
     # without tasks,
-    # first date is the end date
+    # last date is the end date
     product2 = mommy.make(Product)
     product2.end_date = date.today()
     assert product2.last_date == product2.end_date
+
+
+@pytest.mark.django_db
+def test_product_last_date_with_repeating_tasks():
+    product = make_product()
+    contractor = mommy.make(Person, is_contractor=True)
+    first_task_start_date = parse_date(task_time_ranges[0][0])
+    last_task_end_date = parse_date(task_time_ranges[-1][-1])
+
+    # repeating task doesn't repeat beyond last_task_end_date
+    task_0 = mommy.make(
+        Task,
+        person=contractor,
+        product=product,
+        repeat_state=1,
+        start_date=first_task_start_date,
+        end_date=first_task_start_date + timedelta(days=2),
+        repeat_end=first_task_start_date
+    )
+    assert product.last_task.id != task_0.id
+    assert product.last_date == last_task_end_date
+
+    # repeating task repeats beyond last_task_end_date
+    task_1 = mommy.make(
+        Task,
+        person=contractor,
+        product=product,
+        repeat_state=1,
+        start_date=first_task_start_date,
+        end_date=first_task_start_date + timedelta(days=2),
+        repeat_end=last_task_end_date
+    )
+    assert product.last_task.id == task_1.id
+    assert product.last_date == last_task_end_date + timedelta(days=2)
 
 
 @pytest.mark.django_db
