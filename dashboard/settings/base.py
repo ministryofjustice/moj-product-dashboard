@@ -66,6 +66,8 @@ ALLOWED_HOSTS = [
     os.environ.get('ALLOWED_HOSTS', 'localhost'),
 ]
 
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
+
 
 def expand_admins_to_list(envvar):
     if not envvar:

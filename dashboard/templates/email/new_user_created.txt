@@ -1,0 +1,10 @@
+<p>Welcome to the Product Tracker!</p>
+
+<p>Your login details:</p>
+
+<p>
+Username: {{ user.username }}<br>
+Email: {{ user.email }}<br>
+</p>
+
+<p>Please now go to <a href="{{ password_reset_url }}">{{ password_reset_url }}</a> to set your password.</p>
