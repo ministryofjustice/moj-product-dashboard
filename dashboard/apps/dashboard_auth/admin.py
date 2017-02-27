@@ -10,6 +10,13 @@ from .forms import DashboardUserChangeForm, DashboardUserCreationForm
 
 
 class DashboardUserAdmin(UserAdmin):
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'username', 'password1', 'password2', 'email', 'first_name', 'last_name')}
+         ),
+    )
     form = DashboardUserChangeForm
     add_form = DashboardUserCreationForm
 
