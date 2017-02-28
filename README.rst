@@ -64,6 +64,24 @@ Install frontend dependencies:
 Development
 ============
 
+Create the postgres database named dashboard:
+
+::
+
+    createdb dashboard
+
+Create database tables
+
+::
+
+    python manager.py migrate
+
+Load auth group, permissions and test users:
+
+::
+
+    python manager.py loaddata dashboard/apps/dashboard/fixtures/*
+
 Run the Django development server:
 
 ::
@@ -75,7 +93,6 @@ Watch and compile JS and CSS when code changes detected:
 ::
 
     npm run watch
-
 
 Build compressed JS and CSS:
 
@@ -229,3 +246,22 @@ The Template can also be produced/edited with this repository
     docker push {YOUR_IMAGE_REPOSITRY}/{STACK_NAME}:{WebAppRevision}
 
 7. Re-run the task for the Cluster in ECS Management in AWS Console
+
+
+Create Finance Admin User
+=========================
+
+Only users with the role of ``finance`` can access sensitive data like people's salary or daily rates. Only users with both roles of ``finance`` and ``admin`` can create finance users. Therefore to get the system running, a finance admin user is needed.
+
+This command will create a finance admin user if one doesn't already exist, so it's safe to be used by build system to run in every build without causing additional side effects
+
+::
+
+    python manager.py ensure_finance_amdin_user --username ${username} --password ${password}
+
+
+To create an extra finance admin user, use the --force option
+
+::
+
+    python manager.py ensure_finance_amdin_user --username ${username} --password ${password} --force
