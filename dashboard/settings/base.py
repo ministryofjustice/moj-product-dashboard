@@ -22,6 +22,7 @@ APPLICATION_CONTEXT = {
     'phase': 'alpha',
     'product_type': 'service',
     'feedback_url': '',
+    'GA_KEY': os.environ.get('GA_KEY'),
 }
 
 # earliest start date to sync tasks from float.com
