@@ -13,7 +13,9 @@ import os
 import sys
 from datetime import date
 
-from django_gov.settings import *
+from django_gov.settings import (
+    REST_FRAMEWORK, API_VERSION, SWAGGER_SETTINGS, PING_JSON_KEYS,
+    HEALTHCHECKS, AUTODISCOVER_HEALTHCHECKS, CORS_ORIGIN_ALLOW_ALL)
 
 FINANCE_GROUP_NAME = 'Finance'
 
@@ -24,6 +26,10 @@ APPLICATION_CONTEXT = {
     'feedback_url': '',
     'GA_KEY': os.environ.get('GA_KEY'),
 }
+
+# access to the dashboard is IP restricted, so there is no
+# way to validate the schema from swagger.io
+SWAGGER_SETTINGS['VALIDATOR_URL'] = None
 
 # earliest start date to sync tasks from float.com
 FLOAT_TASK_SYNC_STARTING_POINT = date(2015, 1, 1)
@@ -211,19 +217,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     location('assets'),
 )
-
-PING_JSON_KEYS = {
-    'build_date_key': 'APP_BUILD_DATE',
-    'commit_id_key': 'APP_GIT_COMMIT',
-    'version_number_key': 'APPVERSION',
-    'build_tag_key': 'APP_BUILD_TAG',
-}
-
-HEALTHCHECKS = [
-    'moj_irat.healthchecks.database_healthcheck',
-    # override default list of healthcheck callables
-]
-AUTODISCOVER_HEALTHCHECKS = True  # whether to autodiscover and load healthcheck.py from all installed apps
 
 FLOAT_API_TOKEN = os.environ.get('FLOAT_API_TOKEN')
 FLOAT_URL = os.environ.get('FLOAT_URL')
