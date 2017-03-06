@@ -24,7 +24,7 @@ from dashboard.apps.dashboard.views import (
     service_html, service_json, product_html, product_json,
     product_group_json, product_group_html, portfolio_html, services_json,
     sync_from_float, PersonViewSet, PersonProductListView,
-    DepartmentViewSet, products_spreadsheet)
+    DepartmentViewSet, SkillViewSet, products_spreadsheet)
 
 
 schema_view = get_swagger_view(title='Product Dashboard')
@@ -32,7 +32,7 @@ schema_view = get_swagger_view(title='Product Dashboard')
 
 urlpatterns = [
     url(r'^$', portfolio_html, name='portfolio_html'),
-    url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service'),
+    url(r'^services/(?P<id>[0-9]+)?$', service_html, name='service_html'),
     url(r'^products/export/(?P<show>[all|visible|0-9]+)?/$',
         products_spreadsheet, name='products_spreadsheet'),
     url(r'^products/(?P<id>[0-9]+)?$', product_html, name='product_html'),
@@ -55,6 +55,7 @@ urlpatterns = [
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'persons', PersonViewSet)
 router.register(r'departments', DepartmentViewSet)
+router.register(r'skills', SkillViewSet)
 
 apis = [
     url(r'^api/', include(router.urls)),

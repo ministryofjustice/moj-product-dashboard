@@ -8,3 +8,4 @@ from .person import Person
 from .product import Product, ProductGroup, ProductStatus, ProductGroupStatus
 from .task import Task
 from .department import Department
+from .skill import Skill
