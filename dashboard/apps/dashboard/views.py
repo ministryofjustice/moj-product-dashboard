@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponse
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets, generics
@@ -217,7 +218,7 @@ def sync_from_float(request):
     })
 
 
-@api_view(['GET'])
+@require_http_methods(['GET'])
 def products_spreadsheet(request, **kwargs):
     show = kwargs.get('show', 'visible')
     if show == 'visible':
