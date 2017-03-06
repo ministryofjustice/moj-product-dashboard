@@ -114,14 +114,8 @@ class PersonViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PersonSerializer
 
 
-@swagger_tools.additional_schema
-class PersonProductListView(generics.ListAPIView):
-    """
-    List view of products the person(id={person_id}) spends time on
-    in the time window defined by start date and end date.
-    """
-
-    schema = OrderedDict([
+@swagger_tools.additional_schema(
+    OrderedDict([
         ('start_date', {
             'name': 'start_date',
             'required': False,
@@ -137,6 +131,13 @@ class PersonProductListView(generics.ListAPIView):
             'description': 'end date',
          }),
     ])
+)
+class PersonProductListView(generics.ListAPIView):
+    """
+    List view of products the person(id={person_id}) spends time on
+    in the time window defined by start date and end date.
+    """
+
     serializer_class = PersonProductSerializer
 
     def get_queryset(self):

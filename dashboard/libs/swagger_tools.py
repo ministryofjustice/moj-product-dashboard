@@ -2,19 +2,12 @@
 from rest_framework.compat import coreapi
 
 
-def additional_schema(cls):
+def additional_schema(schema):
     """
     rest framework does not provide a way to override the schema on
     a per endpoint basis.  this is a cheap way to get the fields to
     appear on the swagger web interface through the filter_backends
     """
-    try:
-        schema = cls.schema
-    except AttributeError:
-        raise Exception(
-            'addtional_schema decorator expect a class property'
-            ' {}.schema'.format(cls.__name__))
-
     class SwaggerFilterBackend(object):
 
         def get_schema_fields(self, view):
@@ -29,5 +22,8 @@ def additional_schema(cls):
             # do nothing
             return queryset
 
-    cls.filter_backends = list(cls.filter_backends) + [SwaggerFilterBackend]
-    return cls
+    def wrapper(cls):
+        cls.filter_backends = list(cls.filter_backends) + [SwaggerFilterBackend]
+        return cls
+
+    return wrapper
