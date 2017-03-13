@@ -9,16 +9,16 @@ from datetime import datetime, date, timedelta
 import functools
 from decimal import Decimal
 import logging
+import shutil
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from requests.exceptions import HTTPError
-import shutil
 
 import dashboard.settings as settings
 from dashboard.libs.floatapi import many
 from dashboard.apps.dashboard.models import (
-    Area, Person, Product, Task, Department)
+    Area, Person, Product, Task, Department, Skill)
 from dashboard.libs.date_tools import get_workdays, parse_date
 
 FLOAT_DATA_DIR = settings.location('../var/float')
@@ -170,6 +170,11 @@ def sync_people(data_dir):
             person = Person.objects.create(**useful_data)
             logging.info('new person found "%s"', person)
             person.save()
+        update_skills(person, item)
+    for skill in Skill.objects.all():
+        if skill.persons.count() == 0:
+            logging.info('delete skill with no person "%s"', skill)
+            skill.delete()
 
 
 def sync_projects(data_dir):
@@ -209,6 +214,37 @@ def sync_projects(data_dir):
                 'found deleted product float_id=%s "%s"',
                 deleted.float_id, deleted)
             deleted.delete()
+
+
+def update_skills(person, raw_data):
+    skill_names = {
+        item.get('name', '').strip()
+        for item in raw_data.get('skills', [])
+        if item.get('name', '').strip()
+    }
+    skills = set()
+    for name in skill_names:
+        try:
+            skill = Skill.objects.get(name__iexact=name)
+        except Skill.DoesNotExist:
+            skill = Skill.objects.create(name=name)
+        skills.add(skill)
+
+    existing_skills = set(person.skills.all())
+    to_add = skills - existing_skills
+    if to_add:
+        logging.info('add skills %s to %s', to_add, person)
+    for skill in to_add:
+        person.skills.add(skill)
+
+    to_remove = existing_skills - skills
+    if to_remove:
+        logging.info('remove skills %s to %s', to_remove, person)
+    for skills in to_remove:
+        person.skills.remove(skill)
+
+    if to_add or to_remove:
+        person.save()
 
 
 def sync_tasks(start_date, end_date, data_dir):
@@ -269,12 +305,17 @@ def sync_tasks(start_date, end_date, data_dir):
         deleted.delete()
 
 
-def sync(start_date, end_date, data_dir):
-    sync_clients(data_dir)
-    sync_departments(data_dir)
-    sync_people(data_dir)
-    sync_projects(data_dir)
-    sync_tasks(start_date, end_date, data_dir)
+def sync(start_date, end_date, resources, data_dir):
+    if 'clients' in resources:
+        sync_clients(data_dir)
+    if 'departments' in resources:
+        sync_departments(data_dir)
+    if 'people' in resources:
+        sync_people(data_dir)
+    if 'projects' in resources:
+        sync_projects(data_dir)
+    if 'tasks' in resources:
+        sync_tasks(start_date, end_date, data_dir)
 
 
 def ensure_directory(d):
@@ -287,7 +328,11 @@ class Command(BaseCommand):
     help = 'Sync with float'
     output = ['accounts.json', 'clients.json',
               'projects.json', 'tasks.json',
-              'people.json', 'people-active.json']
+              'people.json', 'people-active.json',
+              'departments.json']
+    resources = [
+        'accounts', 'clients', 'projects', 'tasks', 'people', 'departments'
+    ]
 
     def add_arguments(self, parser):
         today = date.today()
@@ -298,6 +343,8 @@ class Command(BaseCommand):
         parser.add_argument('-t', '--token', type=str)
         parser.add_argument('-o', '--output-dir', type=ensure_directory,
                             default=self._default_output_dir())
+        parser.add_argument('-r', '--resources', nargs='*', choices=self.resources)
+        parser.add_argument('-k', '--keep', action='store_true')
 
     @staticmethod
     def _default_output_dir():
@@ -349,6 +396,9 @@ class Command(BaseCommand):
             except HTTPError as exc:
                 raise CommandError(exc.args)
         logging.info('- sync database with exported Float data.')
-        sync(start_date, end_date, data_dir=output_dir)
-        shutil.rmtree(output_dir, ignore_errors=True)
+        resources = options['resources'] or self.resources
+        sync(start_date, end_date, resources, data_dir=output_dir)
+        if not options['keep']:
+            shutil.rmtree(output_dir, ignore_errors=True)
+            logging.info('- remove directory %s', output_dir)
         logging.info('- job complete.')

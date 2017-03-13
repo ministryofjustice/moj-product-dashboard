@@ -21,11 +21,11 @@ from dateutil.relativedelta import relativedelta
 
 from .models import (Person, Rate, Area, Product, Cost, Budget,
                      ProductStatus, ProductGroupStatus, Saving, Link,
-                     PersonCost, Department)
+                     PersonCost, Department, Skill)
 from .forms import (PayrollUploadForm, ExportForm, Export)
 from .permissions import ReadOnlyPermissions, FinancePermissions
-from .filters import (IsVisibleFilter, IsCivilServantFilter,
-                      IsCurrentStaffFilter)
+from .filters import (
+    IsVisibleFilter, IsCivilServantFilter, IsCurrentStaffFilter)
 
 
 class ReadOnlyAdmin(ReadOnlyPermissions, admin.ModelAdmin):
@@ -45,13 +45,13 @@ class PersonCostInline(FinancePermissions, admin.TabularInline):
 class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     inlines = [RateInline, PersonCostInline]
     ordering = ('name',)
-    list_display = ('name', 'department', 'job_title',
+    list_display = ('name', 'department', 'job_title', 'get_skills',
                     'contractor_civil_servant', 'is_current')
-    search_fields = ('name', 'job_title', 'department__name')
+    search_fields = ('name', 'job_title', 'department__name', 'skills__name')
     list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
     fields = ['name', 'staff_number', 'job_title', 'email',
-              'is_contractor', 'is_current', 'float_link']
-    readonly_fields = ['float_link']
+              'is_contractor', 'is_current', 'get_skills', 'float_link']
+    readonly_fields = ['float_link', 'get_skills']
     actions = None
 
     def get_readonly_fields(self, request, obj=None):
@@ -72,6 +72,15 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
                            float_id=obj.float_id)
     float_link.short_description = 'Float Id'
     float_link.allow_tags = True
+
+    def get_skills(self, obj):
+        html = [
+            '<a href="{}">{}</a>'.format(skill.admin_url, skill.name)
+            for skill in obj.skills.all()
+        ]
+        return ', '.join(html)
+    get_skills.short_description = 'Skills'
+    get_skills.allow_tags = True
 
     def get_urls(self):
         urls = [
@@ -161,10 +170,39 @@ class RateAdmin(FinancePermissions, admin.ModelAdmin):
 
 class AreaAdmin(admin.ModelAdmin):
     search_fields = ('name', 'float_id')
-    fields = ['id', 'name', 'float_id', 'manager', 'visible']
-    readonly_fields = ['id', 'name', 'float_id']
+    fields = ['id', 'name', 'float_id', 'manager', 'visible', 'get_products']
+    readonly_fields = ['id', 'name', 'float_id', 'get_products']
     exclude = ['raw_data']
     actions = None
+
+    def view_on_site(self, obj):
+        return urlresolvers.reverse('service_html', args=[str(obj.id)])
+
+    def get_products(self, obj):
+        html = [
+            '<a href="{}">{}</a>'.format(product.admin_url, product.name)
+            for product in obj.products.all()
+        ]
+        return format_html(', '.join(html))
+    get_products.short_description = 'Products'
+    get_products.allow_tags = True
+
+
+class SkillAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'person__name')
+    fields = ['id', 'name', 'get_people']
+    readonly_fields = ['id', 'name', 'get_people']
+    list_display = ('name', 'get_people')
+    actions = None
+
+    def get_people(self, obj):
+        html = [
+            '<a href="{}">{}</a>'.format(person.admin_url, person.name)
+            for person in obj.persons.all()
+        ]
+        return format_html(', '.join(html))
+    get_people.short_description = 'People'
+    get_people.allow_tags = True
 
 
 class CostInline(admin.TabularInline):
@@ -301,9 +339,21 @@ class ProductGroupAdmin(admin.ModelAdmin):
 
 
 class DepartmentAdmin(ReadOnlyAdmin):
-    search_fields = ('name', 'float_id')
+    search_fields = ['name', 'float_id', 'persons__name']
     actions = None
+    list_display = ['name', 'get_people']
+    fields = ['name', 'get_people']
+    readonly_fields = ['name', 'get_people']
     exclude = ['raw_data']
+
+    def get_people(self, obj):
+        html = [
+            '<a href="{}">{}</a>'.format(person.admin_url, person.name)
+            for person in obj.persons.all(is_current=True)
+        ]
+        return format_html(', '.join(html))
+    get_people.short_description = 'People'
+    get_people.allow_tags = True
 
 
 admin.site.register(Area, AreaAdmin)
@@ -311,3 +361,4 @@ admin.site.register(Department, DepartmentAdmin)
 admin.site.register(LogEntry, ReadOnlyAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Product, ProductAdmin)
+admin.site.register(Skill, SkillAdmin)

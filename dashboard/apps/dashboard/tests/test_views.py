@@ -18,9 +18,9 @@ from rest_framework.test import APIRequestFactory
 from dashboard.apps.dashboard.views import (
     product_html, product_json, service_html, service_json,
     product_group_html, product_group_json, DepartmentViewSet,
-    sync_from_float)
+    SkillViewSet, sync_from_float)
 from dashboard.apps.dashboard.models import (
-    Area, Product, ProductGroup, Department, Person)
+    Area, Product, ProductGroup, Department, Person, Skill)
 
 
 def make_login_client():
@@ -207,7 +207,7 @@ def test_department_list_view():
     assert rsp.status_code == 200
     results = rsp.data['results']
     assert {d['id'] for d in results} == {d.id for d in departments}
-    assert 'persons' not in results[0]
+    assert 'persons' in results[0]
 
 
 @pytest.mark.django_db
@@ -215,8 +215,38 @@ def test_department_detail_view():
     departments = [mommy.make(Department) for _ in range(5)]
     persons = [mommy.make(Person, department=departments[0])
                for _ in range(2)]
+    # inactive person shouldn't be included
+    mommy.make(Person, is_current=False, department=departments[0])
 
     view = DepartmentViewSet.as_view(actions={'get': 'retrieve'})
     rsp = view(APIRequestFactory().get(''), pk=departments[0].pk)
+    assert rsp.status_code == 200
+    assert {p['id'] for p in rsp.data['persons']} == {p.id for p in persons}
+
+
+@pytest.mark.django_db
+def test_skill_list_view():
+    skills = [mommy.make(Skill) for _ in range(5)]
+    view = SkillViewSet.as_view(actions={'get': 'list'})
+    rsp = view(APIRequestFactory().get(''))
+    assert rsp.status_code == 200
+    results = rsp.data['results']
+    assert {s['id'] for s in results} == {s.id for s in skills}
+
+
+@pytest.mark.django_db
+def test_skill_detail_view():
+    skills = [mommy.make(Skill) for _ in range(5)]
+    persons = []
+    for _ in range(5):
+        person = mommy.make(Person)
+        persons.append(person)
+        person.skills.add(skills[0])
+    # inactive person shouldn't be included
+    inactive_person = mommy.make(Person, is_current=False)
+    inactive_person.skills.add(skills[0])
+
+    view = SkillViewSet.as_view(actions={'get': 'retrieve'})
+    rsp = view(APIRequestFactory().get(''), pk=skills[0].pk)
     assert rsp.status_code == 200
     assert {p['id'] for p in rsp.data['persons']} == {p.id for p in persons}

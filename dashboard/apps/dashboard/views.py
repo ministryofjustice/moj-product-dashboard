@@ -14,11 +14,11 @@ from rest_framework import viewsets, generics
 
 from dashboard.libs.date_tools import parse_date
 from dashboard.libs import swagger_tools
-from .models import Product, Area, ProductGroup, Person, Department
+from .models import Product, Area, ProductGroup, Person, Department, Skill
 from .tasks import sync_float
 from .serializers import (
     PersonSerializer, PersonProductSerializer, DepartmentSerializer,
-    DepartmentWithPersonsSerializer)
+    SkillSerializer)
 from . import spreadsheets
 
 
@@ -248,8 +248,18 @@ class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
     List view of departments
     """
     queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
 
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return DepartmentWithPersonsSerializer
-        return DepartmentSerializer
+
+class SkillViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    View set for skills
+
+    retrieve:
+    Detail view of a single skill
+
+    list:
+    List view of skills
+    """
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer

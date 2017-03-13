@@ -3,12 +3,15 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.db import models
+from django.core import urlresolvers
 from django.contrib.postgres.fields import JSONField
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy
 
 from dashboard.libs.rate_converter import (
     RATE_TYPES, dec_workdays, average_rate_from_segments, last_date_in_month)
 from .cost import AditionalCostsMixin
+from .skill import Skill
 from ..constants import COST_TYPES
 
 
@@ -30,6 +33,10 @@ class Person(models.Model, AditionalCostsMixin):
     )
     department = models.ForeignKey(
         'Department', related_name='persons', null=True)
+    skills = models.ManyToManyField(
+        Skill,
+        related_name='persons'
+    )
     raw_data = JSONField(null=True)
 
     @property
@@ -47,6 +54,13 @@ class Person(models.Model, AditionalCostsMixin):
 
     def __str__(self):
         return self.name
+
+    @property
+    def admin_url(self):
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        name = 'admin:{}_{}_change'.format(content_type.app_label,
+                                           content_type.model)
+        return urlresolvers.reverse(name, args=(self.id,))
 
     class Meta:
         verbose_name_plural = ugettext_lazy('People')
