@@ -25,7 +25,7 @@ from .models import (Person, Rate, Area, Product, Cost, Budget,
 from .forms import (PayrollUploadForm, ExportForm, Export)
 from .permissions import ReadOnlyPermissions, FinancePermissions
 from .filters import (
-    IsVisibleFilter, IsCivilServantFilter, IsCurrentStaffFilter)
+    IsVisibleFilter, IsCivilServantFilter, IsCurrentStaffFilter, HasRateFilter)
 
 
 class ReadOnlyAdmin(ReadOnlyPermissions, admin.ModelAdmin):
@@ -48,7 +48,7 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     list_display = ('name', 'department', 'job_title', 'get_skills',
                     'contractor_civil_servant', 'is_current')
     search_fields = ('name', 'job_title', 'department__name', 'skills__name')
-    list_filter = (IsCivilServantFilter, IsCurrentStaffFilter)
+    list_filter = (IsCivilServantFilter, IsCurrentStaffFilter, HasRateFilter)
     fields = ['name', 'staff_number', 'job_title', 'email',
               'is_contractor', 'is_current', 'get_skills', 'float_link']
     readonly_fields = ['float_link', 'get_skills']
@@ -349,7 +349,7 @@ class DepartmentAdmin(ReadOnlyAdmin):
     def get_people(self, obj):
         html = [
             '<a href="{}">{}</a>'.format(person.admin_url, person.name)
-            for person in obj.persons.all(is_current=True)
+            for person in obj.persons.filter(is_current=True)
         ]
         return format_html(', '.join(html))
     get_people.short_description = 'People'
