@@ -60,6 +60,28 @@ class IsCurrentStaffFilter(DefaultNoneChoicesFilter):
             return queryset
 
 
+class HasRateFilter(admin.SimpleListFilter):
+    """
+    this filter shows people either with rate info or not
+    """
+    title = 'has rate?'
+    parameter_name = 'has_rate'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is 'yes':
+            return queryset.exclude(rates=None)
+        elif self.value() == 'no':
+            return queryset.filter(rates=None)
+        else:
+            return queryset
+
+
 class IsVisibleFilter(DefaultNoneChoicesFilter):
     """
     this filter shows `visible=True` by default
