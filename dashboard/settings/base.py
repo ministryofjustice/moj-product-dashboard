@@ -104,7 +104,7 @@ INSTALLED_APPS = [
     'django_gov',
     'rest_framework_swagger',
 
-    'dashboard.apps.dashboard',
+    'dashboard.apps.dashboard.apps.DashboardConfig',
     'dashboard_auth',
 ]
 

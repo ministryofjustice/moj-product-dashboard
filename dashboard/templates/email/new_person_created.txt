@@ -1,0 +1,14 @@
+<p>A new person was just added to the MoJ Product Tracker.</p>
+<p>To complete their rate information, please go to  <a href="{{ admin_url }}">{{ admin_url }}</a>.</p>
+
+<p>
+Name: {{ person.name }}<br>
+Job title: {{ person.job_title }}<br>
+{% spaceless %}
+{% if person.is_contractor %}
+Contractor / Civil Servant: Contractor
+{% else %}
+Contractor / Civil Servant: Civil Servant
+{% endif %}
+{% endspaceless %}
+</p>
