@@ -292,8 +292,8 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
                         '[^0-9a-zA-Z]+',
                         '-',
                         form.cleaned_data['product'].name),
-                    form.cleaned_data['date'].year,
-                    form.cleaned_data['date'].month)
+                    form.cleaned_data['date_range'][0].year,
+                    form.cleaned_data['date_range'][0].month)
                 workbook = form.export()
                 response = HttpResponse(
                     content_type="application/vnd.ms-excel")

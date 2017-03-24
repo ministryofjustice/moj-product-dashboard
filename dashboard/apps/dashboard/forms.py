@@ -23,7 +23,7 @@ from dashboard.libs.rate_converter import last_date_in_month
 
 from .constants import COST_TYPES
 from .models import Person, Rate, Product, PersonCost
-from .widgets import MonthYearDateWidget
+from .widgets import DateRangeWidget
 
 
 CURRENCY_FORMAT = '£#,##0.00'
@@ -58,20 +58,50 @@ def year_range(backward=0, forward=10):
     return range(this_year-backward, this_year+forward)
 
 
-class MonthYearField(forms.DateField):
-    widget = MonthYearDateWidget
+class DateRangeField(forms.DateField):
+    input_formats = ['%Y-%m-%d']
+    widget = DateRangeWidget
+
+    def format(self, v):
+        return datetime.strptime(v, self.input_formats[0]).date()
+
+    def to_python(self, value):
+        """
+        Validates that the input can be converted to a date. Returns a Python
+        tuple of two datetime.date objects.
+        """
+        if value:
+            try:
+                value = value.split(':')
+                if len(value) == 2:
+                    f, t = (self.format(v) for v in value)
+                    if f < t:
+                        return f, t
+                    raise ValidationError('From date must be before To date.')
+            except AttributeError:
+                pass
+
+            raise ValidationError('Must be two dates')
 
     def validate(self, value):
-        if isinstance(value, date):
-            return value
+        def validate_date(v):
+            if isinstance(v, date):
+                return v
+            try:
+                return self.format(v)
+            except (TypeError, ValueError):
+                raise ValidationError('Invalid date.')
+
         try:
-            return datetime.strptime(value, '%Y-%m-%d')
+            from_date, to_date = map(validate_date, value)
         except (TypeError, ValueError):
-            raise ValidationError('Invalid Month or Year.')
+            raise ValidationError('Date range must have two dates')
+
+        return from_date, to_date
 
 
 class PayrollUploadForm(forms.Form):
-    date = MonthYearField(required=True)
+    date_range = DateRangeField(required=True)
     payroll_file = forms.FileField(
         required=True,
         help_text='This must be an original payroll file from HR in .xls '
@@ -79,9 +109,9 @@ class PayrollUploadForm(forms.Form):
 
     @property
     def month(self):
-        d = self.cleaned_data.get('date', None)
-        if d:
-            return d.strftime('%Y-%m')
+        dr = self.cleaned_data.get('date_range', None)
+        if dr:
+            return dr[0].strftime('%Y-%m')
 
     def get_person(self, row, data):
         try:
@@ -117,8 +147,8 @@ class PayrollUploadForm(forms.Form):
                 '"%s"' % (row, data.get('Surname')))
 
     def clean_payroll_file(self):
-        start = self.cleaned_data.get('date')
-        if not start:
+        start, end = self.cleaned_data.get('date_range')
+        if not start or not end:
             raise ValidationError('No date supplied.')
 
         try:
@@ -149,7 +179,7 @@ class PayrollUploadForm(forms.Form):
                 person = self.get_person(row, data)
                 if person:
                     day_rate = Decimal(data[BASE_SALARY_RATE_KEY]) / get_workdays(
-                        start, start + relativedelta(day=31))
+                        start, end)
                     staff_number = int(data['Staff'])
 
                     additional = {}
@@ -164,7 +194,7 @@ class PayrollUploadForm(forms.Form):
                         'person': person,
                         'rate': day_rate,
                         'start': start,
-                        'end': last_date_in_month(start),
+                        'end': end,
                         'staff_number': staff_number,
                         'additional': additional
                     })
@@ -256,7 +286,7 @@ EXPORTS = (
 
 
 class ExportForm(forms.Form):
-    date = MonthYearField(required=True)
+    date_range = DateRangeField(required=True)
     product = forms.ModelChoiceField(
         queryset=Product.objects.all().order_by('area', 'name'),
         required=True)
@@ -288,25 +318,19 @@ class TemplateExport(Export):
         if ws is None:  # pragma: no cover
             ws = workbook.get_active_sheet()
         product = self.cleaned_data['product']
-        date = self.cleaned_data['date']
-        month = date.strftime('%B \'%y')
-        period_start = date if date.month < 4 else \
-            date.replace(year=date.year + 1)
-        period_end = period_start.replace(year=date.year + 1)
+        start_date, end_date = self.cleaned_data['date_range']
+        month = start_date.strftime('%B \'%y')
+        period_start = start_date if start_date.month < 4 else \
+            start_date.replace(year=start_date.year + 1)
+        period_end = period_start.replace(year=period_start.year + 1)
         period = '%s-%s' % (period_start.strftime('%y'),
                             period_end.strftime('%y'))
 
-        last_business_day = monthrange(date.year, date.month)[1]
-
-        start_date = date
-        end_date = date.replace(day=last_business_day)
-
-        ws.cell(row=11, column=9).value = '%s%s' % (last_business_day,
-                                                    date.strftime('/%m/%Y'))
-        ws.cell(row=12, column=9).value = '%s%s' % (date.strftime('%B'),
+        ws.cell(row=11, column=9).value = end_date.strftime('%d/%m/%Y')
+        ws.cell(row=12, column=9).value = '%s%s' % (start_date.strftime('%B'),
                                                     period)
         ws.cell(row=13, column=9).value = 'MA100_LW_%s_13' % \
-                                          date.strftime('%d%m%y')
+                                          start_date.strftime('%d%m%y')
 
         def desc(t):
             return '%s - %s Share of DS %s Costs %s' % (
@@ -367,9 +391,7 @@ class ProductDetailExport(TemplateExport):
     def write(self, workbook, ws=None):
         ws = workbook.get_active_sheet()
         product = self.cleaned_data['product']
-        start_date = self.cleaned_data['date']
-        last_business_day = monthrange(start_date.year, start_date.month)[1]
-        end_date = start_date.replace(day=last_business_day)
+        start_date, end_date = self.cleaned_data['date_range']
 
         details = defaultdict(lambda: defaultdict(Decimal))
 

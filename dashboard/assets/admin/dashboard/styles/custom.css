@@ -430,10 +430,12 @@ p.errornote {
   margin-right: 5px;
   width: 50px;
 }
-#id_date_month {
+.upload input[type="text"].form-control.date-range-two,
+.export input[type="text"].form-control.date-range-two {
     width: 50px;
 }
-#id_date_year {
+.upload input[type="text"].form-control.date-range-four,
+.export input[type="text"].form-control.date-range-four {
     width: 70px;
 }
 
