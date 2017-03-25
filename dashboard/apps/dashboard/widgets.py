@@ -33,11 +33,11 @@ class DateWidget(Widget):
         else:
             id_ = 'id_%s' % name
 
-        local_attrs = self.build_attrs(id=self.month_field % id_)
+        local_attrs = self.build_attrs(id=self.day_field % id_)
         local_attrs.update({
             'size': 3,
             'maxlength': 2,
-            'placeholder': 'MM',
+            'placeholder': 'DD',
             'autocomplete': 'off',
             'class': 'form-control date-range-two',
         })
@@ -45,6 +45,11 @@ class DateWidget(Widget):
         s = TextInput()
         day_html = s.render(self.day_field % name, day_val, local_attrs)
         output.append(day_html)
+
+        local_attrs['id'] = self.month_field % id_
+        local_attrs.update({
+            'placeholder': 'MM',
+        })
 
         s = TextInput()
         month_html = s.render(self.month_field % name, month_val, local_attrs)
