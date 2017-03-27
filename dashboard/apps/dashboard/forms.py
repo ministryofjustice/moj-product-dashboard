@@ -2,7 +2,6 @@
 from collections import defaultdict
 import copy
 import os
-from calendar import monthrange
 from decimal import Decimal
 from datetime import datetime, date
 import re
@@ -11,7 +10,6 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from dateutil.relativedelta import relativedelta
 from openpyxl import load_workbook, Workbook
 from openpyxl.cell import Cell
 from openpyxl.styles import Style, Font
@@ -19,7 +17,6 @@ from openpyxl.utils import get_column_letter
 from xlrd import open_workbook, XLRDError
 
 from dashboard.libs.date_tools import get_workdays
-from dashboard.libs.rate_converter import last_date_in_month
 
 from .constants import COST_TYPES
 from .models import Person, Rate, Product, PersonCost
