@@ -23,14 +23,14 @@ def test_valid_upload_form():
 
     fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
     form = PayrollUploadForm(
-        data={'date': date(2016, 1, 1)},
+        data={'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31))},
         files=MultiValueDict(
             {'payroll_file': [SimpleUploadedFile(fb.name, fb.read())]}
         ),
     )
 
     assert form.is_valid() is True
-    assert form.cleaned_data['date'] == date(2016, 1, 1)
+    assert form.cleaned_data['date_range'] == (date(2016, 1, 1), date(2016, 1, 31))
     assert form.cleaned_data['payroll_file'] == [{'person': p1,
                                                   'rate': Decimal('0.05'),
                                                   'staff_number': 123470,
@@ -75,7 +75,7 @@ def test_invalid_upload_form():
 
     fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
     form = PayrollUploadForm(
-        data={'date': date(2016, 1, 1)},
+        data={'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31))},
         files=MultiValueDict(
             {'payroll_file': [SimpleUploadedFile(fb.name, fb.read())]}
         ),
@@ -99,7 +99,7 @@ class PayrollUploadTestCase(TestCase):
         self.client.get("/admin/dashboard/person/upload/")
         response = self.client.post(
             '/admin/dashboard/person/upload/',
-            {'date': date(2016, 1, 1), 'payroll_file': fb})
+            {'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31)), 'payroll_file': fb})
         self.assertEqual(response.status_code, 200)
         self.assertTrue('ERROR' in str(response.content))
 
@@ -113,7 +113,7 @@ class PayrollUploadTestCase(TestCase):
         mommy.make(Person, name='C Surname3', is_contractor=True)
         response = self.client.post(
             '/admin/dashboard/person/upload/',
-            {'date': date(2016, 1, 1), 'payroll_file': fb})
+            {'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31)), 'payroll_file': fb})
         self.assertEqual(response.status_code, 200)
         self.assertTrue('ERROR' not in str(response.content))
 
@@ -122,5 +122,5 @@ class PayrollUploadTestCase(TestCase):
         self.client.login(username='admin', password='Admin123')
         response = self.client.post(
             '/admin/dashboard/person/upload/',
-            {'date': date(2016, 1, 1), 'payroll_file': fb})
+            {'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31)), 'payroll_file': fb})
         self.assertEqual(response.status_code, 403)
