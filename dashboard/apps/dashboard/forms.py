@@ -23,7 +23,7 @@ from dashboard.libs.rate_converter import last_date_in_month
 
 from .constants import COST_TYPES
 from .models import Person, Rate, Product, PersonCost
-from .widgets import DateRangeWidget
+from .widgets import DateRangeWidget, RE_DATE_RANGE
 
 
 CURRENCY_FORMAT = '£#,##0.00'
@@ -71,15 +71,12 @@ class DateRangeField(forms.DateField):
         tuple of two datetime.date objects.
         """
         if value:
-            try:
+            if RE_DATE_RANGE.match(value):
                 value = value.split(':')
-                if len(value) == 2:
-                    f, t = (self.format(v) for v in value)
-                    if f < t:
-                        return f, t
-                    raise ValidationError('From date must be before To date.')
-            except AttributeError:
-                pass
+                f, t = (self.format(v) for v in value)
+                if f < t:
+                    return f, t
+                raise ValidationError('From date must be before To date.')
 
             raise ValidationError('Must be two dates')
 

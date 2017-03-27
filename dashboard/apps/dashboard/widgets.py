@@ -6,6 +6,7 @@ from django.forms.widgets import Widget, TextInput
 from django.utils.safestring import mark_safe
 
 RE_DATE = re.compile(r'(\d{4})-(\d\d?)-(\d\d?)$')
+RE_DATE_RANGE = re.compile(r'(\d{4})-(\d\d?)-(\d\d?):(\d{4})-(\d\d?)-(\d\d?)$')
 
 
 class DateWidget(Widget):
@@ -21,10 +22,9 @@ class DateWidget(Widget):
             year_val, month_val, day_val = map(str_format, [value.year, value.month, value.day])
         except AttributeError:
             year_val = month_val = day_val = None
-            if isinstance(value, str):
+            if isinstance(value, str) and RE_DATE.match(value):
                 match = RE_DATE.match(value)
-                if match:
-                    year_val, month_val, day_val = map(str_format, match.groups())
+                year_val, month_val, day_val = map(str_format, match.groups())
 
         output = []
 
@@ -89,9 +89,11 @@ class DateRangeWidget(Widget):
 
     def render(self, name, value, attrs=None):
         try:
-            from_val, to_val = value.split(':')
-        except (TypeError, ValueError, AttributeError) as e:
+            from_val, to_val = value
+        except (ValueError, TypeError):
             from_val = to_val = None
+            if isinstance(value, str) and RE_DATE_RANGE.match(value):
+                from_val, to_val = value.split(':')
 
         output = []
 
