@@ -18,6 +18,7 @@ from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 
 from dateutil.relativedelta import relativedelta
+from dashboard.libs.rate_converter import last_date_in_month
 
 from .models import (Person, Rate, Area, Product, Cost, Budget,
                      ProductStatus, ProductGroupStatus, Saving, Link,
@@ -113,8 +114,11 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
         if not self.has_upload_permission(request):
             raise PermissionDenied
 
+        start = (date.today() - relativedelta(months=1)).replace(day=1)
+        end = last_date_in_month(start)
+
         initial = {
-            'date': date.today() - relativedelta(months=1)
+            'date_range': (start, end)
         }
 
         if request.method == 'POST':
@@ -278,8 +282,11 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
         if not self.is_finance(request.user):  # pragma: no cover
             raise PermissionDenied
 
+        start = (date.today() - relativedelta(months=1)).replace(day=1)
+        end = last_date_in_month(start)
+
         initial = {
-            'date': date.today() - relativedelta(months=1)
+            'date_range': (start, end)
         }
 
         if request.method == 'POST':
@@ -292,8 +299,8 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
                         '[^0-9a-zA-Z]+',
                         '-',
                         form.cleaned_data['product'].name),
-                    form.cleaned_data['date'].year,
-                    form.cleaned_data['date'].month)
+                    form.cleaned_data['date_range'][0].year,
+                    form.cleaned_data['date_range'][0].month)
                 workbook = form.export()
                 response = HttpResponse(
                     content_type="application/vnd.ms-excel")
