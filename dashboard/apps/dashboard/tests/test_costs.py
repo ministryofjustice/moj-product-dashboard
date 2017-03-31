@@ -6,8 +6,7 @@ from django.test import TestCase
 from model_mommy import mommy
 import pytest
 
-from ..constants import COST_TYPES
-from ..forms import PAYROLL_COSTS
+from ..constants import COST_TYPES, PAYROLL_COSTS
 from ..models import Cost, Product, Person, PersonCost, Rate, Task
 
 

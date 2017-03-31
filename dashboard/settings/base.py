@@ -106,6 +106,7 @@ INSTALLED_APPS = [
 
     'dashboard.apps.dashboard.apps.DashboardConfig',
     'dashboard_auth',
+    'reports',
 ]
 
 MIDDLEWARE_CLASSES = [

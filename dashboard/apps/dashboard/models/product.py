@@ -732,11 +732,6 @@ class Product(BaseProduct, AditionalCostsMixin):
             pass
 
     class Meta:
-        permissions = (
-            ('adjustmentexport_product', 'Can run Adjustment Export'),
-            ('intercompanyexport_product', 'Can run Intercompany Export'),
-            ('productdetailexport_product', 'Can run Intercompany Export'),
-        )
         verbose_name = ugettext_lazy('product')
 
 

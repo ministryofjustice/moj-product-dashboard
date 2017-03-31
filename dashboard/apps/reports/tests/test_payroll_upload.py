@@ -10,8 +10,9 @@ from django.utils.datastructures import MultiValueDict
 from model_mommy import mommy
 import pytest
 
+from dashboard.apps.dashboard.models import Person
+
 from ..forms import PayrollUploadForm
-from ..models import Person
 
 
 @pytest.mark.django_db

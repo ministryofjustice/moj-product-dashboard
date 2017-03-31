@@ -5,6 +5,10 @@ from openpyxl.styles import Style, Font
 from openpyxl.workbook import Workbook
 
 from dashboard.libs.date_tools import parse_date
+from .models import Person
+
+
+CURRENCY_FORMAT = '£#,##0.00'
 
 
 class Products:
@@ -117,3 +121,50 @@ class Products:
                 cell = sheet.cell(row=idx + 2, column=column)
                 cell.style = self.currency_style
                 cell.value = round(time_frames[time_frame][row_name], 0)
+
+
+class Export():
+    def __init__(self, cleaned_data, title='Export'):
+        self.cleaned_data = cleaned_data
+        self.title = title
+
+    def export(self):
+        wb = Workbook()
+        self.write(wb)
+        return wb
+
+    def write(self, wb):
+        bold_font = Font(bold=True)
+        bold_style = Style(font=bold_font)
+        currency_style = Style(number_format=CURRENCY_FORMAT)
+
+        fields = (
+            ('Name', 'name', {}, None),
+            ('Type', 'type', {}, None),
+            ('Current', 'is_current', {}, None),
+            ('Rate', 'base_rate_on', {'on': self.cleaned_data['date']},
+             currency_style),
+            ('Rate Type', 'rate_type', {}, None),
+            ('Applied Daily Rate', 'rate_on', {'on': self.cleaned_data['date']},
+             currency_style),
+        )
+
+        sheet = wb.active
+        sheet.title = self.title
+        for col, (heading, f, kwargs, style) in enumerate(fields):
+            cell = sheet.cell(row=1, column=col + 1)
+            cell.style = bold_style
+            cell.value = heading
+        sheet.freeze_panes = sheet['A2']
+
+        people = Person.objects.filter()
+
+        for row, product in enumerate(people):
+            for col, (heading, f, kwargs, style) in enumerate(fields):
+                val = getattr(product, f)
+                if callable(val):
+                    val = val(**kwargs)
+                cell = sheet.cell(row=row + 2, column=col + 1)
+                if style:
+                    cell.style = style
+                cell.value = val

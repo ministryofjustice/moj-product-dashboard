@@ -10,34 +10,18 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from openpyxl import load_workbook, Workbook
+from openpyxl import load_workbook
 from openpyxl.cell import Cell
-from openpyxl.styles import Style, Font
 from openpyxl.utils import get_column_letter
 from xlrd import open_workbook, XLRDError
 
+from dashboard.apps.dashboard.constants import COST_TYPES, PAYROLL_COSTS
+from dashboard.apps.dashboard.spreadsheets import Export, CURRENCY_FORMAT
 from dashboard.libs.date_tools import get_workdays
+from dashboard.apps.dashboard.models import Person, Rate, Product, PersonCost
 
-from .constants import COST_TYPES
-from .models import Person, Rate, Product, PersonCost
 from .widgets import DateRangeWidget, RE_DATE_RANGE
 
-
-CURRENCY_FORMAT = '£#,##0.00'
-
-
-PAYROLL_COSTS = [
-    'ASLC',
-    'A/L Sacrifice',
-    'Special Bonus',
-    'Temp.Promo.',
-    'Misc.Allow.',
-    'FTE',
-    'Bike Sal',
-    'T & S paid with Sal',
-    'O/time',
-    'ERNIC',
-]
 
 REQUIRED_COLS = [
     'Init',
@@ -223,53 +207,6 @@ class PayrollUploadForm(forms.Form):
                 )
                 additional.cost = cost
                 additional.save()
-
-
-class Export():
-    def __init__(self, cleaned_data, title='Export'):
-        self.cleaned_data = cleaned_data
-        self.title = title
-
-    def export(self):
-        wb = Workbook()
-        self.write(wb)
-        return wb
-
-    def write(self, wb):
-        bold_font = Font(bold=True)
-        bold_style = Style(font=bold_font)
-        currency_style = Style(number_format=CURRENCY_FORMAT)
-
-        fields = (
-            ('Name', 'name', {}, None),
-            ('Type', 'type', {}, None),
-            ('Current', 'is_current', {}, None),
-            ('Rate', 'base_rate_on', {'on': self.cleaned_data['date']},
-             currency_style),
-            ('Rate Type', 'rate_type', {}, None),
-            ('Applied Daily Rate', 'rate_on', {'on': self.cleaned_data['date']},
-             currency_style),
-        )
-
-        sheet = wb.active
-        sheet.title = self.title
-        for col, (heading, f, kwargs, style) in enumerate(fields):
-            cell = sheet.cell(row=1, column=col + 1)
-            cell.style = bold_style
-            cell.value = heading
-        sheet.freeze_panes = sheet['A2']
-
-        people = Person.objects.filter()
-
-        for row, product in enumerate(people):
-            for col, (heading, f, kwargs, style) in enumerate(fields):
-                val = getattr(product, f)
-                if callable(val):
-                    val = val(**kwargs)
-                cell = sheet.cell(row=row + 2, column=col + 1)
-                if style:
-                    cell.style = style
-                cell.value = val
 
 
 EXPORTS = (

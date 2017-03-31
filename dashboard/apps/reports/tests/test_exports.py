@@ -6,8 +6,8 @@ from django.test import TestCase
 from model_mommy import mommy
 
 
-from ..models import Product, Area, Person, PersonCost, Rate, Task
-from ..constants import COST_TYPES
+from dashboard.apps.dashboard.models import Product, Area, Person, PersonCost, Rate, Task
+from dashboard.apps.dashboard.constants import COST_TYPES
 from ..forms import EXPORTS
 
 
