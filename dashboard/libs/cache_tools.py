@@ -28,6 +28,16 @@ class method_cache:
 
     @staticmethod
     def cache_key(method, instance, *args, **kwargs):
+        # TODO the key str should be more intelligent.
+        # for this example function
+        # @method_cache()
+        # def add(x, y, z=3):
+        #     return x + y + z
+        # all these forms should hit the same cache:
+        # add(1, 2)
+        # add(1, 2, 3)
+        # add(1, 2, z=3)
+        # add(1, y=2, z=3)
         key_str = '{}:{}:{}:{}:{}'.format(
             method.__module__,
             method.__name__,
@@ -35,6 +45,7 @@ class method_cache:
             args,
             kwargs)
         key = sha224(key_str.encode()).hexdigest()
+        logger.debug('cache key %s for str %s ', key, key_str)
         return key
 
     def __call__(self, method):
@@ -48,6 +59,9 @@ class method_cache:
             if not ignore_cache and key in cache:
                 logger.debug('cache found for key %s', key)
                 return cache.get(key)
+
+            if ignore_cache:
+                logger.debug('ignore cache')
 
             result = method(instance, *args, **kwargs)
             logger.debug('cache generated for key %s', key)

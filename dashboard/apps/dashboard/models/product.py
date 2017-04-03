@@ -116,6 +116,7 @@ class BaseProduct(models.Model):
                 'remaining': Decimal('0')
             }
 
+    @method_cache(timeout=24 * 60 * 60)
     def stats_between(self, start_date, end_date, calculation_start_date=None):
         """
         key statistics in a time window
@@ -367,7 +368,9 @@ class BaseProduct(models.Model):
             },
             'financial_rag': self.financial_rag(calculation_start_date),
             'budget': self.budget(),
-            'current_fte': self.current_fte(start_date, end_date),
+            'current_fte': self.current_fte(
+                start_date=start_date,
+                end_date=end_date),
             'cost_to_date': self.cost_to_date(calculation_start_date=calculation_start_date),
             'phase': self.phase,
             'costs': {c.id: c.as_dict() for c in self.costs.all()},
@@ -626,6 +629,7 @@ class Product(BaseProduct, AditionalCostsMixin):
         return sum(task.time_spent(start_date, end_date)
                    for task in self.tasks.all())
 
+    @method_cache(timeout=24 * 60 * 60)
     def current_fte(self, start_date=None, end_date=None):
         """
         current FTE measures the number of people working on the product.
@@ -684,7 +688,8 @@ class Product(BaseProduct, AditionalCostsMixin):
     def cost_of_stage(self, start, end, calculation_start_date=None):
         if start and end:
             return self.stats_between(
-                start, end - timedelta(days=1), calculation_start_date)['total']
+                start, end - timedelta(days=1),
+                calculation_start_date=calculation_start_date)['total']
 
     def cost_of_discovery(self, calculation_start_date=None):
         return self.cost_of_stage(
