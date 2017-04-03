@@ -6,12 +6,11 @@ from django.test import TestCase
 from model_mommy import mommy
 
 
-from ..models import Product, Area, Person, PersonCost, Rate, Task
-from ..constants import COST_TYPES
-from ..forms import EXPORTS
+from dashboard.apps.dashboard.models import Product, Area, Person, PersonCost, Rate, Task
+from dashboard.apps.dashboard.constants import COST_TYPES
 
 
-class ExportTestCase(TestCase):
+class BaseExportTestCase(TestCase):
     fixtures = ['auth_group_permissions.yaml', 'test_users']
 
     def setUp(self):
@@ -71,15 +70,8 @@ class ExportTestCase(TestCase):
             days=1
         )
 
-    def test_can_export_files(self):
-        self.client.login(username='test_finance', password='Admin123')
-        for export in dict(EXPORTS).keys():
-            response = self.client.post(
-                '/admin/dashboard/product/export/',
-                {'date': date(2015, 1, 1), 'product': self.product.pk,
-                 'export_type': export})
-            self.assertEqual(response.status_code, 200)
 
+class ExportTestCase(BaseExportTestCase):
     def test_can_export_products(self):
         for show in ['all', 'visible', self.product.pk]:
             response = self.client.get(

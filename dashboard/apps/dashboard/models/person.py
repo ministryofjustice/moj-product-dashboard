@@ -65,7 +65,6 @@ class Person(models.Model, AditionalCostsMixin):
     class Meta:
         verbose_name_plural = ugettext_lazy('People')
         permissions = (
-            ('upload_person', 'Can upload monthly payroll'),
             ('export_person_rates', 'Can export person rates'),
         )
 

@@ -23,13 +23,9 @@
       - ['change_area', 'dashboard', 'area']
       - ['change_department', 'dashboard', 'department']
       - ['change_person', 'dashboard', 'person']
-      - ['upload_person', 'dashboard', 'person']
       - ['change_skill', 'dashboard', 'skill']
-      - ['export_person_rates', 'dashboard', 'person']
       - ['change_product', 'dashboard', 'product']
-      - ['adjustmentexport_product', 'dashboard', 'product']
-      - ['intercompanyexport_product', 'dashboard', 'product']
-      - ['productdetailexport_product', 'dashboard', 'product']
+      - ['export_person_rates', 'dashboard', 'person']
       - ['change_task', 'dashboard', 'task']
       - ['change_cost', 'dashboard', 'cost']
       - ['add_cost', 'dashboard', 'cost']
@@ -52,6 +48,7 @@
       - ['change_link', 'dashboard', 'link']
       - ['add_link', 'dashboard', 'link']
       - ['delete_link', 'dashboard', 'link']
+      - ['financial_access', 'dashboard', 'product']
 - model: auth.group
   pk: 3
   fields:

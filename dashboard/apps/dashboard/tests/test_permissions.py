@@ -1,22 +1,17 @@
 # -*- coding: utf-8 -*-
-from urllib.request import Request
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 from django.contrib.auth.models import User, Group
-from django.core.exceptions import PermissionDenied
 from django.test import TestCase, mock
 
 from model_mommy import mommy
 
 from ..admin import (RateAdmin, RateInline, AreaAdmin, ProductAdmin,
-                     TaskAdmin, PersonAdmin)
+                     TaskAdmin)
 from ..models import Rate, Area, Product, Task, Person
 
 
-class TaskTimeSpentTestCase(TestCase):
-
-    fixtures = ['auth_group_permissions.yaml']
-
+class BasePermissionTestCase(TestCase):
     def setUp(self):
         self.super_user = mommy.make(User, is_superuser=True, is_active=True)
 
@@ -55,6 +50,11 @@ class TaskTimeSpentTestCase(TestCase):
             fields
         )
 
+
+class RatePermissionTestCase(BasePermissionTestCase):
+
+    fixtures = ['auth_group_permissions.yaml']
+
     def test_finance_can_access_rates(self):
         self.assertHasPermission(self.finance_admin, RateAdmin, Rate,
                                  delete=False)
@@ -88,33 +88,3 @@ class TaskTimeSpentTestCase(TestCase):
 
     def test_read_only_fields(self):
         self.assertFieldsReadOnly(self.finance_admin, TaskAdmin, Task)
-
-    def test_upload_permission(self):
-        mock_request = mock.Mock(user=self.finance_admin)
-        model_admin = PersonAdmin(Person, admin.site)
-        can_upload = model_admin.has_upload_permission(mock_request)
-        self.assertTrue(can_upload)
-        self.assertDictEqual(model_admin.get_model_perms(mock_request), {
-            'add': False, 'change': True, 'delete': False, 'upload': True})
-
-        mock_request = mock.Mock(user=self.super_user)
-        can_upload = model_admin.has_upload_permission(mock_request)
-        self.assertFalse(can_upload)
-
-    def test_users_cant_access_exports(self):
-        model_admin = ProductAdmin(Product, admin.site)
-        for user in [self.user_admin, self.other_admin, self.regular_user]:
-            mock_request = mock.Mock(user=user)
-
-            self.assertRaises(
-                PermissionDenied,
-                model_admin.export_view,
-                mock_request)
-
-    def test_finance_users_can_access_exports(self):
-        model_admin = ProductAdmin(Product, admin.site)
-        mock_request = mock.Mock(spec=Request, user=self.finance_admin,
-                                 method='GET', COOKIES={}, META={})
-
-        resp = model_admin.export_view(mock_request)
-        self.assertEqual(resp.status_code, 200)

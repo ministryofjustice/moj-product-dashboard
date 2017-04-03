@@ -10,8 +10,9 @@ from django.utils.datastructures import MultiValueDict
 from model_mommy import mommy
 import pytest
 
+from dashboard.apps.dashboard.models import Person
+
 from ..forms import PayrollUploadForm
-from ..models import Person
 
 
 @pytest.mark.django_db
@@ -96,9 +97,9 @@ class PayrollUploadTestCase(TestCase):
     def test_view_post_with_error(self):
         fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
         self.client.login(username='test_finance', password='Admin123')
-        self.client.get("/admin/dashboard/person/upload/")
+        self.client.get("/admin/reports/report/upload/")
         response = self.client.post(
-            '/admin/dashboard/person/upload/',
+            '/admin/reports/report/upload/',
             {'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31)), 'payroll_file': fb})
         self.assertEqual(response.status_code, 200)
         self.assertTrue('ERROR' in str(response.content))
@@ -106,13 +107,13 @@ class PayrollUploadTestCase(TestCase):
     def test_view_post_no_error(self):
         fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
         self.client.login(username='test_finance', password='Admin123')
-        self.client.get("/admin/dashboard/person/upload/")
+        self.client.get("/admin/reports/report/upload/")
         mommy.make(Person, name='X Surname1', is_contractor=False)
         mommy.make(Person, name='B Surname2', is_contractor=False)
         mommy.make(Person, name='C Surname3', is_contractor=False)
         mommy.make(Person, name='C Surname3', is_contractor=True)
         response = self.client.post(
-            '/admin/dashboard/person/upload/',
+            '/admin/reports/report/upload/',
             {'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31)), 'payroll_file': fb})
         self.assertEqual(response.status_code, 200)
         self.assertTrue('ERROR' not in str(response.content))
@@ -121,6 +122,6 @@ class PayrollUploadTestCase(TestCase):
         fb = open(abspath(join(dirname(__file__), 'data/payroll_test.xls')), 'rb')
         self.client.login(username='admin', password='Admin123')
         response = self.client.post(
-            '/admin/dashboard/person/upload/',
+            '/admin/reports/report/upload/',
             {'date_range': '%s:%s' % (date(2016, 1, 1), date(2016, 1, 31)), 'payroll_file': fb})
         self.assertEqual(response.status_code, 403)

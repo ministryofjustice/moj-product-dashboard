@@ -24,3 +24,16 @@ STATUS_TYPES = Choices(
     ('IN_TROUBLE',  3, 'In trouble'),
     ('PAUSED',  4, 'Paused'),
 )
+
+PAYROLL_COSTS = [
+    'ASLC',
+    'A/L Sacrifice',
+    'Special Bonus',
+    'Temp.Promo.',
+    'Misc.Allow.',
+    'FTE',
+    'Bike Sal',
+    'T & S paid with Sal',
+    'O/time',
+    'ERNIC',
+]
