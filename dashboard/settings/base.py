@@ -106,7 +106,7 @@ INSTALLED_APPS = [
 
     'dashboard.apps.dashboard.apps.DashboardConfig',
     'dashboard_auth',
-    'reports',
+    'reports',  # Optional - allows upload and download of xls reports
 ]
 
 MIDDLEWARE_CLASSES = [

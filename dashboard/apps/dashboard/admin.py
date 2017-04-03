@@ -3,9 +3,11 @@ from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
+from django.contrib.auth.decorators import permission_required
 from django.core import urlresolvers
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 
 from dashboard.apps.dashboard.spreadsheets import Export
@@ -72,17 +74,16 @@ class PersonAdmin(ReadOnlyAdmin, FinancePermissions):
     get_skills.allow_tags = True
 
     def get_urls(self):
-        urls = super(PersonAdmin, self).get_urls()
-        urls += [
+        urls = [
             url(
                 r'^export_rates/$',
                 self.admin_site.admin_view(self.export_person_rates_view),
                 name='person_export_rates'),
         ]
-        return urls
+        return urls + super(PersonAdmin, self).get_urls()
 
-    # @method_decorator(permission_required('dashboard.export_person_rates',
-    #                                       raise_exception=True))
+    @method_decorator(permission_required('dashboard.export_person_rates',
+                                          raise_exception=True))
     def export_person_rates_view(self, request, *args, **kwargs):
         if not self.is_finance(request.user):
             raise PermissionDenied

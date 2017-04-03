@@ -18,8 +18,8 @@ from dashboard.libs.rate_converter import last_date_in_month
 from dashboard.apps.dashboard.permissions import FinancePermissions
 from dashboard.apps.dashboard.models import Area
 
-from .forms import PayrollUploadForm, ExportForm
-from .models import ProductProxy
+from reports.forms import PayrollUploadForm, ExportForm
+from reports.models import Report
 
 
 class ReportsAdmin(admin.ModelAdmin, FinancePermissions):
@@ -50,7 +50,7 @@ class ReportsAdmin(admin.ModelAdmin, FinancePermissions):
 
     @csrf_protect_m
     @transaction.atomic
-    @method_decorator(permission_required('reports.upload_payroll',
+    @method_decorator(permission_required('dashboard.financial_access',
                                           raise_exception=True))
     def upoload_view(self, request, *args, **kwargs):
         if not self.has_upload_permission(request):
@@ -92,7 +92,7 @@ class ReportsAdmin(admin.ModelAdmin, FinancePermissions):
 
     @csrf_protect_m
     @transaction.atomic
-    @method_decorator(permission_required('reports.adjustment_export',
+    @method_decorator(permission_required('dashboard.financial_access',
                                           raise_exception=True))
     def export_view(self, request):
         if not self.is_finance(request.user):  # pragma: no cover
@@ -142,4 +142,4 @@ class ReportsAdmin(admin.ModelAdmin, FinancePermissions):
             context_instance=RequestContext(request))
 
 
-admin.site.register(ProductProxy, ReportsAdmin)
+admin.site.register(Report, ReportsAdmin)

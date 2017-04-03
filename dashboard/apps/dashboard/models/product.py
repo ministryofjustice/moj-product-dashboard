@@ -733,6 +733,9 @@ class Product(BaseProduct, AditionalCostsMixin):
 
     class Meta:
         verbose_name = ugettext_lazy('product')
+        permissions = (
+            ('financial_access', 'Can run financial reports'),
+        )
 
 
 class ProductGroup(BaseProduct):
