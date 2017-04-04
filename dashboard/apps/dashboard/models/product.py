@@ -302,9 +302,9 @@ class BaseProduct(models.Model):
             result['service_manager'] = self.area.manager.name
         return result
 
+    @method_cache(timeout=24 * 60 * 60)
     def profile(self, start_date=None, end_date=None, freq='MS',
-                calculation_start_date=None,
-                ignore_cache=False):
+                calculation_start_date=None):
         """
         get the profile of a product group in a time window.
         :param start_date: start date of time window, a date object
@@ -315,17 +315,6 @@ class BaseProduct(models.Model):
         :param calculation_start_date: date when calculation for people costs
         using tasks and rates start
         :return: a dictionary representing the profile
-        """
-        return self._profile(
-            start_date, end_date, freq,
-            calculation_start_date=calculation_start_date,
-            ignore_cache=ignore_cache)
-
-    @method_cache(timeout=24 * 60 * 60)
-    def _profile(self, start_date, end_date, freq, calculation_start_date):
-        """
-        this method does not have default value for params
-        hence more suitable for caching.
         """
         status = self.status()
         status = status.as_dict() if status else {}
