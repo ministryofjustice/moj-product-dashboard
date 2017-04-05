@@ -12,41 +12,6 @@ class NoMatchFound(Exception):
     pass
 
 
-def get_logger():
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': True,
-        'formatters': {
-            'basic': {'format': '%(asctime)s - %(levelname)s - %(message)s'},
-            'simple': {'format': '%(message)s'},
-        },
-        'handlers': {
-            'console': {
-                'level': 'INFO',
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple'
-            },
-            'file': {
-                'level': 'WARN',
-                'class': 'logging.FileHandler',
-                'filename': 'output.log',
-                'formatter': 'basic'
-            },
-        },
-        'loggers': {
-            __name__: {
-                'handlers': ['console', 'file'],
-                'level': 'WARN'
-            }
-        }
-    }
-    logging.config.dictConfig(LOGGING)
-    return logging.getLogger(__name__)
-
-
-logger = get_logger()
-
-
 def print_person(person, padding=''):
     if person.is_contractor:
         line = '{}, {} (contractor)'.format(

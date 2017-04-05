@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, date
 import functools
+import logging
 
 from django.core.cache import cache
 from django.core.management import call_command
@@ -10,7 +11,6 @@ from celery import shared_task, group
 from celery.task import periodic_task
 
 from .models import Product
-from .management.commands.helpers import logger
 
 
 def single_instance_task(timeout):
@@ -66,7 +66,7 @@ def cache_products():
 def cache_product(product_id):
     product = Product.objects.get(pk=product_id)
 
-    logger.info('- generating caching for product "%s"', product)
+    logging.info('- generating caching for product "%s"', product)
     product.profile(
         calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT,
         ignore_cache=True

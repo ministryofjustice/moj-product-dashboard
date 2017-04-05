@@ -11,7 +11,7 @@ import inspect
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('cache')
 
 
 def cache_key(function, instance, args, kwargs):
@@ -178,7 +178,17 @@ class method_cache:
                 return cache.get(key)
 
             if ignore_cache:
-                logger.debug('cache ignored')
+                msg = 'cache ignored'
+            else:
+                msg = 'cache missed'
+            logger.info(
+                '%s. call function name: "%s", instance: "%s", *args: "%s", *kwargs: "%s")',
+                msg,
+                method.__name__,
+                instance,
+                args,
+                kwargs
+            )
             result = method(instance, *args, **kwargs)
             logger.debug('cache generated for key %s', key)
             cache.set(key, result, self.timeout)
