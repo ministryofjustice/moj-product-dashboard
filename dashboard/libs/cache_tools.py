@@ -169,7 +169,7 @@ class method_cache:
                     (None,) + args,  # None for first param `self`
                     kwargs
                 )
-            except Exception as exc:
+            except Exception:
                 logger.exception('generate cache_key failed')
                 return method(instance, *args, **kwargs)
 
