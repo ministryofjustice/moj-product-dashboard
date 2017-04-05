@@ -7,6 +7,7 @@ from hashlib import sha224
 from functools import wraps
 import pickle
 import inspect
+from collections import OrderedDict
 
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -30,7 +31,7 @@ def cache_key(function, instance, args, kwargs):
     >>> add(1, 2, 3, z=4)  # multiple values
     >>> add(1, 2, foo=4)  # unexpected keyword argument
     :returns: str key
-    :raises: PickingError, ValueError
+    :raises: PickingError, ValueError, TypeError
     """
     key_tuple = (
         function.__module__,
@@ -78,6 +79,9 @@ def inspect_positional_arguments(parameters, args):
 
 
 def inspect_keyword_arguments(parameters, kwargs):
+    """
+    inspect keyword arguments
+    """
     options = {
         name: param
         for name, param in parameters.items()
@@ -99,10 +103,10 @@ def inspect_keyword_arguments(parameters, kwargs):
 
     if var_keyword:
         name, param = var_keyword
-        result[name] = {
-            k: v for k, v in kwargs.items()
+        result[name] = OrderedDict([
+            (k, v) for k, v in sorted(kwargs.items())
             if k not in result
-        } or param.empty
+        ]) or param.empty
     elif len(result) < len(kwargs):
         unexpected = set(kwargs.keys()) - set(result.keys())
         error = 'unexpected keyword arguments {}'.format(','.join(unexpected))
@@ -116,7 +120,7 @@ def inspect_arguments(function, args, kwargs):
     :param function: function to whose arguments is to be inspected
     :param args: tuple of positional arguments
     :param kwargs: dict of keyword arguments
-    :returns: dict for the mapping of argument name to value
+    :returns: OrderedDict for the mapping of argument name to value
     :raises: TypeError
     """
     parameters = inspect.signature(function).parameters
@@ -137,7 +141,8 @@ def inspect_arguments(function, args, kwargs):
                 missing_args.append(name)
     if missing_args:
         raise TypeError('missing arguments {}'.format(','.join(missing_args)))
-    return {**positional_args, **keyword_args, **args_with_default_value}
+    call_args = {**positional_args, **keyword_args, **args_with_default_value}
+    return OrderedDict([(name, call_args[name]) for name in parameters])
 
 
 class method_cache:

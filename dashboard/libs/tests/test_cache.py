@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from inspect import Parameter
+from collections import OrderedDict
+import tempfile
 
 import pytest
 from unittest.mock import Mock, patch
@@ -100,7 +102,7 @@ def test_inspect_arguments_positional_or_keyword(args, kwargs):
 
     assert cache_tools.inspect_arguments(
         func, args, kwargs
-    ) == {'x': 1, 'y': 2, 'z': 3}
+    ) == OrderedDict([('x', 1), ('y', 2), ('z', 3)])
 
 
 @pytest.mark.parametrize('args, kwargs', [
@@ -123,7 +125,7 @@ def test_inspect_arguments_var_positional():
 
     assert cache_tools.inspect_arguments(
         func, (1, 2, 3, 4), {}
-    ) == {'x': 1, 'y': 2, 'args': (3, 4)}
+    ) == OrderedDict([('x', 1), ('y', 2), ('args', (3, 4))])
 
 
 def test_inspect_arguments_func_with_var_keyword():
@@ -132,41 +134,46 @@ def test_inspect_arguments_func_with_var_keyword():
 
     assert cache_tools.inspect_arguments(
         func, (1, 2), {'kw1': 3, 'kw2': 4}
-    ) == {'x': 1, 'y': 2, 'kw': {'kw1': 3, 'kw2': 4}}
+    ) == OrderedDict([
+        ('x', 1), ('y', 2), ('kw', OrderedDict([('kw1', 3), ('kw2', 4)]))
+    ])
 
 
 @pytest.mark.parametrize('args, kwargs, expected', [
-    ((1,), {'y': 2, 'z': 1}, {'x': 1, 'y': 2, 'z': 1}),
-    ((1,), {'y': 2}, {'x': 1, 'y': 2, 'z': 1}),
+    ((1,), {'y': 2, 'z': 1}, [('x', 1), ('y', 2), ('z', 1)]),
+    ((1,), {'y': 2}, [('x', 1), ('y', 2), ('z', 1)]),
 ])
 def test_inspect_arguments_func_with_keyword_only_parameters(args, kwargs, expected):
     def func(x, *, y, z=1):
         pass
     assert cache_tools.inspect_arguments(
         func, args, kwargs
-    ) == expected
+    ) == OrderedDict(expected)
 
 
 @pytest.mark.parametrize('args, kwargs, expected', [
     (
         (1, 2),
         {},
-        {'x': 1, 'y': 2, 'z': 3, 'args': empty, 'kw': empty}
+        [('x', 1), ('y', 2), ('args', empty), ('z', 3), ('kw', empty)]
     ),
     (
         (1, 2, 3),
         {},
-        {'x': 1, 'y': 2, 'z': 3, 'args': (3,), 'kw': empty}
+        [('x', 1), ('y', 2), ('args', (3,)), ('z', 3), ('kw', empty)]
     ),
     (
         (1, 2, 3, 4, 5),
         {'z': 6},
-        {'x': 1, 'y': 2, 'z': 6, 'args': (3, 4, 5), 'kw': empty}
+        [('x', 1), ('y', 2), ('args', (3, 4, 5)), ('z', 6), ('kw', empty)]
     ),
     (
         (1, 2, 3, 4, 5),
         {'z': 6, 'kw1': 7, 'kw2': 8},
-        {'x': 1, 'y': 2, 'z': 6, 'args': (3, 4, 5), 'kw': {'kw1': 7, 'kw2': 8}}
+        [
+            ('x', 1), ('y', 2), ('args', (3, 4, 5)), ('z', 6),
+            ('kw', OrderedDict([('kw1', 7), ('kw2', 8)]))
+        ]
     ),
 ])
 def test_inspect_arguments_func_mixed_kinds(args, kwargs, expected):
@@ -175,4 +182,18 @@ def test_inspect_arguments_func_mixed_kinds(args, kwargs, expected):
 
     assert cache_tools.inspect_arguments(
         func, args, kwargs
-    ) == expected
+    ) == OrderedDict(expected)
+
+
+@patch.object(cache_tools, 'logger')
+def test_non_picklable_does_not_get_cached(logger):
+
+    mock_obj = MockModel()
+    args = (tempfile.TemporaryFile(), )  # file object is not pickable
+    kw = {'x': 4, 'y': 5}
+
+    # run 5 times and the function should be called 5 times
+    for _ in range(5):
+        mock_obj.cached_method(mock_obj, *args, **kw)
+    logger.exception.assert_called_with('generate cache_key failed')
+    assert mock_obj.echo.call_count == 5
