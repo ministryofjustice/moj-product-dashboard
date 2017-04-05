@@ -1,96 +1,71 @@
-{% extends 'moj_template_custom/moj_base.html' %}
+{% extends 'base.html' %}
 
-{% load staticfiles %}
-
-{% block top_of_page %}
-    {% load i18n admin_static %}
-{% endblock %}
-
-{% block page_title %}
-
-    MoJ Product Dashboard
-
-{% endblock %}
-
-{% block stylesheets %}
-
-    {% block extrastyle %}
-
-    {% endblock %}
-{% endblock %}
+{% load staticfiles i18n admin_static %}
 
 {% block head %}
-    {% block blockbots %}
-        <meta name="robots" content="NONE,NOARCHIVE"/>
-    {% endblock %}
+  {{ block.super }}
+  {% block blockbots %}
+    <meta name="robots" content="NONE,NOARCHIVE"/>
+  {% endblock %}
 
-    {% block extrahead %}
-
-        <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/custom.css" %}"/>
-        <link rel="stylesheet" type="text/css" href="{% static "common/common.css" %}"/>
-        {# Here to ensure loaded last #}
-    {% endblock %}
+  {% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css"
+          href="{% static "admin/dashboard/styles/custom.css" %}"/>
+    <link rel="stylesheet" type="text/css"
+          href="{% static "common/common.css" %}"/>
+    {# Here to ensure loaded last #}
+  {% endblock %}
 {% endblock %}
-
-{% load i18n %}
 
 {% block body_classes %}admin{% endblock %}
 
-{% block headerbar %}
-{% endblock %}
-
 {% block after_header %}
+  {{ block.super }}
 
-    {% block nav-global %}{% endblock %}
-
+  {% block nav-global %}{% endblock %}
 {% endblock %}
 
-{% block before_content %}
+{% block content %}
+  <div id="wrapper" class="group">
+    <main id="content" role="main">
+      <div class="admin-wrapper">
 
-{% endblock %}
+        {% block dashboard_admin_nav %}
+          {% include 'admin/partials/_dashboard_admin_nav.html' %}
+        {% endblock %}
 
-{% block main %}
-  <div class="admin-wrapper">
+        {% block breadcrumbs %}
+            <div class="breadcrumbs">
+                <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+                {% if title %} &rsaquo; {{ title }}{% endif %}
+            </div>
+        {% endblock %}
+        {% block messages %}
+            {% if messages %}
+                <ul class="messagelist">{% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+                {% endfor %}</ul>
+            {% endif %}
+        {% endblock messages %}
 
-    {% block dashboard_admin_nav %}
-      {% include 'admin/partials/_dashboard_admin_nav.html' %}
-    {% endblock %}
+        <div class="main-section">
+            <!-- Content -->
+            <div class="{% block coltype %}colM{% endblock %}">
+              <div class="pad">
+                {% block pretitle %}{% endblock %}
+                <!-- {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %} -->
+              </div>
+                {% block main %}
+                    {% block object-tools %}{% endblock %}
+                    {{ content }}
+                {% endblock %}
+                {% block sidebar %}{% endblock %}
+                <br class="clear"/>
+            </div>
 
-    {% block breadcrumbs %}
-        <div class="breadcrumbs">
-            <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-            {% if title %} &rsaquo; {{ title }}{% endif %}
         </div>
-    {% endblock %}
-    {% block messages %}
-        {% if messages %}
-            <ul class="messagelist">{% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
-            {% endfor %}</ul>
-        {% endif %}
-    {% endblock messages %}
-
-
-    <div class="main-section">
-        <!-- Content -->
-        <div class="{% block coltype %}colM{% endblock %}">
-          <div class="pad">
-            {% block pretitle %}{% endblock %}
-            <!-- {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %} -->
-          </div>
-            {% block content %}
-                {% block object-tools %}{% endblock %}
-                {{ content }}
-            {% endblock %}
-            {% block sidebar %}{% endblock %}
-            <br class="clear"/>
-        </div>
-
-    </div>
-
+      </div>
+    </main>
   </div>
 {% endblock %}
-
-{% block javascripts %}{% endblock %}
-
-{% block body_end %}{% endblock %}

@@ -1,26 +1,19 @@
-{% extends 'moj_template_custom/moj_base.html' %}
+{% extends 'base.html' %}
 
 {% load staticfiles %}
 {% load render_bundle from webpack_loader %}
 
-{% block page_title %}
-
-    MoJ Product Dashboard
-
-{% endblock %}
+{% block page_title %}MoJ Product Dashboard{% endblock %}
 
 {% block stylesheets %}
-
+  {{ block.super }}
   {% render_bundle 'main' 'css' %}
   <link href="{% static 'common/common.css' %}" rel="stylesheet" type="text/css"/>
-
 {% endblock %}
 
 {% block javascripts %}
+  {{ block.super }}
   {% render_bundle 'main' 'js' %}
-{% endblock %}
-
-{% block before_content %}
 {% endblock %}
 
 {% block body_classes %}
@@ -29,9 +22,11 @@
 
 {% block content %}
   <!--TODO use main tag in moj template-->
-  <main id="content" role="main">
-    {% block main %}
-      <div id="container" />
-    {% endblock %}
-  </main>
+  <div id="wrapper" class="group">
+    <main id="content" role="main">
+      {% block main %}
+        <div id="container" />
+      {% endblock %}
+    </main>
+  </div>
 {% endblock %}
