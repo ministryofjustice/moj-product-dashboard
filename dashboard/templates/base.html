@@ -1,0 +1,77 @@
+{% extends 'govuk_template/base.html' %}
+
+{% load staticfiles %}
+
+{% block head %}
+  <!--[if gt IE 8]><!-->
+  <link href="{% static 'stylesheets/govuk-template.css' %}" media="screen" rel="stylesheet" type="text/css"/>
+  <!--<![endif]-->
+  <!--[if IE 6]><link href="{% static 'stylesheets/govuk-template-ie6.css' %}" media="screen" rel="stylesheet" type="text/css" />
+  <![endif]-->
+  <!--[if IE 7]><link href="{% static 'stylesheets/govuk-template-ie7.css' %}" media="screen" rel="stylesheet" type="text/css" />
+  <![endif]-->
+  <!--[if IE 8]><link href="{% static 'stylesheets/govuk-template-ie8.css' %}" media="screen" rel="stylesheet" type="text/css" />
+  <![endif]-->
+  {% block stylesheets %}{% endblock %}
+  {% block extrastyle %}{% endblock %}
+  {% block extrahead %}{% endblock %}
+{% endblock %}
+
+{% block proposition_header %}
+  <div class="header-proposition">
+    <div class="content">
+      <a href="/" id="proposition-name">{{ proposition_title }}</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block after_header %}
+  <div id="global-header-bar">
+    <div class="inner-block">
+        <div class="header-bar">
+            {% block headerbar %}{% endblock %}
+        </div>
+        <div class="nav-bar">
+            <ul>
+              <li class="portfolio"><a href="{% url 'portfolio_html' %}">Portfolio Summary</a></li>
+              {% if request.user.is_authenticated %}
+                {% if perms.dashboard.change_product %}
+                  <li class="admin"><a href="/admin/dashboard/product/">Admin</a></li>
+                {% elif perms.auth.change_user %}
+                  <li class="admin"><a href="/admin/auth/user/">Admin</a></li>
+                {% endif %}
+                <li class="user-menu">
+                  <ul>
+                    <li><a href="/password_change">Change password</a></li>
+                    <li><a href="/logout">Sign out</a></li>
+                  </ul>
+                  <a>{{ request.user.username }} <i class="arrow-down"></i></a>
+                </li>
+              {% else %}
+                <li class="admin"><a href="/login/?next=/">Login</a></li>
+              {% endif %}
+            </ul>
+        </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer_support_links %}
+  <ul>
+    <li>
+      Built by
+      <a href="https://mojdigital.blog.gov.uk/"><abbr
+        title="Ministry of Justice">MOJ</abbr> Digital
+        Services</a>
+    </li>
+  </ul>
+{% endblock %}
+
+{% block body_end %}
+  {{ block.super }}
+  <script src="{% static 'javascripts/vendor/jquery/jquery-1.11.0.min.js' %}" type="text/javascript"></script>
+  <script src="{% static 'javascripts/moj.js' %}" type="text/javascript"></script>
+  <script src="{% static 'admin/dashboard/js/dropdown_filter.js' %}"></script>
+  {% block javascripts %}{% endblock %}
+  {% include 'partials/_ga.html' %}
+{% endblock %}

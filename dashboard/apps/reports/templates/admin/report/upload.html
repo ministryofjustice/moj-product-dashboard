@@ -3,20 +3,19 @@
 
 {% load staticfiles %}
 {% block extrastyle %}
+  {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/gov-uk-elements.css" %}"/>
   <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/upload.css" %}"/>
 {% endblock %}
 
 {% block javascripts %}
-<script src="{% static 'admin/dashboard/js/vendor/dropzone.js' %}"></script>
-<script src="{% static 'admin/dashboard/js/vendor/attrchange.js' %}"></script>
-<script src="{% static 'admin/dashboard/js/file_upload.js' %}"></script>
-<script>
-
-</script>
+  {{ block.super }}
+  <script src="{% static 'admin/dashboard/js/vendor/dropzone.js' %}"></script>
+  <script src="{% static 'admin/dashboard/js/vendor/attrchange.js' %}"></script>
+  <script src="{% static 'admin/dashboard/js/file_upload.js' %}"></script>
 {% endblock %}
 
-{% block content %}
+{% block main %}
 <div class="pad upload">
 
   <div class="grid-row">

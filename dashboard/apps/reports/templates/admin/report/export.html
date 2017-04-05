@@ -2,10 +2,11 @@
 
 {% load staticfiles %}
 {% block extrastyle %}
+  {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/dashboard/styles/gov-uk-elements.css" %}"/>
 {% endblock %}
 
-{% block content %}
+{% block main %}
 <div class="pad export">
 
   <div class="grid-row">
