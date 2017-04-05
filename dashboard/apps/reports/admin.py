@@ -86,7 +86,7 @@ class ReportsAdmin(admin.ModelAdmin, FinancePermissions):
         })
 
         return render_to_response(
-            'admin/dashboard/upload.html',
+            'admin/report/upload.html',
             context,
             context_instance=RequestContext(request))
 
@@ -137,7 +137,7 @@ class ReportsAdmin(admin.ModelAdmin, FinancePermissions):
         })
 
         return render_to_response(
-            'admin/dashboard/export.html',
+            'admin/report/export.html',
             context,
             context_instance=RequestContext(request))
 
