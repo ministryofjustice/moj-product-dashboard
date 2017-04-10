@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import sys
 from datetime import date
+import logging.config
 
 from django_gov.settings import (
     REST_FRAMEWORK, API_VERSION, SWAGGER_SETTINGS, PING_JSON_KEYS,
@@ -221,6 +222,49 @@ STATICFILES_DIRS = (
 
 FLOAT_API_TOKEN = os.environ.get('FLOAT_API_TOKEN')
 FLOAT_URL = os.environ.get('FLOAT_URL')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'basic': {'format': '%(asctime)s - %(levelname)s - %(message)s'},
+        'simple': {'format': '%(message)s'},
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'basic'
+        },
+        'command': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'WARN',
+            'class': 'logging.FileHandler',
+            'filename': 'output.log',
+            'formatter': 'basic'
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO'
+        },
+        'cache': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO'
+        },
+        'command': {
+            'handlers': ['command'],
+            'level': 'INFO'
+        }
+    }
+}
+logging.config.dictConfig(LOGGING)
+
 
 # RAVEN SENTRY CONFIG
 if 'SENTRY_DSN' in os.environ:

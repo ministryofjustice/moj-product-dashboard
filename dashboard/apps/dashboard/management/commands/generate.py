@@ -4,14 +4,18 @@
 random rate generator
 """
 from decimal import Decimal
+import logging
 from datetime import date, timedelta
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
 
 from dashboard.apps.dashboard.models import Rate
 from dashboard.libs.rate_generator import gen_rates, get_reference_rate
 from dashboard.libs.date_tools import parse_date
-from .helpers import logger, get_persons, NoMatchFound
+from .helpers import get_persons, NoMatchFound
+
+logger = logging.getLogger(name='command')
 
 
 class Command(BaseCommand):
