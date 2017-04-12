@@ -145,6 +145,12 @@ export class Product {
     return this.managers['service_manager'];
   }
 
+  get lastUpdated() {
+    if (this['last_updated']) {
+      return moment(this['last_updated']).format('DD/MM/YYYY H:mm');
+    }
+  }
+
   get monthlyFinancials() {
     return parseProductFinancials(this.financial['time_frames']);
   }

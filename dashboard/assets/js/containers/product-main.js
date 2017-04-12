@@ -109,6 +109,8 @@ export class ProductContainer extends Component {
           </div>
           {product.name}
           { editButton() }
+          <p className="font-small"> last updated { product.lastUpdated ? product.lastUpdated : 'never' }
+          </p>
         </h1>
         <Tabs className="product-tabs">
           <TabList>

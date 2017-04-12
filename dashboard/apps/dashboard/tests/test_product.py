@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import pytest
 from model_mommy import mommy
+from django.contrib.contenttypes.models import ContentType
 
 from dashboard.libs.date_tools import parse_date, get_workdays
 from dashboard.apps.dashboard.models import (
@@ -714,3 +715,30 @@ def test_non_contractor_salary_costs():
     assert product.people_costs(start_date, end_date) == Decimal('402')
 
     assert product.non_contractor_salary_costs(start_date, end_date) == Decimal('240')
+
+
+@pytest.mark.django_db
+def test_last_updated(admin_client):
+
+    from django.contrib.admin.models import LogEntry, CHANGE
+    product = make_product()
+    assert product.last_updated is None
+
+    content_type = ContentType.objects.get_for_model(Product)
+    LogEntry.objects.create(
+        user_id=1,
+        content_type_id=content_type.pk,
+        object_id=product.pk,
+        object_repr=repr(product),
+        action_flag=CHANGE,
+        change_message='Changed something',
+    )
+    latest_log_entry = LogEntry.objects.create(
+        user_id=1,
+        content_type_id=content_type.pk,
+        object_id=product.pk,
+        object_repr=repr(product),
+        action_flag=CHANGE,
+        change_message='Changed something again',
+    )
+    assert product.last_updated == latest_log_entry.action_time

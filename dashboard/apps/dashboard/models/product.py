@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import LogEntry
 from django.core import urlresolvers
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy
@@ -62,6 +63,18 @@ class BaseProduct(models.Model):
             return 'Discovery'
         else:
             return 'Not Defined'
+
+    @property
+    def last_updated(self):
+        """
+        last time the product was updated through the admin interface
+        :return: a date time object or None
+        """
+        last_entry = LogEntry.objects.filter(
+            content_type_id=ContentType.objects.get_for_model(self).id,
+            object_id=self.id).order_by('-action_time').first()
+        if last_entry:
+            return last_entry.action_time
 
     def financial_rag(self, calculation_start_date=None):
         """
@@ -364,7 +377,8 @@ class BaseProduct(models.Model):
             'phase': self.phase,
             'costs': {c.id: c.as_dict() for c in self.costs.all()},
             'savings': {s.id: s.as_dict() for s in self.savings.all()},
-            'links': [l.as_dict() for l in self.links.all()]
+            'links': [l.as_dict() for l in self.links.all()],
+            'last_updated': self.last_updated
         }
         return result
 
