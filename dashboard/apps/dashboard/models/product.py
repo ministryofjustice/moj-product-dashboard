@@ -666,23 +666,35 @@ class Product(BaseProduct, AditionalCostsMixin):
 
     @property
     def discovery_fte(self):
-        return self.current_fte(start_date=self.discovery_date,
-                                end_date=self.alpha_date)
+        if self.discovery_date and self.alpha_date:
+            return self.current_fte(
+                start_date=self.discovery_date,
+                end_date=self.alpha_date - timedelta(days=1)
+            )
 
     @property
     def alpha_fte(self):
-        return self.current_fte(start_date=self.alpha_date,
-                                end_date=self.beta_date)
+        if self.alpha_date and self.beta_date:
+            return self.current_fte(
+                start_date=self.alpha_date,
+                end_date=self.beta_date - timedelta(days=1)
+            )
 
     @property
     def beta_fte(self):
-        return self.current_fte(start_date=self.beta_date,
-                                end_date=self.live_date)
+        if self.beta_date and self.live_date:
+            return self.current_fte(
+                start_date=self.beta_date,
+                end_date=self.live_date - timedelta(days=1)
+            )
 
     @property
     def live_fte(self):
-        return self.current_fte(start_date=self.live_date,
-                                end_date=self.end_date)
+        if self.live_date and self.end_date:
+            return self.current_fte(
+                start_date=self.live_date,
+                end_date=self.end_date - timedelta(days=1)
+            )
 
     @property
     def area_name(self):
