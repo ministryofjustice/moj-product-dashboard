@@ -17,7 +17,7 @@ class Products:
     header_style = Style(font=Font(bold=True))
     currency_style = Style(number_format='£#,##0.00')
 
-    def __init__(self, products, calculation_start_date):
+    def __init__(self, products, calculation_start_date=None):
         self.workbook = Workbook()
         self.fill_main_sheet(self.workbook.active, products, calculation_start_date)
         # create the monthly spend sheet when there is one product.

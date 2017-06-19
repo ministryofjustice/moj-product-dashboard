@@ -4,13 +4,63 @@
 command for generating and clearing cache
 """
 import logging
+from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand
 from django.core.cache import cache
 from django.conf import settings
 
 from dashboard.apps.dashboard.models import Product
+from dashboard.libs.date_tools import slice_time_window, financial_year_tuple
 from .helpers import contains_any
+
+
+def get_product_time_windows(product):
+    """
+    get all the key time windows for a product
+    """
+    # for most recent fte
+    time_windows = [(None, None)]
+    try:
+        first_date = product.first_date
+        last_date = product.last_date
+    except ValueError:
+        pass
+    else:
+        # every month from first date to last date if exists
+        time_windows += slice_time_window(
+            first_date,
+            last_date,
+            freq='MS',
+            extend=True
+        )
+        # key dates
+        time_windows += [
+            (first_date, item['date'] - timedelta(days=1))
+            for item in product.key_dates('MS').values()
+        ]
+        # for cost to date
+        time_windows += [(first_date, date.today() - timedelta(days=1))]
+        # first to last date
+        time_windows += [(first_date, last_date)]
+    # all stages
+    stages = [
+        (product.discovery_date, product.alpha_date),
+        (product.alpha_date, product.beta_date),
+        (product.beta_date, product.live_date),
+        (product.live_date, product.end_date)
+    ]
+    time_windows += [
+        (start, end - timedelta(days=1))
+        for start, end in stages
+        if start and end
+    ]
+    # financial years
+    time_windows += [
+        financial_year_tuple(date.today().year + offset)
+        for offset in range(-2, 2)
+    ]
+    return time_windows
 
 
 class Command(BaseCommand):
@@ -23,35 +73,47 @@ class Command(BaseCommand):
         )
         parser.add_argument('-p', '--products', nargs='*', type=str)
 
-    def generate(self, products):
+    def generate_cache_for_time_windows(self, product, calculation_start_date=None):
         """
-        generate cache
-        :param products: list of product objects
+        call both `stats_between` and `current_fte` with
+        flag `ignore_cache=True` for all time windows
         """
-        for product in products:
-            logging.info('- generating caching for product "%s"', product)
-            product.profile(
-                calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT,
-                ignore_cache=True
-            )
-            for start, end in [
-                    (product.discovery_date, product.alpha_date),
-                    (product.alpha_date, product.beta_date),
-                    (product.beta_date, product.live_date),
-                    (product.live_date, product.end_date)
-            ]:
-                if start and end:
-                    product.stats_between(
-                        start,
-                        end,
-                        calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT,
-                        ignore_cache=True
-                    )
-                product.current_fte(
-                    start_date=start,
-                    end_date=end,
+        time_windows = get_product_time_windows(product)
+        for start, end in time_windows:
+            if start and end:
+                product.stats_between(
+                    start,
+                    end,
+                    calculation_start_date=calculation_start_date,
                     ignore_cache=True
                 )
+            product.current_fte(
+                start_date=start,
+                end_date=end,
+                ignore_cache=True
+            )
+
+    def generate_cache_for_profile(self, product, calculation_start_date=None):
+        """
+        call the `profile` method with flag `ignore_cache=True`
+        """
+        product.profile(
+            calculation_start_date=calculation_start_date,
+            ignore_cache=True
+        )
+
+    def generate(self, product):
+        """
+        generate cache
+        :param product: product object
+        """
+        logging.info('- generating caching for product "%s"', product)
+        self.generate_cache_for_time_windows(
+            product,
+            calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT)
+        self.generate_cache_for_profile(
+            product,
+            calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT)
 
     def remove(self):
         """
@@ -67,6 +129,7 @@ class Command(BaseCommand):
                 if not products:
                     logging.info('no product found for name %s', options['products'])
 
-            self.generate(products)
+            for product in products:
+                self.generate(product)
         elif options['action'] == 'rm':
             self.remove()

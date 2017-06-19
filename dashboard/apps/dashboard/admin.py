@@ -191,7 +191,7 @@ class ProductAdmin(admin.ModelAdmin, FinancePermissions):
         return urlresolvers.reverse('product_html', args=[str(obj.id)])
 
     def float_link(self, obj):
-        return format_html('<a href="{base}/products?active=1&product={name}"'
+        return format_html('<a href="{base}/projects?active=1&project={name}"'
                            ' target="_blank" rel="external">{float_id}</a>',
                            base=settings.FLOAT_URL,
                            name=obj.name,
