@@ -73,7 +73,8 @@ class Command(BaseCommand):
         )
         parser.add_argument('-p', '--products', nargs='*', type=str)
 
-    def generate_cache_for_time_windows(self, product, calculation_start_date=None):
+    @staticmethod
+    def generate_cache_for_time_windows(product, calculation_start_date=None):
         """
         call both `stats_between` and `current_fte` with
         flag `ignore_cache=True` for all time windows
@@ -93,7 +94,8 @@ class Command(BaseCommand):
                 ignore_cache=True
             )
 
-    def generate_cache_for_profile(self, product, calculation_start_date=None):
+    @staticmethod
+    def generate_cache_for_profile(product, calculation_start_date=None):
         """
         call the `profile` method with flag `ignore_cache=True`
         """
@@ -102,20 +104,22 @@ class Command(BaseCommand):
             ignore_cache=True
         )
 
-    def generate(self, product):
+    @classmethod
+    def generate(cls, product):
         """
         generate cache
         :param product: product object
         """
         logging.info('- generating caching for product "%s"', product)
-        self.generate_cache_for_time_windows(
+        cls.generate_cache_for_time_windows(
             product,
             calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT)
-        self.generate_cache_for_profile(
+        cls.generate_cache_for_profile(
             product,
             calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT)
 
-    def remove(self):
+    @staticmethod
+    def remove():
         """
         remove cache
         """

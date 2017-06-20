@@ -11,6 +11,7 @@ from celery import shared_task, group
 from celery.task import periodic_task
 
 from .models import Product
+from .management.commands.cache import Command
 
 
 def single_instance_task(timeout):
@@ -67,7 +68,4 @@ def cache_product(product_id):
     product = Product.objects.get(pk=product_id)
 
     logging.info('- generating caching for product "%s"', product)
-    product.profile(
-        calculation_start_date=settings.PEOPLE_COST_CALCATION_STARTING_POINT,
-        ignore_cache=True
-    )
+    Command.generate(product)
