@@ -108,12 +108,12 @@ def test_generate_cache():
         # run generate_cache_for_time_windows, which calls
         # `stats_between` and `current_fte` with input of
         # all time_windows of interests
-        Command().generate_cache_for_time_windows(product)
+        Command.generate_cache_for_time_windows(product)
         cache_keys_1 = set(dummy_cache.cache.keys())
 
         # run `profile` should add only 1 more cached
         # result, which is for `profile` itself.
-        Command().generate_cache_for_profile(product)
+        Command.generate_cache_for_profile(product)
         cache_keys_2 = set(dummy_cache.cache.keys())
         assert cache_keys_1.issubset(cache_keys_2)
         assert len(cache_keys_2 - cache_keys_1) == 1
