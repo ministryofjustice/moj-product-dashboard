@@ -183,17 +183,23 @@ class method_cache:
                 return cache.get(key)
 
             if ignore_cache:
-                msg = 'cache ignored'
+                logger.debug(
+                    'cache ignored.'
+                    ' call function name: "%s", instance: "%s", *args: "%s", *kwargs: "%s")',
+                    method.__name__,
+                    instance,
+                    args,
+                    kwargs
+                )
             else:
-                msg = 'cache missed'
-            logger.info(
-                '%s. call function name: "%s", instance: "%s", *args: "%s", *kwargs: "%s")',
-                msg,
-                method.__name__,
-                instance,
-                args,
-                kwargs
-            )
+                logger.info(
+                    'cache missed.'
+                    ' call function name: "%s", instance: "%s", *args: "%s", *kwargs: "%s")',
+                    method.__name__,
+                    instance,
+                    args,
+                    kwargs
+                )
             result = method(instance, *args, **kwargs)
             logger.debug('cache generated for key %s', key)
             cache.set(key, result, self.timeout)
