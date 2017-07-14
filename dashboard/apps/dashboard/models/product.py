@@ -423,7 +423,8 @@ class Product(BaseProduct, AditionalCostsMixin):
             models.F('end_date') - models.F('start_date') + models.F('repeat_end')
         ).reverse().first()
         if (last_repeating_task and
-                last_repeating_task.effective_end_date > last_non_repeating_task.end_date):
+                (not last_non_repeating_task or
+                    last_repeating_task.effective_end_date > last_non_repeating_task.end_date)):
             return last_repeating_task
         else:
             return last_non_repeating_task
