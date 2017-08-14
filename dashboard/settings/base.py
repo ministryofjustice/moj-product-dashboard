@@ -190,6 +190,7 @@ AXES_LOGIN_FAILURE_LIMIT = 5
 AXES_LOCK_OUT_AT_FAILURE = True
 AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
 AXES_LOCKOUT_TEMPLATE = 'admin/lockout.html'
+AXES_COOLOFF_TIME = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
